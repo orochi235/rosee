@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { expandJob, type Job } from './job';
+import { expandJob, type Job, passCount } from './job';
 
 const base: Job = { from: 10, to: 12, step: 0.5, depth: 0.05, phaseStep: 15, phaseGroup: 1, pumpPhaseStep: 0, indexCount: 1 };
 
@@ -33,5 +33,10 @@ describe('expandJob', () => {
 
   it('allows a zero step when there is nowhere to go', () => {
     expect(expandJob({ ...base, from: 10, to: 10, step: 0 }).map((p) => p.radius)).toEqual([10]);
+  });
+
+  it('counts the passes it would expand to', () => {
+    for (const j of [base, { ...base, indexCount: 3 }, { ...base, from: 12, to: 12 }])
+      expect(passCount(j)).toBe(expandJob(j).length);
   });
 });

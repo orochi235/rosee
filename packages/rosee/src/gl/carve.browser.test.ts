@@ -18,6 +18,13 @@ function column(h: Float32Array, resolution: number, extent: number, u: number):
 describe('createCarve', () => {
   const cutter = { vAngle: 90, tipFlat: 0 };
 
+  it('refuses a resolution the GPU cannot hold', () => {
+    const gl = context();
+    const max: number = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+    expect(() => createCarve(gl, max * 2)).toThrow(/carve resolution must be a whole number from 1 to/);
+    expect(() => createCarve(gl, 100.5)).toThrow(/carve resolution/);
+  });
+
   it('cuts a straight groove as wide as the cutter at that depth, to within a texel', () => {
     const gl = context();
     const carve = createCarve(gl, 1024);

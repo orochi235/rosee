@@ -45,6 +45,9 @@ void main() {
 /** Carves toolpath meshes into a depth texture: an orthographic view straight
  *  down onto the work, where the depth test keeps the deepest cut per texel. */
 export function createCarve(gl: WebGL2RenderingContext, resolution = 4096): Carve {
+  const max: number = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+  if (!(Number.isInteger(resolution) && resolution >= 1 && resolution <= max))
+    throw new Error(`rosee/gl: carve resolution must be a whole number from 1 to ${max} on this GPU, got ${resolution}`);
   const carveProgram = compile(gl, CARVE_VERTEX, CARVE_FRAGMENT);
   const readProgram = compile(gl, FULLSCREEN_VERTEX, READ_FRAGMENT);
   const depth = gl.createTexture();
@@ -59,7 +62,15 @@ export function createCarve(gl: WebGL2RenderingContext, resolution = 4096): Carv
   gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depth, 0);
   gl.drawBuffers([gl.NONE]);
   gl.readBuffer(gl.NONE);
+  const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  if (status !== gl.FRAMEBUFFER_COMPLETE) {
+    gl.deleteFramebuffer(framebuffer);
+    gl.deleteTexture(depth);
+    gl.deleteProgram(carveProgram);
+    gl.deleteProgram(readProgram);
+    throw new Error(`rosee/gl: this GPU cannot carve into a ${resolution}² depth texture (framebuffer status 0x${status.toString(16)})`);
+  }
 
   const vao = gl.createVertexArray();
   const positionAt = gl.getAttribLocation(carveProgram, 'position');

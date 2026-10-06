@@ -1,6 +1,6 @@
 import { rad, TAU } from '../angle';
 import { contactTable, reachAt } from '../contact/table';
-import { expandJob, type Pass } from '../job/job';
+import { expandJob, type Pass, passCount } from '../job/job';
 import { headstockToWork, machineToHeadstock } from '../machine/pose';
 import { swingAt, swingTable } from '../machine/swing';
 import type { Settings } from './settings';
@@ -35,12 +35,27 @@ export interface Toolpaths {
   passes: PassPath[];
 }
 
+/** The samples per turn a job may ask for. */
+export const SAMPLES_PER_TURN = { min: 16, max: 16384 };
+
+/** The most samples, over every pass, one job may hold. Each costs a few
+ *  hundred bytes once meshed for the carve. */
+export const SAMPLE_BUDGET = 5_000_000;
+
 export function computeToolpaths(s: Settings): Toolpaths {
+  const n = s.samplesPerTurn;
+  const { min, max } = SAMPLES_PER_TURN;
+  if (!(Number.isInteger(n) && n >= min && n <= max))
+    throw new Error(`samplesPerTurn must be a whole number from ${min} to ${max}, got ${n}`);
+  const total = passCount(s.job) * (n + 1);
+  if (total > SAMPLE_BUDGET)
+    throw new Error(
+      `the job needs ${total.toLocaleString('en-US')} samples, over the budget of ${SAMPLE_BUDGET.toLocaleString('en-US')}: cut fewer passes or fewer samples per turn`,
+    );
   const table = contactTable(s.rosette, s.rubber);
   const pump = s.pump && { gain: s.pump.gain, table: contactTable(s.pump.rosette, s.pump.rubber) };
   const rubberX = table.mean;
   const swings = swingTable(table, rubberX, s.pivotDistance);
-  const n = s.samplesPerTurn;
   const passes = expandJob(s.job).map((pass): PassPath => {
     const xyz = new Float32Array((n + 1) * 3);
     const swing = new Float32Array(n + 1);

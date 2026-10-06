@@ -207,4 +207,17 @@ describe('computeToolpaths', () => {
       if (Math.abs(r(i) - r(i - 1)) > 0.5) expect(path.steep[i] | path.steep[i - 1]).toBe(1);
     }
   });
+
+  it('refuses a sample count that is not a whole number in range', () => {
+    for (const samplesPerTurn of [0, 15, 100.5, 16385, Number.NaN])
+      expect(() => computeToolpaths(settings({ samplesPerTurn }))).toThrow(/samplesPerTurn must be a whole number from 16 to 16384/);
+  });
+
+  it('refuses a job over the sample budget before computing any of it', () => {
+    // 3001 radii × 24 divisions × 2049 samples is about 148 million
+    const s = settings({ job: job({ from: 0, to: 60, step: 0.02, indexCount: 24 }), samplesPerTurn: 2048 });
+    const started = performance.now();
+    expect(() => computeToolpaths(s)).toThrow(/over the budget of 5,000,000/);
+    expect(performance.now() - started).toBeLessThan(200);
+  });
 });
