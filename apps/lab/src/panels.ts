@@ -2,7 +2,7 @@ import { f, resolveConfigSchema, type ResolvedConfig } from '@weasel-js/labkit';
 import type { ParamSpec, Rosette, Rubber, Settings } from 'rosee';
 import { WAVE_PARAMS } from 'rosee';
 import { METALS } from 'rosee/gl';
-import { DEFAULT_POINTS, DEFAULT_PUMP, RUBBERS, SIMPLE_KINDS as KINDS, type SimpleKind, type SimpleWave as Simple } from './defaults';
+import { DEFAULT_PUMP, defaultWave, RUBBERS, SIMPLE_KINDS as KINDS, type SimpleKind, type SimpleWave } from './defaults';
 import { type Look, OUTPUT_MODES, RESOLUTIONS } from './state';
 
 /** One sidebar section: a labkit schema over a flat config, and the two
@@ -42,18 +42,12 @@ function rosetteRead(r: Rosette): Record<string, unknown> {
 }
 
 function rosetteWrite(r: Rosette, c: Record<string, unknown>): Rosette {
-  const kind = c.kind as SimpleKind;
-  const lobes = c.lobes as number;
-  const amplitude = c.amplitude as number;
-  const points = r.wave.kind === 'drawn' ? r.wave.points : DEFAULT_POINTS;
-  const waves: Record<SimpleKind, Simple> = {
-    sine: { kind: 'sine', lobes, amplitude },
-    flat: { kind: 'flat', lobes, amplitude, flat: (c.flat as number) ?? 0.4 },
-    petal: { kind: 'petal', lobes, amplitude, sharpness: (c.sharpness as number) ?? 2 },
-    scallop: { kind: 'scallop', lobes, amplitude },
-    drawn: { kind: 'drawn', lobes, amplitude, points },
-  };
-  return { radius: c.radius as number, wave: waves[kind] };
+  const base = defaultWave(c.kind as SimpleKind);
+  // Each param the panel holds a value of the right type for; the kind's default otherwise.
+  const wave = Object.fromEntries(
+    Object.entries(base).map(([k, v]) => [k, k !== 'kind' && typeof c[k] === typeof v ? c[k] : v]),
+  ) as SimpleWave;
+  return { radius: typeof c.radius === 'number' ? c.radius : r.radius, wave };
 }
 
 export const rosettePanel: Panel<Settings> = {
@@ -145,7 +139,7 @@ export const pumpPanel: Panel<Settings> = {
   ),
   read: (s) => {
     const w = (s.pump ?? DEFAULT_PUMP).rosette.wave;
-    const d = DEFAULT_PUMP.rosette.wave as Simple;
+    const d = DEFAULT_PUMP.rosette.wave as SimpleWave;
     return {
       on: s.pump !== null,
       lobes: 'lobes' in w ? w.lobes : d.lobes,

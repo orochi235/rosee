@@ -217,7 +217,7 @@ describe('computeToolpaths', () => {
     // 3001 radii × 24 divisions × 2049 samples is about 148 million
     const s = settings({ job: job({ from: 0, to: 60, step: 0.02, indexCount: 24 }), samplesPerTurn: 2048 });
     const started = performance.now();
-    expect(() => computeToolpaths(s)).toThrow(/over the budget of 5,000,000/);
+    expect(() => computeToolpaths(s)).toThrow(/over the budget of 1,000,000/);
     expect(performance.now() - started).toBeLessThan(200);
   });
 });

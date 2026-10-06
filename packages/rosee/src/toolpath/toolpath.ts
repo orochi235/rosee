@@ -40,7 +40,7 @@ export const SAMPLES_PER_TURN = { min: 16, max: 16384 };
 
 /** The most samples, over every pass, one job may hold. Each costs a few
  *  hundred bytes once meshed for the carve. */
-export const SAMPLE_BUDGET = 5_000_000;
+export const SAMPLE_BUDGET = 1_000_000;
 
 export function computeToolpaths(s: Settings): Toolpaths {
   const n = s.samplesPerTurn;
