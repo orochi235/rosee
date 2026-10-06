@@ -28,6 +28,7 @@ describe('expandJob', () => {
     expect(() => expandJob({ ...base, step: -0.5 })).toThrow(/step/);
     expect(() => expandJob({ ...base, phaseGroup: 0 })).toThrow(/phaseGroup/);
     expect(() => expandJob({ ...base, indexCount: 0 })).toThrow(/indexCount/);
+    expect(() => expandJob({ ...base, indexCount: 2.5 })).toThrow(/indexCount/);
   });
 
   it('allows a zero step when there is nowhere to go', () => {
