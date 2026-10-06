@@ -1,6 +1,6 @@
 # rosee: rose engine lathe simulator — design
 
-**Status: library and carve built (plans 1–2); lab not built yet.** This is the design for v1 plus
+**Status: v1 built (library, carve and lab); the roadmap is not started.** This is the design for v1 plus
 the roadmap after it. It is for whoever implements it; it assumes familiarity with
 TypeScript and labkit (`@weasel-js/labkit`), not with ornamental turning.
 
