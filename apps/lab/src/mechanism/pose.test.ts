@@ -61,4 +61,12 @@ describe('machinePose', () => {
     expect(pose.chuck).toBeNull();
     expect(pose.work).toEqual(pose.spindle);
   });
+
+  it('moves the elliptical ring out with the eccentricity step', () => {
+    const o = { ...PRESETS.oval, job: { ...PRESETS.oval.job, eccentricityStep: 0.5 }, samplesPerTurn: 256 };
+    const ot = computeToolpaths(o);
+    const pose = machinePose(o, ot, at(4 * 256 + 10, 256, ot.passes.length));
+    const [rx, ry] = pose.chuck!.ring!;
+    expect(Math.hypot(rx - pose.spindle[0], ry - pose.spindle[1])).toBeCloseTo(4 + 4 * 0.5, 3);
+  });
 });

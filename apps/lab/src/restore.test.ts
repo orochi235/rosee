@@ -83,4 +83,11 @@ describe('restore', () => {
   it('keeps a chuck preset through JSON', () => {
     expect(settingsOf(JSON.parse(JSON.stringify(PRESETS.oval)))).toEqual(PRESETS.oval);
   });
+
+  it('resets the chuck job fields of a hash that has no chuck, so it still cuts', () => {
+    const s = settingsOf({ chuck: null, job: { wheelCount: 3, eccentricityStep: 0.5 } });
+    expect(s.job.wheelCount).toBe(1);
+    expect(s.job.eccentricityStep).toBe(0);
+    expect(() => computeToolpaths({ ...s, samplesPerTurn: 256 })).not.toThrow();
+  });
 });

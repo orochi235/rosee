@@ -69,6 +69,7 @@ export function machinePose(s: Settings, t: Toolpaths, at: PlayheadAt): MachineP
   const c = s.chuck;
   const eccentricity = c ? Math.max(...t.passes.map((q) => Math.abs(c.eccentricity + q.pass.eccentricity))) : 0;
   const stock = Math.max(s.job.from, s.job.to) + eccentricity + 1;
+  const e = c ? c.eccentricity + path.pass.eccentricity : 0;
   const chuck: ChuckPose | null = c && {
     kind: c.kind,
     slide,
@@ -76,7 +77,7 @@ export function machinePose(s: Settings, t: Toolpaths, at: PlayheadAt): MachineP
     ends: [onHeadstock([-stock, 0]), onHeadstock([stock, 0])],
     ring:
       c.kind === 'elliptical'
-        ? headstockToMachine([c.eccentricity * Math.cos(rad(c.ring)), c.eccentricity * Math.sin(rad(c.ring))], P, swing)
+        ? headstockToMachine([e * Math.cos(rad(c.ring)), e * Math.sin(rad(c.ring))], P, swing)
         : null,
   };
   const rosette: Vec2[] = [];

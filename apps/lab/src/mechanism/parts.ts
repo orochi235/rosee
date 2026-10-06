@@ -127,7 +127,9 @@ export function liveLine(part: PartKey, c: LiveContext): string {
         : `elliptical · slide ${f2(pose.chuck.slide)} of ±${f2(e)} mm · ${wheel}`;
     }
     case 'ring':
-      return s.chuck?.kind === 'elliptical' ? `${f2(s.chuck.eccentricity)} mm off the spindle toward ${f1(s.chuck.ring)}°` : '';
+      return s.chuck?.kind === 'elliptical'
+        ? `${f2(s.chuck.eccentricity + pass.pass.eccentricity)} mm off the spindle toward ${f1(s.chuck.ring)}°`
+        : '';
     case 'bed':
       return '';
   }

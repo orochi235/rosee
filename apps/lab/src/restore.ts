@@ -62,7 +62,15 @@ function chuck(raw: unknown, fallback: Chuck | null): Chuck | null {
   return numbers(raw, DEFAULT_CHUCKS[kind]);
 }
 
+/** Settings from a hash. A job that repeats the wheel or steps the
+ *  eccentricity with no chuck to do it is set back, since the sidebar hides
+ *  those fields without a chuck and could not undo them. */
 function settings(raw: Raw): Settings {
+  const s = fields(raw);
+  return s.chuck ? s : { ...s, job: { ...s.job, wheelCount: 1, eccentricityStep: 0 } };
+}
+
+function fields(raw: Raw): Settings {
   const d = DEFAULT_STATE.settings;
   return {
     rosette: rosette(raw.rosette, d.rosette),
