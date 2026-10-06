@@ -9,7 +9,10 @@ interface Props {
   onSpeed(speed: number): void;
 }
 
-const SPEEDS = [0.25, 0.5, 1, 2, 4, 8];
+const SPEEDS = [1 / 64, 1 / 32, 1 / 16, 1 / 8, 0.25, 0.5, 1, 2, 4, 8];
+
+/** Slow speeds read better as the seconds one turn takes. */
+const speedLabel = (s: number): string => (s < 1 ? `${1 / s} s/turn` : `${s} turn/s`);
 
 export function Transport({ head, at, end, onToggle, onSeek, onSpeed }: Props) {
   return (
@@ -20,7 +23,7 @@ export function Transport({ head, at, end, onToggle, onSeek, onSpeed }: Props) {
       <select value={head.speed} onChange={(e) => onSpeed(Number(e.target.value))} aria-label="Turns per second">
         {SPEEDS.map((s) => (
           <option key={s} value={s}>
-            {s} turn/s
+            {speedLabel(s)}
           </option>
         ))}
       </select>
