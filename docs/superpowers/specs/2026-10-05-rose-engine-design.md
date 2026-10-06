@@ -1,6 +1,7 @@
 # rosee: rose engine lathe simulator — design
 
-**Status: v1 and chucks (roadmap item 1) built; the rest of the roadmap is not started.** This is the design for v1 plus the roadmap after it. It is for whoever implements it; it assumes familiarity with
+**Status: v1, chucks (roadmap item 1) and equations (item 2) built; the rest of
+the roadmap is not started.** This is the design for v1 plus the roadmap after it. It is for whoever implements it; it assumes familiarity with
 TypeScript and labkit (`@weasel-js/labkit`), not with ornamental turning.
 
 ## What it is
@@ -247,16 +248,77 @@ The carve gets a headless-Chromium test: one straight groove of known V angle an
 depth must measure 2·depth·tan(vAngle/2) wide within one pixel. `npm run smoke`
 loads every preset headless and screenshots it.
 
+## Equations
+
+Each stage of a simulation written out as MathML, once in symbols and once with
+the current pass's numbers in them, shown in the Motion tile beside the
+playhead's values. The equations describe the code rather than run it: tests
+evaluate them against the library, so an equation cannot disagree with the cut
+without a test failing.
+
+### Library (`math/`)
+
+`expr.ts` is a small expression tree: numbers, settings (which print as a name or
+as their number, degrees evaluating in radians), variables, sums, products,
+quotients, powers, `cos`, `sin`, `tan`, `sqrt`, `abs`, `min`, `arg`, `mod`, 2D
+vectors and rotations, a piecewise node, and a "max over α" node whose body may
+carry a condition. An alias prints a short name (u, s, H_φ⁻¹(r_c, 0)) and
+evaluates what it stands for; the equation defining it is built from the same
+expression, so the two cannot drift. `evaluate(expr, env)` compiles the tree to
+closures; `toMathML(expr)` emits MathML Core with text escaped. No TeX step and
+no dependency.
+
+"Max over α" samples 4096 angles, bisects to the edge wherever its condition
+flips, and closes in on the best sample, so it lands within 2·10⁻⁵ mm of the
+contact table, edge contacts with a flat rubber included.
+
+`describe(settings, toolpaths, pass)` returns stages, each a title and its
+equations. An equation is a left side, a right side and a kind: a **formula**
+can be evaluated; a **definition** is implicit or tabulated and only prints. A
+formula holding a drawn lobe becomes a definition, so a drawn rosette makes both
+r(α) and R(β) definitions. `sampleEnv` binds the variables at one sample: θ, φ,
+the touched angle α, the depth of cut, and the β directions, which it gets by
+evaluating their own equations.
+
+| Stage | Equation | Kind | Checked against |
+|---|---|---|---|
+| Rosette | r(α) = r₀ + Σ A·p(u), u = nα/2π mod 1, p per wave kind: `sine` cos 2πu; `flat`, `petal`, `scallop` in d = min(u, 1 − u) | formula | `radiusAt` |
+| Rosette, `drawn` | p is the periodic monotone cubic through the drawn points, shown as a table | definition | — |
+| Reach, round ρ | R(β) = max over α with \|r(α) sin(α−β)\| ≤ ρ of r(α) cos(α−β) + √(ρ² − (r(α) sin(α−β))²); R(β) = r(β) for a knife edge | formula | contact table `reach` |
+| Reach, flat w | R(β) = max over α with \|r(α) sin(α−β)\| ≤ w/2 of r(α) cos(α−β) | formula | contact table `reach` |
+| Swing | H_φ⁻¹(x, y) = Rot(−φ)(x, y + P) − (0, P); ψ(φ) = arg H_φ⁻¹(X, 0); β = ψ(φ) − θ − phase | formula | `machineToHeadstock` |
+| Swing | φ = the largest φ with \|H_φ⁻¹(X, 0)\| = R(β) | definition | — |
+| Chain | (x, y) = Rot(−wheel)(Rot(index − θ) H_φ⁻¹(r_c, 0) − (s, 0)); s = e, or e cos(θ − index − ring) | formula, given each sample's φ | `PassPath.xyz`, `PassPath.slide` |
+| Pump | β_pump = arg H_φ⁻¹(X_pump, 0) − θ − phase_pump; z = −(d₀ + g(R_pump(β_pump) − X_pump)); z = −d₀ with no pump | formula, given R_pump from the table | `PassPath.xyz` z |
+| Groove | w = f + 2d tan(V/2) | formula | `grooveWidth` |
+
+X is where the rubber sits, the reach table's mean (`Toolpaths.rubberX`), and
+X_pump the pumping rubber's (`Toolpaths.pumpX`); P the pivot distance; r_c the
+pass's cutter radius.
+
+### Lab
+
+The Motion tile has tabs, Plots and Equations. Equations lists the stages top
+to bottom, scrolling within the tile, each equation with the playhead's value
+in a fixed-width column beside it: r at the contact, R(β), φ, s, the tip, z and
+the groove's width. The transport goes down to 64 seconds a turn, slow enough
+to follow one turn against the equations.
+
+### Testing
+
+Every formula is evaluated for every preset, every wave kind under knife, round
+and flat rubbers, and a pumped elliptical case: the rosette at 360 angles, the
+reach at 256 directions, the chain and depth at every fourth sample of the first
+and last pass. A formula printing a symbol its environment does not bind fails.
+MathML gets a snapshot per preset, and `npm run smoke` opens the Equations tab
+and finds `<math>`, values, and no error.
+
 ## Roadmap
 
 In order.
 
 1. **Eccentric and elliptical chucks**: built; see [Chucks](#chucks).
-2. **The math as equations**: each stage of a simulation written out as MathML with
-   the settings' numbers in it: rosette outline, reach and swing as definitions,
-   the motion chain as composed transforms. Each stage is an expression tree that
-   both prints and evaluates, and a test checks the evaluation against
-   `computeToolpaths`, so an equation can't disagree with the code.
+2. **The math as equations**: built; see [Equations](#equations).
 3. **Surface work**: cylinder and dome `Surface`s; the carve target becomes the
    unrolled surface, and the 3D view shows the curved part.
 4. **Straight-line engine**: a second machine whose chain has a linear slide where

@@ -35,6 +35,9 @@ export interface Toolpaths {
   samples: number;
   /** Where the rubber sits on the machine's x axis, mm. */
   rubberX: number;
+  /** Where the pumping rubber sits on its own rosette's axis, mm, or null
+   *  with no pump. */
+  pumpX: number | null;
   passes: PassPath[];
 }
 
@@ -100,5 +103,5 @@ export function computeToolpaths(s: Settings): Toolpaths {
     }
     return { pass, xyz, swing, pump: pumpTravel, contact, steep, across, slide };
   });
-  return { samples: n, rubberX, passes };
+  return { samples: n, rubberX, pumpX: pump ? pump.table.mean : null, passes };
 }

@@ -14,6 +14,12 @@ export {
   workToChuck,
 } from './machine/pose';
 export { contactGap, solveSwing } from './machine/swing';
+export { type DescribeOptions, describe } from './math/describe';
+export { sampleEnv } from './math/env';
+export { type Env, evaluate, type Value } from './math/evaluate';
+export type { Expr, Name } from './math/expr';
+export { type MathMLOptions, toMathML } from './math/mathml';
+export { type Equation, equation, equationMathML, type Stage, type Unit } from './math/stage';
 export { choice, type ChoiceParam, num, type NumberParam, type ParamSpec } from './params';
 export { PRESETS, type PresetName } from './presets';
 export type { ProfilePoint } from './rosette/profile';
