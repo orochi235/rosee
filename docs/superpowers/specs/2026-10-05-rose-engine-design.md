@@ -67,6 +67,9 @@ coordinates plus the per-sample machine state (swing angle, pump offset, contact
 point) that the mechanism views draw from. Every view reads that result; none
 recomputes kinematics.
 
+A job is refused past 1,000,000 samples (passes × samples per turn), which keeps
+its carve mesh near 200 MB.
+
 Settings are immutable: replace an object to change it. The library caches lobe
 profiles per wave object, so a wave edited in place would keep its old shape.
 
@@ -148,7 +151,8 @@ at that sample's depth, into a float depth target with depth test keeping the
 deepest cut per pixel; overlapping cuts resolve correctly for free. The graver is
 fixed to the machine, so the V opens across the machine's x axis carried into the
 work (`PassPath.across`), not across the path: a groove narrows where the path
-climbs steeply. Default 4096², blank stock at depth 0. A second pass shades from
+climbs steeply. `createCarve` defaults to 4096², the lab starts at 2048² for
+speed; blank stock is at depth 0. A second pass shades from
 the depth target: normals from finite differences, a GGX highlight from a movable
 light so facets flash as it moves, and a pixel's footprint averaged when it spans
 several texels. Carving up to a transport position means drawing passes before the
