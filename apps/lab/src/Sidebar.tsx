@@ -1,5 +1,6 @@
 import { ControlPanel } from '@weasel-js/labkit';
 import { PRESETS, type PresetName, type Settings } from 'rosee';
+import { useRef } from 'react';
 import { chuckPanel, cutPanel, lookPanel, type Panel, pumpPanel, rosettePanel, rubberPanel } from './panels';
 import { shareLink } from './hash';
 import { ProfileEditor } from './ProfileEditor';
@@ -11,6 +12,7 @@ interface Props {
   setLook(next: Look): void;
   loadPreset(name: PresetName): void;
   onExportSvg(): void;
+  onOpen(file: File): void;
 }
 
 function Section<T>({ panel, value, onChange }: { panel: Panel<T>; value: T; onChange(next: T): void }) {
@@ -27,7 +29,8 @@ function Section<T>({ panel, value, onChange }: { panel: Panel<T>; value: T; onC
   );
 }
 
-export function Sidebar({ state, setSettings, setLook, loadPreset, onExportSvg }: Props) {
+export function Sidebar({ state, setSettings, setLook, loadPreset, onExportSvg, onOpen }: Props) {
+  const picker = useRef<HTMLInputElement>(null);
   const { settings } = state;
   const wave = settings.rosette.wave;
   return (
@@ -48,6 +51,21 @@ export function Sidebar({ state, setSettings, setLook, loadPreset, onExportSvg }
           <button type="button" onClick={onExportSvg}>
             Export SVG
           </button>
+          <button type="button" onClick={() => picker.current?.click()}>
+            Open SVG
+          </button>
+          <input
+            ref={picker}
+            className="rs-hidden"
+            type="file"
+            accept=".svg,image/svg+xml"
+            aria-label="SVG to open"
+            onChange={(e) => {
+              const file = e.currentTarget.files?.[0];
+              if (file) onOpen(file);
+              e.currentTarget.value = '';
+            }}
+          />
           <button
             type="button"
             onClick={() => navigator.clipboard?.writeText(shareLink(state))}

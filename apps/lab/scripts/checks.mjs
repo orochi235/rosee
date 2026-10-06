@@ -100,10 +100,15 @@ export async function bareView(page, url) {
   await page.goto(bare);
   await page.waitForTimeout(1500);
   const narrow = await page.locator('.rs-bare canvas').count();
+  const narrowTransport = await page.locator('.rs-transport').count();
   await page.setViewportSize({ width: 1100, height: 600 });
   await page.waitForTimeout(800);
   const wide = await page.locator('.rs-bare canvas').count();
-  const chrome = await page.locator('.rs-sidebar, .rs-transport, .rs-parts').count();
+  const chrome = await page.locator('.rs-sidebar, .rs-parts').count();
+  const transportInk = await page
+    .locator('.rs-transport .rs-pass')
+    .evaluate((e) => getComputedStyle(e).color)
+    .catch(() => null);
   // An opaque root, or a color scheme unlike the embedder's, hides the page behind the frame.
   const [ground, scheme] = await page.evaluate(() => {
     const root = getComputedStyle(document.documentElement);
@@ -121,7 +126,24 @@ export async function bareView(page, url) {
   if (ink === null) return 'no callout under the machine';
   if (ink === 'rgb(0, 0, 0)') return 'callout text is black';
   if (chrome) return 'lab chrome drawn in the bare view';
+  if (narrowTransport) return 'transport drawn in the narrow bare view';
+  if (transportInk === null) return 'no transport in the wide bare view';
+  if (transportInk === 'rgb(0, 0, 0)') return 'transport text is black';
   return narrow === 1 && wide === 2 ? '' : `${narrow} canvases narrow, ${wide} wide`;
+}
+
+/** Once the viewer has touched the wide bare view's transport, the cut it
+ *  leaves finished is not replayed under them after the hold. */
+export async function bareHold(page, url) {
+  await page.setViewportSize({ width: 1100, height: 600 });
+  await page.goto(`${url}?bare`);
+  // It opens finished and holds; seeking to the end then would change nothing.
+  await page.locator('.rs-transport button[aria-label="Pause"]').waitFor({ timeout: 6000 });
+  const slider = page.locator('.rs-transport input[type="range"]');
+  await slider.fill(await slider.getAttribute('max'));
+  await page.waitForTimeout(4500);
+  const label = await page.locator('.rs-transport button').getAttribute('aria-label');
+  return label === 'Play' ? '' : 'the loop replayed after the viewer seeked';
 }
 
 /** `?bare=still` stays the surface alone however wide the frame, and does
@@ -135,10 +157,12 @@ export async function bareStill(page, url) {
   const after = await page.locator('.rs-bare canvas').screenshot();
   const n = await page.locator('.rs-bare canvas').count();
   if (n !== 1) return `${n} canvases`;
+  if (await page.locator('.rs-transport').count()) return 'transport drawn in the still';
   return before.equals(after) ? '' : 'the cut changed after the hold';
 }
 
-/** Export SVG downloads the finished cut with a link back to its settings. */
+/** Export SVG downloads the finished cut with a link back to its settings,
+ *  and Open SVG restores them from it. */
 export async function exportSvg(page, url) {
   await page.goto(url);
   await page.waitForTimeout(1000);
@@ -149,7 +173,45 @@ export async function exportSvg(page, url) {
   const lines = svg.match(/<polyline /g)?.length ?? 0;
   if (!/<metadata>[^<]*#s=[A-Za-z0-9_-]+<\/metadata>/.test(svg)) return 'no settings link in the metadata';
   if (download.suggestedFilename() !== 'rosee-swirl.svg') return `named ${download.suggestedFilename()}`;
-  return lines > 1 ? '' : `${lines} polylines`;
+  if (lines < 2) return `${lines} polylines`;
+
+  // Open SVG brings back the settings the file was exported with.
+  await page.selectOption('.rs-preset select', 'basket');
+  await page.locator('input[type=file]').setInputFiles({ name: 'cut.svg', mimeType: 'image/svg+xml', buffer: Buffer.from(svg) });
+  await page.waitForTimeout(500);
+  const preset = await page.locator('.rs-preset select').inputValue();
+  if (preset !== 'swirl') return `opening the export left the preset at ${preset}`;
+  // A file dropped anywhere on the lab opens the same way.
+  await page.selectOption('.rs-preset select', 'basket');
+  await page.evaluate((text) => {
+    const data = new DataTransfer();
+    data.items.add(new File([text], 'dropped.svg', { type: 'image/svg+xml' }));
+    window.dispatchEvent(new DragEvent('drop', { dataTransfer: data, cancelable: true }));
+  }, svg);
+  await page.waitForTimeout(500);
+  const dropped = await page.locator('.rs-preset select').inputValue();
+  if (dropped !== 'swirl') return `dropping the export left the preset at ${dropped}`;
+  await page.locator('input[type=file]').setInputFiles({ name: 'other.svg', mimeType: 'image/svg+xml', buffer: Buffer.from('<svg/>') });
+  await page.waitForTimeout(300);
+  const notice = await page.getByRole('alert').filter({ hasText: 'other.svg' }).count();
+  return notice ? '' : 'no notice for a file with no settings';
+}
+
+/** 0 over the output undoes a zoom. */
+export async function resetKey(page, url) {
+  await page.goto(url);
+  await setMode(page, 'lines');
+  await page.waitForTimeout(800);
+  const canvas = page.locator('.rs-output > canvas');
+  const box = await canvas.boundingBox();
+  const before = await canvas.screenshot();
+  await page.mouse.move(box.x + box.width / 3, box.y + box.height / 3);
+  await page.mouse.wheel(0, -400);
+  await page.waitForTimeout(300);
+  if ((await canvas.screenshot()).equals(before)) return 'the wheel did not zoom';
+  await page.keyboard.press('0');
+  await page.waitForTimeout(300);
+  return (await canvas.screenshot()).equals(before) ? '' : '0 did not restore the view';
 }
 
 /** The Motion tile's Equations tab prints every stage as MathML, with a

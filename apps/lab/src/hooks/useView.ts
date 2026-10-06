@@ -1,4 +1,4 @@
-import { type PointerEvent, useRef, useState, type WheelEvent } from 'react';
+import { type KeyboardEvent, type PointerEvent, useEffect, useRef, useState, type WheelEvent } from 'react';
 
 interface Zoomed {
   zoom: number;
@@ -14,6 +14,11 @@ function paneUnder(container: HTMLElement, target: EventTarget): Element {
   return container;
 }
 
+const isReset = (e: globalThis.KeyboardEvent) => e.key === '0' && !e.metaKey && !e.ctrlKey && !e.altKey;
+
+const isTyping = (t: EventTarget | null) =>
+  t instanceof HTMLElement && (t.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName));
+
 /** A pan and zoom over the work, in mm: the point at each pane's center and
  *  how much a CSS pixel spans. `fit` is the half-width to show at zoom 1, and
  *  `size` one pane's size. */
@@ -25,6 +30,17 @@ export function useView(fit: number, size: { width: number; height: number }) {
   const release = () => {
     drag.current = null;
   };
+  const hovered = useRef(false);
+
+  // 0 resets the view while the pointer is over it, as Mod+0 resets a lab's
+  // zoom; with the view focused instead, its own key handler does.
+  useEffect(() => {
+    const key = (e: globalThis.KeyboardEvent) => {
+      if (hovered.current && isReset(e) && !isTyping(e.target)) setState(HOME);
+    };
+    window.addEventListener('keydown', key);
+    return () => window.removeEventListener('keydown', key);
+  }, []);
 
   const handlers = {
     onWheel: (e: WheelEvent<HTMLElement>) => {
@@ -53,7 +69,19 @@ export function useView(fit: number, size: { width: number; height: number }) {
     onPointerUp: release,
     onPointerCancel: release,
     onLostPointerCapture: release,
-    onDoubleClick: () => setState(HOME),
+    onPointerEnter: () => {
+      hovered.current = true;
+    },
+    onPointerLeave: () => {
+      hovered.current = false;
+    },
+    onKeyDown: (e: KeyboardEvent<HTMLElement>) => {
+      if (!isReset(e.nativeEvent) || hovered.current) return;
+      e.preventDefault();
+      setState(HOME);
+    },
+    tabIndex: 0,
+    'aria-keyshortcuts': '0',
   };
 
   return { view: { center: state.center, mmPerPixel }, handlers };

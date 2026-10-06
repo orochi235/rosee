@@ -12,16 +12,18 @@ interface Props {
 const SPEEDS = [1 / 64, 1 / 32, 1 / 16, 1 / 8, 0.25, 0.5, 1, 2, 4, 8];
 
 /** Slow speeds read better as the seconds one turn takes. */
-const speedLabel = (s: number): string => (s < 1 ? `${1 / s} s/turn` : `${s} turn/s`);
+const speedLabel = (s: number): string => (s < 1 ? `${+(1 / s).toFixed(1)} s/turn` : `${+s.toFixed(2)} turn/s`);
 
 export function Transport({ head, at, end, onToggle, onSeek, onSpeed }: Props) {
+  // An embed paces its loop by the pattern, so its speed may be off the list.
+  const speeds = SPEEDS.includes(head.speed) ? SPEEDS : [...SPEEDS, head.speed].sort((a, b) => a - b);
   return (
     <div className="rs-transport">
       <button type="button" onClick={onToggle} aria-label={head.playing ? 'Pause' : 'Play'}>
         {head.playing ? '❚❚' : '▶'}
       </button>
       <select value={head.speed} onChange={(e) => onSpeed(Number(e.target.value))} aria-label="Turns per second">
-        {SPEEDS.map((s) => (
+        {speeds.map((s) => (
           <option key={s} value={s}>
             {speedLabel(s)}
           </option>

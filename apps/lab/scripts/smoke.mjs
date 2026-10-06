@@ -4,7 +4,7 @@
 import { mkdir } from 'node:fs/promises';
 import { chromium } from 'playwright';
 import { build, preview } from 'vite';
-import { bareStill, bareView, equationsTab, exportSvg, hostileHash, modeToggles, splitZoom } from './checks.mjs';
+import { bareHold, bareStill, bareView, equationsTab, exportSvg, hostileHash, modeToggles, resetKey, splitZoom } from './checks.mjs';
 
 const PRESETS = ['swirl', 'basket', 'barleycorn', 'wheel', 'oval'];
 const root = new URL('..', import.meta.url).pathname;
@@ -31,7 +31,7 @@ try {
     console.log(`${i + 1}/${PRESETS.length} ${name}: ${ok ? 'ok' : `FAILED ${errors.join('; ') || 'error banner shown'}`}`);
     await page.close();
   }
-  const checks = { hostileHash, modeToggles, splitZoom, bareView, bareStill, exportSvg, equationsTab };
+  const checks = { hostileHash, modeToggles, splitZoom, bareView, bareHold, bareStill, exportSvg, resetKey, equationsTab };
   for (const [i, [name, check]] of Object.entries(checks).entries()) {
     const page = await browser.newPage({ viewport: { width: 1440, height: 860 } });
     const problem = await check(page, url);
