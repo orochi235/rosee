@@ -167,6 +167,10 @@ Pumping, Cutter, Job, Surface, Presets) and a `WorkspaceGrid`:
 - **Machine 3D**: crude three.js model (boxes, cylinders, a disc rosette) driven by
   the same per-sample machine state as the 2D views, orbit camera. Its purpose is
   debugging: where it disagrees with the 2D view, one of them has a bug.
+- **Callouts**: hovering a part in the 3D machine or the 2D Top and Contact views
+  shows what it is, how it works, and one live value at the playhead (the
+  rubber's contact angle, the headstock's swing, the groove's width). A Parts list
+  in each tile's corner opens the same callouts by keyboard or touch.
 - **Transport**: play/pause, pass `n/N`, scrubber, speed; the angle readout pinned
   to a fixed width.
 
