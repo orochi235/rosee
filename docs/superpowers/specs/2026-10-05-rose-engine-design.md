@@ -71,13 +71,14 @@ recomputes kinematics.
 
 ### Rosettes
 
-A rosette is data: `{ kind, lobes, amplitude, baseRadius, ...kindParams }`.
-Kinds: `sine`, `flat` (flat-topped lobes with a ramp fraction), `petal` (pointed),
-`scallop` (circular arcs), `drawn` (one lobe's profile as control points from
-weasel-ui's `CurveEditor`, repeated `lobes` times), and `compound` (sum of child
-rosettes' displacements). Each kind declares its params as data so the lab builds
-panels from them. The library samples any rosette into a dense outline polygon;
-contact works on the polygon, so every kind gets the same contact treatment.
+A rosette is data: `{ radius, wave }`, a wave of lobes around a mean radius.
+Wave kinds: `sine`, `flat` (flat top and floor joined by ramps), `petal` (pointed
+peaks), `scallop` (outward arcs meeting in inward cusps), `drawn` (one lobe's
+profile as control points from weasel-ui's `CurveEditor`, joined by a periodic
+spline and repeated `lobes` times), and `compound` (the sum of child waves). Each
+kind declares its params as data so the lab builds panels from them. Contact
+samples any rosette into a dense outline polygon, so every kind gets the same
+contact treatment.
 
 ### Contact and the swing solve
 
@@ -85,14 +86,21 @@ The rosette rides on the spindle, so it moves with the headstock; the rubber is
 fixed to the bed. At spindle angle θ the headstock swing angle φ is the one at
 which the rubber just touches the rosette outline: rotate the outline by θ + phase,
 place it by the headstock pose for φ, and find the φ where the minimum signed
-distance from rubber shape to outline is zero. That distance is monotonic in φ over
-the working range, so bisection solves it. Rubber shapes: circle of radius ρ
-(ρ = 0 is a point) and knife edge. A rubber too large for a valley never reaches
-its floor, and a short pivot arm makes the work travel on an arc; both fall out of
-the solve without being special-cased.
+gap between rubber and outline is zero. The gap grows with φ over the working
+range, so a bracket widened from the rosette's throw and closed by the Illinois
+method solves it. Rubber shapes: round of radius ρ (ρ = 0 is a knife edge) and
+flat, a face square to the line of approach. Contact is precomputed as a *reach
+table*: for each direction around the rosette, how far out the rubber stops. A
+rubber too large for a valley never reaches its floor, and a short pivot arm makes
+the work travel on an arc; both fall out without being special-cased.
 
-Pumping is the same solve along the spindle axis: a pumping rosette's face profile,
-its own rubber, and an axial slide. Output is the pump offset at θ.
+The swing depends only on the rosette's angle, not on the cutter or the work, so
+it is solved once per rosette angle into a *swing table* that every pass reads.
+That takes a preset from about a second to 80–220 ms.
+
+Pumping uses the same reach table on a pumping rosette with its own rubber; a
+lever of ratio `gain` turns the rubber's travel into the headstock's travel along
+the spindle. Output is the pump offset at θ.
 
 ### Machine and cutter
 
@@ -107,10 +115,12 @@ carve.
 
 ### Jobs
 
-A job is a list of passes, each `{ radius, depth, phase, index, rosette?, pump? }`.
-Generators build common programs (radius sweep with a phase step per pass, index
-repeats) as plain data, so a hand-edited job and a generated one are the same
-type.
+A job is a program the lab edits: the cutter steps from one radius to another;
+every `phaseGroup` passes the rosette is phased on by `phaseStep`, the pump by
+`pumpPhaseStep` every pass; the sweep repeats at `indexCount` divisions. It
+expands to passes `{ radius, depth, phase, pumpPhase, index }`. One program covers
+the swirl (small phase step), barleycorn (half a lobe every pass) and basket weave
+(half a lobe every group).
 
 ### Surfaces
 
