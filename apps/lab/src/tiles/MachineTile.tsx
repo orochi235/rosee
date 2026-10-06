@@ -1,10 +1,11 @@
 import type { Settings, Toolpaths } from 'rosee';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Callout, type Hover, PartsList } from '../Callout';
 import { useElementSize } from '../hooks/useElementSize';
 import { ALL_PARTS, partsFor } from '../mechanism/parts';
 import { type CameraPlacement, CLOSE_UP, createMachineScene, type MachineScene } from '../mechanism/machine3d';
 import type { MachinePose } from '../mechanism/pose';
+import { cutTrail } from '../mechanism/trail';
 import type { PlayheadAt } from '../playhead';
 
 export function MachineTile({
@@ -44,6 +45,12 @@ export function MachineTile({
   useEffect(() => {
     scene.current?.update(settings, pose, at.angle, exaggerate);
   }, [settings, pose, at.angle, exaggerate]);
+  const trail = useMemo(
+    () => cutTrail(settings, toolpaths, at, exaggerate),
+    // `at` is rebuilt every render; only where it points matters
+    [settings, toolpaths, at.pass, at.sample, exaggerate],
+  );
+  useEffect(() => scene.current?.cut(trail), [trail]);
   useEffect(() => scene.current?.highlight(hover?.part ?? null), [hover?.part]);
 
   const show = (part: Hover['part'] | null, x: number, y: number) => setHover(part ? { part, x, y } : null);

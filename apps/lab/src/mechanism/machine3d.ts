@@ -4,6 +4,8 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { PALETTE } from '../palette';
 import type { PartKey } from './parts';
 import { followingRubber, type MachinePose } from './pose';
+import type { Trail } from './trail';
+import { createTrailLine } from './trailLine';
 import { rosetteGeometry } from './rosetteGeometry';
 
 /** A crude rose engine in three.js, in machine-frame mm: x toward the rubber
@@ -14,6 +16,8 @@ import { rosetteGeometry } from './rosetteGeometry';
  *  two still touch rather than the rosette swinging through it. */
 export interface MachineScene {
   update(settings: Settings, pose: MachinePose, spindle: number, exaggerate: number): void;
+  /** Draws the recent cut on the work's face, fading with age. */
+  cut(trail: Trail): void;
   /** The part under a point given in the canvas's CSS pixels, or null. */
   pick(x: number, y: number): PartKey | null;
   /** Tints one part to show it is the one being explained. */
@@ -90,6 +94,10 @@ export function createMachineScene(
   carrier.add(work);
   const mark = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 0.5), metal(PALETTE.steep));
   carrier.add(mark);
+  const trail = createTrailLine(PALETTE.cutter, 3);
+  // Just proud of the face, so it never fights the face for depth.
+  trail.object.position.z = 0.05;
+  carrier.add(trail.object);
   const ring = new THREE.Mesh(new THREE.TorusGeometry(1, 0.02, 12, 96), metal(PALETTE.steel));
   headstock.add(ring);
 
@@ -167,6 +175,10 @@ export function createMachineScene(
       cutter.position.set(pose.cutter[0], pose.cutter[1], 0);
       requestRender();
     },
+    cut(t) {
+      trail.set(t);
+      requestRender();
+    },
     pick(x, y) {
       const ndc = new THREE.Vector2((x / canvas.clientWidth) * 2 - 1, -(y / canvas.clientHeight) * 2 + 1);
       raycaster.setFromCamera(ndc, camera);
@@ -181,6 +193,7 @@ export function createMachineScene(
     },
     resize(width, height) {
       renderer.setSize(width, height, false);
+      trail.resize(width, height);
       camera.aspect = width / Math.max(1, height);
       camera.updateProjectionMatrix();
       requestRender();
@@ -194,6 +207,7 @@ export function createMachineScene(
         o.geometry.dispose();
         (o.material as THREE.Material).dispose();
       });
+      trail.dispose();
       renderer.dispose();
     },
   };
