@@ -24,4 +24,10 @@ describe('rosette', () => {
     const round: Rosette = { radius: 25, wave: { kind: 'sine', lobes: 7, amplitude: 0 } };
     for (const t of [0, 1, 2, 3]) expect(radiusAt(round, t)).toBe(25);
   });
+
+  it('a drawn wave reads its control points', () => {
+    const w: Wave = { kind: 'drawn', lobes: 4, amplitude: 2, points: [{ u: 0, p: 1 }, { u: 0.5, p: -1 }] };
+    expect(displacement(w, 0)).toBeCloseTo(2, 12);
+    expect(displacement(w, Math.PI / 4)).toBeCloseTo(-2, 12);
+  });
 });

@@ -1,3 +1,5 @@
+import { TAU } from '../angle';
+
 /** One lobe's shape: `u` is the position within the lobe in [0, 1), with the
  *  lobe's peak at u = 0. Returns a value in [-1, 1]: 1 at the peak, -1 at the
  *  valley floor. */
@@ -6,7 +8,7 @@ export type LobeProfile = (u: number) => number;
 /** Distance from the nearest peak, in [0, 0.5]. */
 const fromPeak = (u: number): number => Math.min(u, 1 - u);
 
-export const sineLobe: LobeProfile = (u) => Math.cos(2 * Math.PI * u);
+export const sineLobe: LobeProfile = (u) => Math.cos(TAU * u);
 
 /** Flat top and flat floor, each `flat` of the half-period wide, joined by
  *  cosine ramps. */
@@ -38,30 +40,53 @@ export interface ProfilePoint {
 }
 
 /** A hand-drawn lobe: control points (u in [0, 1), p in [-1, 1]) joined by a
- *  periodic Catmull-Rom spline, so the lobe repeats without a seam. */
+ *  periodic monotone cubic (Fritsch–Carlson), so the lobe repeats without a
+ *  seam and never overshoots its points. Of points sharing a `u`, the last
+ *  wins. */
 export const drawnLobe = (points: readonly ProfilePoint[]): LobeProfile => {
-  const pts = [...points].sort((a, b) => a.u - b.u);
+  const pts: ProfilePoint[] = [];
+  for (const q of [...points].sort((a, b) => a.u - b.u)) {
+    if (pts.length > 0 && pts[pts.length - 1].u === q.u) pts[pts.length - 1] = q;
+    else pts.push(q);
+  }
   const n = pts.length;
   if (n === 0) return () => 0;
   if (n === 1) return () => pts[0].p;
-  const at = (i: number): ProfilePoint => {
-    const k = ((i % n) + n) % n;
-    const wraps = Math.floor(i / n);
-    return { u: pts[k].u + wraps, p: pts[k].p };
-  };
+  const width = pts.map((q, k) => (k + 1 < n ? pts[k + 1].u : pts[0].u + 1) - q.u);
+  const slope = pts.map((q, k) => (pts[(k + 1) % n].p - q.p) / width[k]);
+  const tangent = slope.map((s, k) => {
+    const before = slope[(k + n - 1) % n];
+    return before * s > 0 ? (before + s) / 2 : 0;
+  });
+  for (let k = 0; k < n; k++) {
+    const j = (k + 1) % n;
+    if (slope[k] === 0) {
+      tangent[k] = 0;
+      tangent[j] = 0;
+      continue;
+    }
+    const a = tangent[k] / slope[k];
+    const b = tangent[j] / slope[k];
+    const len = Math.hypot(a, b);
+    if (len > 3) {
+      tangent[k] = (3 * a * slope[k]) / len;
+      tangent[j] = (3 * b * slope[k]) / len;
+    }
+  }
   return (u) => {
-    let i = pts.findIndex((q) => q.u > u) - 1;
-    if (i === -2) i = n - 1;
-    const p0 = at(i - 1);
-    const p1 = at(i);
-    const p2 = at(i + 1);
-    const p3 = at(i + 2);
-    const uu = u < p1.u ? u + 1 : u;
-    const t = (uu - p1.u) / (p2.u - p1.u);
-    const m1 = ((p2.p - p0.p) / (p2.u - p0.u)) * (p2.u - p1.u);
-    const m2 = ((p3.p - p1.p) / (p3.u - p1.u)) * (p2.u - p1.u);
+    let k = n - 1;
+    while (k >= 0 && pts[k].u > u) k--;
+    if (k < 0) {
+      k = n - 1;
+      u += 1;
+    }
+    const h = width[k];
+    const t = (u - pts[k].u) / h;
     const t2 = t * t;
     const t3 = t2 * t;
-    return (2 * t3 - 3 * t2 + 1) * p1.p + (t3 - 2 * t2 + t) * m1 + (-2 * t3 + 3 * t2) * p2.p + (t3 - t2) * m2;
+    const p1 = pts[(k + 1) % n].p;
+    return (
+      (2 * t3 - 3 * t2 + 1) * pts[k].p + (t3 - 2 * t2 + t) * h * tangent[k] + (-2 * t3 + 3 * t2) * p1 + (t3 - t2) * h * tangent[(k + 1) % n]
+    );
   };
 };

@@ -20,7 +20,21 @@ export interface Rosette {
   wave: Wave;
 }
 
-const lobeProfile = (w: Exclude<Wave, { kind: 'compound' }>): LobeProfile => {
+type SimpleWave = Exclude<Wave, { kind: 'compound' }>;
+
+const profiles = new WeakMap<SimpleWave, LobeProfile>();
+
+/** The wave's lobe shape, built once per wave object. */
+function lobeProfile(w: SimpleWave): LobeProfile {
+  let p = profiles.get(w);
+  if (!p) {
+    p = buildProfile(w);
+    profiles.set(w, p);
+  }
+  return p;
+}
+
+const buildProfile = (w: SimpleWave): LobeProfile => {
   switch (w.kind) {
     case 'sine':
       return sineLobe;

@@ -31,4 +31,29 @@ describe('lobe profiles', () => {
     expect(p(0.5)).toBeCloseTo(-1, 9);
     expect(p(0.9999999)).toBeCloseTo(p(0), 4);
   });
+
+  it('drawn never overshoots its control points', () => {
+    const p = drawnLobe([
+      { u: 0, p: 1 },
+      { u: 0.05, p: 1 },
+      { u: 0.5, p: -1 },
+    ]);
+    for (let i = 0; i < 1000; i++) {
+      expect(p(i / 1000)).toBeLessThanOrEqual(1);
+      expect(p(i / 1000)).toBeGreaterThanOrEqual(-1);
+    }
+    expect(p(0.025)).toBe(1);
+  });
+
+  it('drawn wraps when the first control point is past zero', () => {
+    const p = drawnLobe([
+      { u: 0.1, p: 1 },
+      { u: 0.6, p: -1 },
+      { u: 0.8, p: 0.5 },
+    ]);
+    expect(p(0.1)).toBeCloseTo(1, 12);
+    expect(p(0.05)).toBeCloseTo(p(1.05 - 1), 12);
+    expect(p(0.9999999)).toBeCloseTo(p(0), 5);
+    for (let i = 0; i < 100; i++) expect(Math.abs(p(i / 100))).toBeLessThanOrEqual(1);
+  });
 });
