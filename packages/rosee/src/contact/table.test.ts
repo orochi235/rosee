@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { TAU } from '../angle';
 import { radiusAt, type Rosette } from '../rosette/rosette';
-import { CONTACT_SAMPLES, contactTable, reachAt } from './table';
+import { CONTACT_SAMPLES, contactTable, reachAt, touchAt } from './table';
 
 /** Reach against the outline sampled 64× denser than the table, then
  *  resampled 1024× finer around each near-best local maximum: a plain dense
@@ -74,6 +74,46 @@ describe('contact table', () => {
     const fromPeak = Math.min(Math.abs(t.touch[k]), Math.abs(t.touch[k] - (2 * Math.PI) / 24));
     expect(Math.abs(t.touch[k] - valley)).toBeGreaterThan(Math.PI / 48);
     expect(fromPeak).toBeLessThan(Math.PI / 48);
+  });
+
+  it('interpolates a fast-moving continuous contact as closely as a plain blend', () => {
+    const rubber = { shape: 'round', radius: 4.3 } as const;
+    const t = contactTable(sine, rubber);
+    const dense = contactTable(sine, rubber, CONTACT_SAMPLES * 4);
+    const apart = (p: number, q: number): number => Math.abs(p - q - TAU * Math.round((p - q) / TAU));
+    let worst = 0;
+    let lerpWorst = 0;
+    for (let k = 0; k <= CONTACT_SAMPLES / 12; k++) {
+      let d = t.touch[k + 1] - t.touch[k];
+      d -= TAU * Math.round(d / TAU);
+      for (const q of [1, 2, 3]) {
+        const truth = dense.touch[4 * k + q];
+        worst = Math.max(worst, apart(touchAt(t, ((k + q / 4) / CONTACT_SAMPLES) * TAU), truth));
+        lerpWorst = Math.max(lerpWorst, apart(t.touch[k] + (d * q) / 4, truth));
+      }
+    }
+    expect(worst).toBeLessThanOrEqual(lerpWorst);
+  });
+
+  it('never reports a touch in a valley the rubber bridges, however narrow', () => {
+    const fine: Rosette = { radius: 30, wave: { kind: 'sine', lobes: 320, amplitude: 0.05 } };
+    const cases = [
+      [sharp, 24, { shape: 'round', radius: 3 }],
+      [sharp, 24, { shape: 'flat', width: 10 }],
+      [fine, 320, { shape: 'round', radius: 1 }],
+    ] as const;
+    for (const [ros, lobes, rubber] of cases) {
+      const valley = Math.PI / lobes;
+      const t = contactTable(ros, rubber);
+      const dense = contactTable(ros, rubber, CONTACT_SAMPLES * 4);
+      let edge = Infinity;
+      for (const c of dense.touch) edge = Math.min(edge, Math.abs(c - valley));
+      expect(edge).toBeGreaterThan(valley / 4);
+      for (let j = 0; j <= 4000; j++) {
+        const a = (j / 4000) * 2 * valley;
+        expect(Math.abs(touchAt(t, a) - valley)).toBeGreaterThan(edge - 1e-3 * valley);
+      }
+    }
   });
 
   it('records a knife edge touching where it points', () => {

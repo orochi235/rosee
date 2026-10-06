@@ -37,6 +37,8 @@ export function solveContact(
     g[i] = gap(at(i));
     if (i > 0 && g[i] <= 0 !== g[i - 1] <= 0) crossings++;
   }
+  if (g[0] > 1e-9 * table.max) throw new Error('swing solve: the rubber cannot reach the rosette at any swing');
+  // Root pairs closer together than one scan cell go unseen, so `steep` can miss them.
   const steep = crossings > 1;
   let i = SCAN;
   while (i >= 0 && g[i] > 0) i--;
@@ -84,13 +86,14 @@ export function contactGap(
   return Math.hypot(hx, hy) - reachAt(table, Math.atan2(hy, hx) - rosetteAngle);
 }
 
-/** Swing, contact point and steepness solved once per rosette angle, evenly
- *  spaced over a turn. The swing depends only on the rosette's angle, not on
- *  the cutter or the work, so every pass reads from one table. */
+/** Swing and steepness solved once per rosette angle, evenly spaced over a
+ *  turn. The swing depends only on the rosette's angle, not on the cutter or
+ *  the work, so every pass reads from one table. */
 export interface SwingTable {
+  table: ContactTable;
+  rubberX: number;
+  pivotDistance: number;
   swing: Float64Array;
-  /** Rosette-local angle of the outline point the rubber touches, [0, 2π). */
-  contact: Float64Array;
   /** 1 where several swings touch: a real machine jumps there. */
   steep: Uint8Array;
 }
@@ -98,25 +101,24 @@ export interface SwingTable {
 export function swingTable(table: ContactTable, rubberX: number, pivotDistance: number): SwingTable {
   const n = table.reach.length;
   const swing = new Float64Array(n);
-  const contact = new Float64Array(n);
   const steep = new Uint8Array(n);
   for (let k = 0; k < n; k++) {
-    const a = (k / n) * TAU;
-    const s = solveContact(table, rubberX, pivotDistance, a);
-    const [hx, hy] = machineToHeadstock([rubberX, 0], pivotDistance, s.swing);
+    const s = solveContact(table, rubberX, pivotDistance, (k / n) * TAU);
     swing[k] = s.swing;
-    contact[k] = touchAt(table, Math.atan2(hy, hx) - a);
     steep[k] = s.steep ? 1 : 0;
   }
-  return { swing, contact, steep };
+  return { table, rubberX, pivotDistance, swing, steep };
 }
 
-/** Swing and contact point at a rosette angle, interpolated; steep if either
- *  neighboring sample is. */
+/** Swing at a rosette angle, interpolated, with the rosette-local angle of
+ *  the outline point the rubber touches there, in [0, 2π). Steep if the
+ *  sample at or before the angle is, or the next one when between them. */
 export function swingAt(t: SwingTable, rosetteAngle: number): { swing: number; contact: number; steep: boolean } {
+  const swing = lerpTurn(t.swing, rosetteAngle);
+  const [hx, hy] = machineToHeadstock([t.rubberX, 0], t.pivotDistance, swing);
   return {
-    swing: lerpTurn(t.swing, rosetteAngle),
-    contact: lerpTurn(t.contact, rosetteAngle, true),
+    swing,
+    contact: touchAt(t.table, Math.atan2(hy, hx) - rosetteAngle),
     steep: lerpTurn(t.steep, rosetteAngle) > 0,
   };
 }

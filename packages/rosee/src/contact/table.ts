@@ -1,4 +1,4 @@
-import { lerpTurn, TAU, wrapAngle } from '../angle';
+import { lerpTurn, TAU, turnSample, wrapAngle } from '../angle';
 import { radiusAt, type Rosette, type Wave } from '../rosette/rosette';
 
 /** The rubber's profile in the rosette's plane. A round rubber of radius 0 is
@@ -15,6 +15,8 @@ export interface ContactTable {
    *  [0, 2π). Where a big rubber bridges a valley it is on a neighboring
    *  peak, not in the rubber's direction. */
   touch: Float64Array;
+  rosette: Rosette;
+  rubber: Rubber;
   mean: number;
   min: number;
   max: number;
@@ -43,6 +45,8 @@ interface Outline {
   rmin: number;
 }
 
+const polar = (a: number, r: number): [number, number] => [r * Math.cos(a), r * Math.sin(a)];
+
 /** The outline as a closed polygon, its vertices in increasing angle. Every
  *  table direction is a vertex, so a circle comes out exact. */
 function outline(rosette: Rosette, directions: number): Outline {
@@ -56,19 +60,19 @@ function outline(rosette: Rosette, directions: number): Outline {
   const ys: number[] = [];
   const as: number[] = [];
   const push = (a: number, r: number): void => {
-    xs.push(r * Math.cos(a));
-    ys.push(r * Math.sin(a));
+    const [x, y] = polar(a, r);
+    xs.push(x);
+    ys.push(y);
     as.push(a);
   };
-  const point = (a: number, r: number): [number, number] => [r * Math.cos(a), r * Math.sin(a)];
   /** Pushes the outline from a0 up to (not including) a1, bisecting until
    *  the chord sits within SAGITTA of the curve. */
   const refine = (a0: number, r0: number, a1: number, r1: number, depth: number): void => {
     const am = (a0 + a1) / 2;
     const rm = radiusAt(rosette, am);
-    const [x0, y0] = point(a0, r0);
-    const [x1, y1] = point(a1, r1);
-    const [xm, ym] = point(am, rm);
+    const [x0, y0] = polar(a0, r0);
+    const [x1, y1] = polar(a1, r1);
+    const [xm, ym] = polar(am, rm);
     const len = Math.hypot(x1 - x0, y1 - y0);
     const off = Math.abs((x1 - x0) * (ym - y0) - (y1 - y0) * (xm - x0)) / len;
     if (depth < 24 && (off > SAGITTA || len > MAX_SEGMENT)) {
@@ -111,7 +115,7 @@ export function contactTable(rosette: Rosette, rubber: Rubber, samples = CONTACT
       touch[k] = (k / samples) * TAU;
       reach[k] = radiusAt(rosette, touch[k]);
     }
-    return summarize(reach, touch);
+    return summarize(rosette, rubber, reach, touch);
   }
   const { x: xs, y: ys, angle: angles, rmin } = outline(rosette, samples);
   const v = xs.length;
@@ -185,10 +189,10 @@ export function contactTable(rosette: Rosette, rubber: Rubber, samples = CONTACT
     reach[k] = best;
     touch[k] = wrapAngle(dir + Math.atan2(bestAcross, bestAlong));
   }
-  return summarize(reach, touch);
+  return summarize(rosette, rubber, reach, touch);
 }
 
-function summarize(reach: Float64Array, touch: Float64Array): ContactTable {
+function summarize(rosette: Rosette, rubber: Rubber, reach: Float64Array, touch: Float64Array): ContactTable {
   let sum = 0;
   let min = Infinity;
   let max = -Infinity;
@@ -197,11 +201,44 @@ function summarize(reach: Float64Array, touch: Float64Array): ContactTable {
     min = Math.min(min, d);
     max = Math.max(max, d);
   }
-  return { reach, touch, mean: sum / reach.length, min, max };
+  return { reach, touch, rosette, rubber, mean: sum / reach.length, min, max };
 }
 
 /** Reach at rosette-local angle `a` (radians), linearly interpolated. */
 export const reachAt = (t: ContactTable, a: number): number => lerpTurn(t.reach, a);
 
-/** Rosette-local angle of the touching point for a rubber in direction `a`. */
-export const touchAt = (t: ContactTable, a: number): number => lerpTurn(t.touch, a, true);
+/** How far the outline may stray from the rubber halfway between two
+ *  samples' touch points, as a share of the distance between them, for the
+ *  contact to have swept between them rather than jumped. */
+const SWEEP_SLACK = 0.01;
+
+/** Rosette-local angle of the touching point for a rubber in direction `a`.
+ *  Between two samples whose contact swept along the outline it blends their
+ *  touch angles the short way round; where the outline halfway between them
+ *  falls away from the rubber, the contact jumped across a bridged valley,
+ *  and the nearer sample is taken. */
+export function touchAt(t: ContactTable, a: number): number {
+  const n = t.touch.length;
+  const { i, f } = turnSample(n, a);
+  const j = (i + 1) % n;
+  const t0 = t.touch[i];
+  let d = t.touch[j] - t0;
+  d -= TAU * Math.round(d / TAU);
+  const blend = wrapAngle(t0 + d * f);
+  const { rosette, rubber } = t;
+  // A knife edge touches where it points; the test below would only see reach's interpolation error.
+  if (rubber.shape === 'round' && rubber.radius === 0) return blend;
+  const [x0, y0] = polar(t0, radiusAt(rosette, t0));
+  const [x1, y1] = polar(t0 + d, radiusAt(rosette, t0 + d));
+  const [x, y] = polar(t0 + d / 2, radiusAt(rosette, t0 + d / 2));
+  const dir = ((i + 0.5) / n) * TAU;
+  const reach = (t.reach[i] + t.reach[j]) / 2;
+  const c = Math.cos(dir);
+  const s = Math.sin(dir);
+  const off =
+    rubber.shape === 'round'
+      ? Math.abs(Math.hypot(x - reach * c, y - reach * s) - rubber.radius)
+      : Math.abs(x * c + y * s - reach);
+  if (off <= SWEEP_SLACK * Math.hypot(x1 - x0, y1 - y0)) return blend;
+  return wrapAngle(f < 0.5 ? t0 : t0 + d);
+}

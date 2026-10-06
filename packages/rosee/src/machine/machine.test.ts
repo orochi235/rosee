@@ -27,6 +27,11 @@ describe('pose', () => {
 describe('swing solve', () => {
   const sine: Rosette = { radius: 30, wave: { kind: 'sine', lobes: 12, amplitude: 1.5 } };
 
+  it('throws where the rubber cannot reach the rosette at any swing', () => {
+    const t = contactTable(sine, { shape: 'round', radius: 0 });
+    expect(() => solveSwing(t, 1000, 60, 0)).toThrow(/cannot reach/);
+  });
+
   it('leaves the rubber just touching at every angle', () => {
     const t = contactTable(sine, { shape: 'round', radius: 1 });
     for (let i = 0; i < 200; i++) {
