@@ -138,7 +138,8 @@ export async function bareStill(page, url) {
   return before.equals(after) ? '' : 'the cut changed after the hold';
 }
 
-/** Export SVG downloads the finished cut with a link back to its settings. */
+/** Export SVG downloads the finished cut with a link back to its settings,
+ *  and Open SVG restores them from it. */
 export async function exportSvg(page, url) {
   await page.goto(url);
   await page.waitForTimeout(1000);
@@ -149,5 +150,26 @@ export async function exportSvg(page, url) {
   const lines = svg.match(/<polyline /g)?.length ?? 0;
   if (!/<metadata>[^<]*#s=[A-Za-z0-9_-]+<\/metadata>/.test(svg)) return 'no settings link in the metadata';
   if (download.suggestedFilename() !== 'rosee-swirl.svg') return `named ${download.suggestedFilename()}`;
-  return lines > 1 ? '' : `${lines} polylines`;
+  if (lines < 2) return `${lines} polylines`;
+
+  // Open SVG brings back the settings the file was exported with.
+  await page.selectOption('.rs-preset select', 'basket');
+  await page.locator('input[type=file]').setInputFiles({ name: 'cut.svg', mimeType: 'image/svg+xml', buffer: Buffer.from(svg) });
+  await page.waitForTimeout(500);
+  const preset = await page.locator('.rs-preset select').inputValue();
+  if (preset !== 'swirl') return `opening the export left the preset at ${preset}`;
+  // A file dropped anywhere on the lab opens the same way.
+  await page.selectOption('.rs-preset select', 'basket');
+  await page.evaluate((text) => {
+    const data = new DataTransfer();
+    data.items.add(new File([text], 'dropped.svg', { type: 'image/svg+xml' }));
+    window.dispatchEvent(new DragEvent('drop', { dataTransfer: data, cancelable: true }));
+  }, svg);
+  await page.waitForTimeout(500);
+  const dropped = await page.locator('.rs-preset select').inputValue();
+  if (dropped !== 'swirl') return `dropping the export left the preset at ${dropped}`;
+  await page.locator('input[type=file]').setInputFiles({ name: 'other.svg', mimeType: 'image/svg+xml', buffer: Buffer.from('<svg/>') });
+  await page.waitForTimeout(300);
+  const notice = await page.getByRole('alert').filter({ hasText: 'other.svg' }).count();
+  return notice ? '' : 'no notice for a file with no settings';
 }

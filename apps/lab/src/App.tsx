@@ -3,7 +3,7 @@ import { PRESETS, type PresetName, toolpathsSvg } from 'rosee';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { Bare } from './Bare';
 import { ErrorBoundary } from './ErrorBoundary';
-import { initialState, readHash, resetToDefault, shareLink, writeHash } from './hash';
+import { initialState, readHash, resetToDefault, shareLink, stateInText, writeHash } from './hash';
 import { machinePose } from './mechanism/pose';
 import { Sidebar } from './Sidebar';
 import type { LabState } from './state';
@@ -35,6 +35,12 @@ function download(text: string, name: string, type: string) {
 
 function Lab() {
   const [state, setState] = useState<LabState>(initialState);
+  const [notice, setNotice] = useState('');
+  const open = async (file: File) => {
+    const next = stateInText(await file.text());
+    if (next) setState(next);
+    setNotice(next ? '' : `${file.name} has no rosee settings in it. Only SVGs exported from this lab do.`);
+  };
   const { toolpaths, error } = useToolpaths(state.settings);
   const samples = toolpaths?.samples ?? 1;
   const passes = toolpaths?.passes.length ?? 1;
@@ -60,6 +66,25 @@ function Lab() {
     return () => window.removeEventListener('hashchange', load);
   }, []);
 
+  // A file dropped anywhere on the lab opens like one chosen with Open SVG.
+  useEffect(() => {
+    const over = (e: DragEvent) => {
+      if (e.dataTransfer?.types.includes('Files')) e.preventDefault();
+    };
+    const drop = (e: DragEvent) => {
+      const file = e.dataTransfer?.files[0];
+      if (!file) return;
+      e.preventDefault();
+      void open(file);
+    };
+    window.addEventListener('dragover', over);
+    window.addEventListener('drop', drop);
+    return () => {
+      window.removeEventListener('dragover', over);
+      window.removeEventListener('drop', drop);
+    };
+  }, []);
+
   return (
     <div className="rs-layout">
       <Sidebar
@@ -75,9 +100,11 @@ function Lab() {
           const name = `rosee-${state.preset || 'custom'}${partial ? `-pass${head.pass + 1}` : ''}.svg`;
           download(svg, name, 'image/svg+xml');
         }}
+        onOpen={open}
       />
       <div className="rs-main">
         {error && <p className="rs-error" role="alert">{error}</p>}
+        {notice && <p className="rs-error" role="alert">{notice}</p>}
         {toolpaths && pose && (
           <div className="rs-workspace">
             <Workspace ids={['output', 'mechanism', 'plots', 'machine']} resizable>

@@ -29,15 +29,27 @@ export function shareLink(s: LabState): string {
   return location.href;
 }
 
-/** The state in the URL hash, or null when there is none or it is unreadable. */
-export function readHash(): LabState | null {
-  const m = location.hash.match(/^#s=([A-Za-z0-9_-]+)$/);
-  if (!m) return null;
+const LINK = /#s=([A-Za-z0-9_-]+)/;
+
+function stateOf(token: string): LabState | null {
   try {
-    return restore(decode(m[1]));
+    return restore(decode(token));
   } catch {
     return null;
   }
+}
+
+/** The state in the URL hash, or null when there is none or it is unreadable. */
+export function readHash(): LabState | null {
+  const m = location.hash.match(new RegExp(`^${LINK.source}$`));
+  return m ? stateOf(m[1]) : null;
+}
+
+/** The state of the first lab link anywhere in `text`, such as the one an
+ *  exported SVG stores in its metadata, or null when there is none. */
+export function stateInText(text: string): LabState | null {
+  const m = text.match(LINK);
+  return m ? stateOf(m[1]) : null;
 }
 
 /** Drops the hash and starts over from the default state. */
