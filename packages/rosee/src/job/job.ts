@@ -1,0 +1,43 @@
+/** One turn of the spindle with the cutter at one setting. Angles in
+ *  degrees: `phase` turns the rosette against the work, `pumpPhase` the
+ *  pumping rosette, `index` the work on the division plate. */
+export interface Pass {
+  radius: number;
+  depth: number;
+  phase: number;
+  pumpPhase: number;
+  index: number;
+}
+
+/** A program of passes, as the lab edits it: the cutter steps from radius
+ *  `from` to `to` by `step` mm; every `phaseGroup` passes the rosette is
+ *  phased on by `phaseStep`°, the pump by `pumpPhaseStep`° every pass; and
+ *  the whole sweep repeats at `indexCount` even divisions of the work. */
+export interface Job {
+  from: number;
+  to: number;
+  step: number;
+  depth: number;
+  phaseStep: number;
+  phaseGroup: number;
+  pumpPhaseStep: number;
+  indexCount: number;
+}
+
+export function expandJob(job: Job): Pass[] {
+  const count = Math.floor(Math.abs(job.to - job.from) / job.step + 1e-9) + 1;
+  const dir = job.to >= job.from ? 1 : -1;
+  const passes: Pass[] = [];
+  for (let k = 0; k < job.indexCount; k++) {
+    for (let i = 0; i < count; i++) {
+      passes.push({
+        radius: job.from + dir * i * job.step,
+        depth: job.depth,
+        phase: job.phaseStep * Math.floor(i / job.phaseGroup),
+        pumpPhase: job.pumpPhaseStep * i,
+        index: (360 * k) / job.indexCount,
+      });
+    }
+  }
+  return passes;
+}
