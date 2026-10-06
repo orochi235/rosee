@@ -83,7 +83,7 @@ export function liveLine(part: PartKey, c: LiveContext): string {
       return `${shape} · touching at ${f1(deg(pass.contact[i]))}°${pose.steep ? ' · steep: jumps here' : ''}`;
     }
     case 'headstock':
-      return `swing ${f2(pose.swing * 1000)} mrad (shown ×${c.exaggerate} in 3D)`;
+      return `swing ${f2(pose.swing * 1000)} mrad (shown ×${c.exaggerate} in 3D, where the rubber moves to keep up)`;
     case 'pivot':
       return `${f1(s.pivotDistance)} mm below the spindle`;
     case 'spindle':

@@ -208,7 +208,7 @@ export const lookPanel: Panel<Look> = {
         .range(1, 100)
         .step(1)
         .label('Exaggerate motion')
-        .describe('Magnifies swing and pump travel in the mechanism views; the contact zoom stays true.')
+        .describe('Magnifies the 3D machine’s swing, moving its rubber to stay on the rosette, and pump travel in the side view and the 3D machine; the top and contact views stay true.')
         .manual(),
     }),
   ),

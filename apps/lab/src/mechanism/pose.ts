@@ -1,4 +1,4 @@
-import { headstockToMachine, rad, radiusAt, type Settings, TAU, type Toolpaths, type Vec2 } from 'rosee';
+import { headstockToMachine, machineToHeadstock, rad, radiusAt, type Settings, TAU, type Toolpaths, type Vec2 } from 'rosee';
 import type { PlayheadAt } from '../playhead';
 
 /** The machine at one instant, in machine-frame mm, ready to draw. */
@@ -48,4 +48,13 @@ export function machinePose(s: Settings, t: Toolpaths, at: PlayheadAt): MachineP
     phase: rad(path.pass.phase),
     stock: Math.max(s.job.from, s.job.to) + 1,
   };
+}
+
+/** Where the rubber's center is drawn when the swing is magnified
+ *  `exaggerate` times: moved with the contact point, so the rubber stays on
+ *  the swung rosette instead of the rosette passing through it. */
+export function followingRubber(pose: MachinePose, pivotDistance: number, exaggerate: number): Vec2 {
+  const local = machineToHeadstock(pose.contact, pivotDistance, pose.swing);
+  const [x, y] = headstockToMachine(local, pivotDistance, pose.swing * exaggerate);
+  return [pose.rubberX + x - pose.contact[0], y - pose.contact[1]];
 }

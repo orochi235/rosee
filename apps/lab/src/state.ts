@@ -14,7 +14,8 @@ export interface Look {
   elevation: number;
   metal: MetalName;
   resolution: number;
-  /** How many times the mechanism views magnify swing and pump travel. */
+  /** How many times the 3D machine magnifies swing, and the side view and
+   *  the 3D machine magnify pump travel. */
   exaggerate: number;
 }
 
