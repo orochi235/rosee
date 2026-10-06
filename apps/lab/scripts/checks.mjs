@@ -109,11 +109,16 @@ export async function bareView(page, url) {
   return narrow === 1 && wide === 2 ? '' : `${narrow} canvases narrow, ${wide} wide`;
 }
 
-/** `?bare=cut` stays the surface alone however wide the frame. */
-export async function bareCut(page, url) {
+/** `?bare=still` stays the surface alone however wide the frame, and does
+ *  not start replaying the cut after the hold. */
+export async function bareStill(page, url) {
   await page.setViewportSize({ width: 1100, height: 600 });
-  await page.goto(`${url}?bare=cut`);
-  await page.waitForTimeout(1500);
+  await page.goto(`${url}?bare=still`);
+  await page.waitForTimeout(1000);
+  const before = await page.locator('.rs-bare canvas').screenshot();
+  await page.waitForTimeout(4000);
+  const after = await page.locator('.rs-bare canvas').screenshot();
   const n = await page.locator('.rs-bare canvas').count();
-  return n === 1 ? '' : `${n} canvases`;
+  if (n !== 1) return `${n} canvases`;
+  return before.equals(after) ? '' : 'the cut changed after the hold';
 }
