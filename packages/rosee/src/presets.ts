@@ -6,7 +6,7 @@ const base: Settings = {
   pivotDistance: 150,
   pump: null,
   cutter: { vAngle: 110, tipFlat: 0 },
-  job: { from: 4, to: 18, step: 0.35, depth: 0.15, phaseStep: 2, phaseGroup: 1, pumpPhaseStep: 0, indexCount: 1 },
+  job: { from: 4, to: 18, step: 0.35, depth: 0.15, phaseStep: 2, phaseGroup: 1, pumpPhaseStep: 0, indexCount: 1, wheelCount: 1, eccentricityStep: 0 },
   samplesPerTurn: 2048,
 };
 

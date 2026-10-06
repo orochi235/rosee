@@ -10,7 +10,7 @@ it('opens the V along the machine x axis, carried into the work by spindle, inde
     pivotDistance: 60,
     pump: null,
     cutter: { vAngle: 90, tipFlat: 0 },
-    job: { from: 20, to: 20, step: 1, depth: 0.05, phaseStep: 0, phaseGroup: 1, pumpPhaseStep: 0, indexCount: 3 },
+    job: { from: 20, to: 20, step: 1, depth: 0.05, phaseStep: 0, phaseGroup: 1, pumpPhaseStep: 0, indexCount: 3, wheelCount: 1, eccentricityStep: 0 },
     samplesPerTurn: 360,
   });
   for (const path of t.passes) {

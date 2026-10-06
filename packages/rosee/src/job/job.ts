@@ -7,12 +7,18 @@ export interface Pass {
   phase: number;
   pumpPhase: number;
   index: number;
+  /** Degrees added to the chuck's wheel. */
+  wheel: number;
+  /** Mm added to the chuck's eccentricity. */
+  eccentricity: number;
 }
 
 /** A program of passes, as the lab edits it: the cutter steps from radius
  *  `from` to `to` by `step` mm; every `phaseGroup` passes the rosette is
  *  phased on by `phaseStep`°, the pump by `pumpPhaseStep`° every pass; and
- *  the whole sweep repeats at `indexCount` even divisions of the work. */
+ *  the whole sweep repeats at `indexCount` even divisions of the work, and
+ *  within each at `wheelCount` even turns of the chuck's wheel. The chuck's
+ *  eccentricity grows by `eccentricityStep` mm every pass. */
 export interface Job {
   from: number;
   to: number;
@@ -22,6 +28,8 @@ export interface Job {
   phaseGroup: number;
   pumpPhaseStep: number;
   indexCount: number;
+  wheelCount: number;
+  eccentricityStep: number;
 }
 
 /** How many passes the job expands to, without expanding it. */
@@ -30,7 +38,10 @@ export function passCount(job: Job): number {
   if (!(job.phaseGroup >= 1)) throw new Error(`job phaseGroup must be at least 1, got ${job.phaseGroup}`);
   if (!(Number.isInteger(job.indexCount) && job.indexCount >= 1))
     throw new Error(`job indexCount must be a whole number at least 1, got ${job.indexCount}`);
-  return job.indexCount * sweepCount(job);
+  if (!(Number.isInteger(job.wheelCount) && job.wheelCount >= 1))
+    throw new Error(`job wheelCount must be a whole number at least 1, got ${job.wheelCount}`);
+  if (!Number.isFinite(job.eccentricityStep)) throw new Error(`job eccentricityStep must be a number, got ${job.eccentricityStep}`);
+  return job.indexCount * job.wheelCount * sweepCount(job);
 }
 
 const sweepCount = (job: Job): number =>
@@ -42,14 +53,18 @@ export function expandJob(job: Job): Pass[] {
   const dir = job.to >= job.from ? 1 : -1;
   const passes: Pass[] = [];
   for (let k = 0; k < job.indexCount; k++) {
-    for (let i = 0; i < count; i++) {
-      passes.push({
-        radius: job.from + dir * i * job.step,
-        depth: job.depth,
-        phase: job.phaseStep * Math.floor(i / job.phaseGroup),
-        pumpPhase: job.pumpPhaseStep * i,
-        index: (360 * k) / job.indexCount,
-      });
+    for (let w = 0; w < job.wheelCount; w++) {
+      for (let i = 0; i < count; i++) {
+        passes.push({
+          radius: job.from + dir * i * job.step,
+          depth: job.depth,
+          phase: job.phaseStep * Math.floor(i / job.phaseGroup),
+          pumpPhase: job.pumpPhaseStep * i,
+          index: (360 * k) / job.indexCount,
+          wheel: (360 * w) / job.wheelCount,
+          eccentricity: job.eccentricityStep * i,
+        });
+      }
     }
   }
   return passes;

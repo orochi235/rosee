@@ -181,6 +181,7 @@ export const cutPanel: Panel<Settings> = {
     ...s,
     cutter: { vAngle: c.vAngle as number, tipFlat: c.tipFlat as number },
     job: {
+      ...s.job,
       from: c.from as number,
       to: c.to as number,
       step: c.step as number,

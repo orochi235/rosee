@@ -15,6 +15,8 @@ const job = (over: Partial<Job> = {}): Job => ({
   phaseGroup: 1,
   pumpPhaseStep: 0,
   indexCount: 1,
+  wheelCount: 1,
+  eccentricityStep: 0,
   ...over,
 });
 
@@ -219,5 +221,10 @@ describe('computeToolpaths', () => {
     const started = performance.now();
     expect(() => computeToolpaths(s)).toThrow(/over the budget of 1,000,000/);
     expect(performance.now() - started).toBeLessThan(200);
+  });
+
+  it('counts wheel repeats against the sample budget', () => {
+    const s = settings({ job: job({ from: 1, to: 20, step: 1, wheelCount: 24 }), samplesPerTurn: 4096 });
+    expect(() => computeToolpaths(s)).toThrow(/over the budget/);
   });
 });
