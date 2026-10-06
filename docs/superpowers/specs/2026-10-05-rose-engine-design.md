@@ -67,6 +67,9 @@ coordinates plus the per-sample machine state (swing angle, pump offset, contact
 point) that the mechanism views draw from. Every view reads that result; none
 recomputes kinematics.
 
+Settings are immutable: replace an object to change it. The library caches lobe
+profiles per wave object, so a wave edited in place would keep its old shape.
+
 ## Library
 
 ### Rosettes
@@ -104,7 +107,7 @@ to the line of approach. The error is about 0.001–0.002 mm at pivot distances 
 
 The swing depends only on the rosette's angle, not on the cutter or the work, so
 it is solved once per rosette angle into a *swing table* that every pass reads.
-That takes a preset from about a second to 80–220 ms.
+A preset computes in about 100 ms.
 
 Pumping uses the same reach table on a pumping rosette with its own rubber; a
 lever of ratio `gain` turns the rubber's travel into the headstock's travel along
