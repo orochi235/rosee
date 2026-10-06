@@ -145,10 +145,13 @@ without touching the carve.
 WebGL2, no three.js. An orthographic camera looks straight down at the face. Each
 toolpath is drawn as a strip whose cross-section is the cutter's V (and tip flat)
 at that sample's depth, into a float depth target with depth test keeping the
-deepest cut per pixel; overlapping cuts resolve correctly for free. Default
-4096², blank stock at depth 0. A second pass shades from the depth target: normals
-from finite differences, a metal BRDF with a movable light, so facets flash as the
-light moves. Carving up to a transport position means drawing passes before the
+deepest cut per pixel; overlapping cuts resolve correctly for free. The graver is
+fixed to the machine, so the V opens across the machine's x axis carried into the
+work (`PassPath.across`), not across the path: a groove narrows where the path
+climbs steeply. Default 4096², blank stock at depth 0. A second pass shades from
+the depth target: normals from finite differences, a GGX highlight from a movable
+light so facets flash as it moves, and a pixel's footprint averaged when it spans
+several texels. Carving up to a transport position means drawing passes before the
 current one in full and the current one up to θ.
 
 ## Lab
