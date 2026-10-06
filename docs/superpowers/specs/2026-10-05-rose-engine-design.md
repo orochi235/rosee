@@ -86,13 +86,21 @@ The rosette rides on the spindle, so it moves with the headstock; the rubber is
 fixed to the bed. At spindle angle θ the headstock swing angle φ is the one at
 which the rubber just touches the rosette outline: rotate the outline by θ + phase,
 place it by the headstock pose for φ, and find the φ where the minimum signed
-gap between rubber and outline is zero. The gap grows with φ over the working
-range, so a bracket widened from the rosette's throw and closed by the Illinois
-method solves it. Rubber shapes: round of radius ρ (ρ = 0 is a knife edge) and
-flat, a face square to the line of approach. Contact is precomputed as a *reach
-table*: for each direction around the rosette, how far out the rubber stops. A
-rubber too large for a valley never reaches its floor, and a short pivot arm makes
-the work travel on an arc; both fall out without being special-cased.
+gap between rubber and outline is zero. Where a rosette's wall is steeper than
+the headstock's arc, several swings satisfy that; the spring pushes the rosette
+onto the rubber from the far side, so the headstock rests at the largest. Those
+samples are flagged *steep*: a real machine jumps there, and the lab shows it.
+Rubber shapes: round of radius ρ (ρ = 0 is a knife edge) and flat, a face square
+to the line of approach. Contact is precomputed as a *reach table*: for each
+direction around the rosette, how far out the rubber stops, tested against the
+outline's segments rather than its vertices. A rubber too large for a valley never
+reaches its floor, and a short pivot arm makes the work travel on an arc; both fall
+out without being special-cased.
+
+Known approximation: a flat rubber's face is fixed to the bed, so under swing it
+tilts by the swing angle relative to the rosette; the reach table keeps it square
+to the line of approach. The error is about 0.001–0.002 mm at pivot distances of
+60–150 mm.
 
 The swing depends only on the rosette's angle, not on the cutter or the work, so
 it is solved once per rosette angle into a *swing table* that every pass reads.
@@ -106,7 +114,8 @@ the spindle. Output is the pump offset at θ.
 
 The machine is a chain of motion steps, each mapping a point from work frame to
 machine frame at angle θ: spindle rotation, swing about the pivot, pump slide. The
-cutter tip is fixed in the machine frame at (slide radius, height, depth); its
+cutter tip is fixed in the machine frame at (slide radius, 0, depth), on center
+height; its
 position in the work frame is the tip run back through the chain in reverse. A
 chuck later is one more step (roadmap item 1).
 
@@ -124,7 +133,7 @@ the swirl (small phase step), barleycorn (half a lobe every pass) and basket wea
 
 ### Surfaces
 
-`Surface` maps work coordinates to the 2D carve domain and back. v1 has `flatFace`
+`Surface` maps work coordinates to the 2D carve domain. v1 has `flatFace`
 (identity onto the face plane). It exists in v1 so cylinders and domes plug in
 without touching the carve.
 
@@ -168,7 +177,7 @@ Vitest in Node for the library, against cases with known answers:
 | Sine rosette, ρ → 0, pivot arm → ∞ | r = R + a·cos(nθ) |
 | ρ larger than a valley's curvature | Path bridges the valley |
 | Short pivot arm | Arc distortion matches hand-derived geometry |
-| Constant pump offset | Every z shifted by exactly that offset |
+| Pumping rosette | z = −(depth + gain × the pump rosette's wave), deeper on a pump lobe |
 | Phase step of one full lobe | Same path as phase 0 |
 
 The carve gets a headless-Chromium test: one straight groove of known V angle and
