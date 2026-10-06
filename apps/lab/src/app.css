@@ -187,6 +187,9 @@
   border: 1px solid var(--wzl-border, #2a2a30);
   border-radius: var(--wzl-radius-md, 6px);
   background: color-mix(in srgb, var(--rs-background) 94%, transparent);
+  /* Its own ink and face: in the bare view no lab shell is around it to inherit from. */
+  color: var(--rs-ink);
+  font-family: var(--wzl-font-body, system-ui, sans-serif);
   font-size: 0.8rem;
   line-height: 1.35;
   pointer-events: none;

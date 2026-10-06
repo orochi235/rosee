@@ -111,6 +111,15 @@ export async function bareView(page, url) {
   });
   if (errors.length) return errors.join('; ');
   if (ground !== 'rgba(0, 0, 0, 0)' || scheme !== 'normal') return `root is ${ground}, color-scheme ${scheme}`;
+  // The callouts set their own ink; inherited, it is black on their dark box.
+  const canvas = await page.locator('.rs-stage canvas').boundingBox();
+  for (let y = 0.1; y < 0.9 && !(await page.locator('.rs-callout').count()); y += 0.05) {
+    await page.mouse.move(canvas.x + canvas.width * 0.6, canvas.y + canvas.height * y);
+    await page.waitForTimeout(60);
+  }
+  const ink = await page.locator('.rs-callout p').first().evaluate((e) => getComputedStyle(e).color).catch(() => null);
+  if (ink === null) return 'no callout under the machine';
+  if (ink === 'rgb(0, 0, 0)') return 'callout text is black';
   if (chrome) return 'lab chrome drawn in the bare view';
   return narrow === 1 && wide === 2 ? '' : `${narrow} canvases narrow, ${wide} wide`;
 }

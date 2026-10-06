@@ -31,7 +31,7 @@ export function linear(hex: string): [number, number, number] {
 
 export type Palette = typeof PALETTE;
 
-const CSS_VARS = ['background', 'rosette', 'cutter', 'error'] as const;
+const CSS_VARS = ['background', 'ink', 'rosette', 'cutter', 'error'] as const;
 
 /** Publishes the colors the stylesheet uses as `--rs-<name>` on :root. */
 export function installPaletteVars(doc: Document = document): void {
