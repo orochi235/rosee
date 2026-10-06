@@ -22,6 +22,10 @@ export interface PassPath {
   /** 1 where the rosette's wall is steeper than the headstock's arc, so
    *  several swings touch and a real machine jumps. */
   steep: Uint8Array;
+  /** Work-frame angle, radians, of the line the graver's V opens across: the
+   *  machine's x axis. The graver is fixed to the machine, so this turns with
+   *  the work and the swing, not with the path. */
+  across: Float32Array;
 }
 
 export interface Toolpaths {
@@ -43,6 +47,7 @@ export function computeToolpaths(s: Settings): Toolpaths {
     const pumpTravel = new Float32Array(n + 1);
     const contact = new Float32Array(n + 1);
     const steep = new Uint8Array(n + 1);
+    const across = new Float32Array(n + 1);
     const index = rad(pass.index);
     for (let i = 0; i <= n; i++) {
       const spindle = (i / n) * TAU;
@@ -66,8 +71,9 @@ export function computeToolpaths(s: Settings): Toolpaths {
       const c = Math.fround(at.contact);
       contact[i] = c < TAU ? c : 0;
       steep[i] = at.steep ? 1 : 0;
+      across[i] = index - spindle - sw;
     }
-    return { pass, xyz, swing, pump: pumpTravel, contact, steep };
+    return { pass, xyz, swing, pump: pumpTravel, contact, steep, across };
   });
   return { samples: n, rubberX, passes };
 }
