@@ -25,7 +25,10 @@ export interface Job {
 }
 
 export function expandJob(job: Job): Pass[] {
-  const count = Math.floor(Math.abs(job.to - job.from) / job.step + 1e-9) + 1;
+  if (job.to !== job.from && !(job.step > 0)) throw new Error(`job step must be positive, got ${job.step}`);
+  if (!(job.phaseGroup >= 1)) throw new Error(`job phaseGroup must be at least 1, got ${job.phaseGroup}`);
+  if (!(job.indexCount >= 1)) throw new Error(`job indexCount must be at least 1, got ${job.indexCount}`);
+  const count = job.to === job.from ? 1 : Math.floor(Math.abs(job.to - job.from) / job.step + 1e-9) + 1;
   const dir = job.to >= job.from ? 1 : -1;
   const passes: Pass[] = [];
   for (let k = 0; k < job.indexCount; k++) {

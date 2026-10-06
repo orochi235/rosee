@@ -14,6 +14,7 @@ export function toolpathsSvg(t: Toolpaths, strokeWidth = 0.02): string {
       maxY = Math.max(maxY, -p.xyz[i + 1]);
     }
   }
+  if (minX > maxX) minX = maxX = minY = maxY = 0;
   const pad = 1;
   const w = maxX - minX + 2 * pad;
   const h = maxY - minY + 2 * pad;

@@ -22,4 +22,15 @@ describe('expandJob', () => {
     expect(passes).toHaveLength(20);
     expect([...new Set(passes.map((p) => p.index))]).toEqual([0, 90, 180, 270]);
   });
+
+  it('rejects a program that cannot step or repeat', () => {
+    expect(() => expandJob({ ...base, step: 0 })).toThrow(/step/);
+    expect(() => expandJob({ ...base, step: -0.5 })).toThrow(/step/);
+    expect(() => expandJob({ ...base, phaseGroup: 0 })).toThrow(/phaseGroup/);
+    expect(() => expandJob({ ...base, indexCount: 0 })).toThrow(/indexCount/);
+  });
+
+  it('allows a zero step when there is nowhere to go', () => {
+    expect(expandJob({ ...base, from: 10, to: 10, step: 0 }).map((p) => p.radius)).toEqual([10]);
+  });
 });
