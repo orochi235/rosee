@@ -275,6 +275,15 @@
 
 .rs-bare-wide {
   grid-template-columns: 1fr 1fr;
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+/* Its own ink, face and scheme: the bare view has no lab shell to inherit them from. */
+.rs-bare .rs-transport {
+  grid-column: 1 / -1;
+  color: var(--rs-ink);
+  color-scheme: dark;
+  font-family: var(--wzl-font-body, system-ui, sans-serif);
 }
 
 .rs-bare .rs-stage {

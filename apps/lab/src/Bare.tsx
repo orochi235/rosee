@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { initialState } from './hash';
 import { useElementSize } from './hooks/useElementSize';
 import { WHOLE_MACHINE } from './mechanism/machine3d';
@@ -6,6 +6,7 @@ import { machinePose } from './mechanism/pose';
 import { at, usePlayhead } from './playhead';
 import { MachineTile } from './tiles/MachineTile';
 import { OutputTile } from './tiles/OutputTile';
+import { Transport } from './Transport';
 import { useToolpaths } from './useToolpaths';
 
 /** Seconds one whole cut takes to replay, whatever the pattern's pass count. */
@@ -25,8 +26,8 @@ if (GROUND) document.documentElement.style.setProperty('--rs-bare-ground', `#${G
 
 /** `?bare` is the cut and nothing else, for embedding the lab as a picture:
  *  the cut drawn as lines on a loop over a transparent page, and the machine
- *  cutting it beside it once the frame is wide enough to hold both. Reads the hash, never
- *  writes it. */
+ *  cutting it beside it once the frame is wide enough to hold both, with the
+ *  transport under them. Reads the hash, never writes it. */
 export function Bare() {
   const state = useMemo(initialState, []);
   const { toolpaths, error } = useToolpaths(state.settings);
@@ -44,12 +45,20 @@ export function Bare() {
 
   const { setSpeed, toggle } = playhead;
   useEffect(() => setSpeed(passes / CUT_SECONDS), [passes]);
+  /** Once the viewer touches the transport, the loop stops replaying under them. */
+  const [held, setHeld] = useState(false);
+  const hold =
+    <A extends unknown[]>(f: (...a: A) => void) =>
+    (...a: A) => {
+      setHeld(true);
+      f(...a);
+    };
   const done = !playhead.head.playing && playhead.head.position >= playhead.end;
   useEffect(() => {
-    if (!done || STILL) return;
+    if (!done || STILL || held) return;
     const id = setTimeout(toggle, HOLD_MS);
     return () => clearTimeout(id);
-  }, [done, playhead.end]);
+  }, [done, playhead.end, held]);
 
   return (
     <div className={`rs-bare${wide ? ' rs-bare-wide' : ''}`} ref={root}>
@@ -73,6 +82,16 @@ export function Bare() {
               parts={false}
               camera={WHOLE_MACHINE}
               transparent
+            />
+          )}
+          {wide && (
+            <Transport
+              head={playhead.head}
+              at={head}
+              end={playhead.end}
+              onToggle={hold(toggle)}
+              onSeek={hold(playhead.seek)}
+              onSpeed={hold(setSpeed)}
             />
           )}
         </>

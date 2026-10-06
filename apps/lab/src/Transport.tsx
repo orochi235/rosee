@@ -12,15 +12,17 @@ interface Props {
 const SPEEDS = [0.25, 0.5, 1, 2, 4, 8];
 
 export function Transport({ head, at, end, onToggle, onSeek, onSpeed }: Props) {
+  // An embed paces its loop by the pattern, so its speed may be off the list.
+  const speeds = SPEEDS.includes(head.speed) ? SPEEDS : [...SPEEDS, head.speed].sort((a, b) => a - b);
   return (
     <div className="rs-transport">
       <button type="button" onClick={onToggle} aria-label={head.playing ? 'Pause' : 'Play'}>
         {head.playing ? '❚❚' : '▶'}
       </button>
       <select value={head.speed} onChange={(e) => onSpeed(Number(e.target.value))} aria-label="Turns per second">
-        {SPEEDS.map((s) => (
+        {speeds.map((s) => (
           <option key={s} value={s}>
-            {s} turn/s
+            {+s.toFixed(2)} turn/s
           </option>
         ))}
       </select>
