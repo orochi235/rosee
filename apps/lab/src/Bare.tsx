@@ -10,7 +10,7 @@ import { Transport } from './Transport';
 import { useToolpaths } from './useToolpaths';
 
 /** Spindle turns per second the loop plays at, so every pattern cuts at one pace. */
-const SPEED = 0.5;
+const SPEED = 0.25;
 /** How long the finished pattern holds before it is cut again. */
 const HOLD_MS = 3000;
 /** Wider than this, and landscape, the machine gets the right half. */
@@ -82,6 +82,7 @@ export function Bare() {
               parts={false}
               camera={WHOLE_MACHINE}
               transparent
+              inset
             />
           )}
           {wide && (

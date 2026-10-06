@@ -5,7 +5,7 @@ import { useElementSize } from '../hooks/useElementSize';
 import { ALL_PARTS, partsFor } from '../mechanism/parts';
 import { type CameraPlacement, CLOSE_UP, createMachineScene, type MachineScene } from '../mechanism/machine3d';
 import type { MachinePose } from '../mechanism/pose';
-import { cutTrail } from '../mechanism/trail';
+import { cutPath, cutTo } from '../mechanism/trail';
 import type { PlayheadAt } from '../playhead';
 
 export function MachineTile({
@@ -17,6 +17,7 @@ export function MachineTile({
   parts = true,
   camera = CLOSE_UP,
   transparent = false,
+  inset = false,
 }: {
   settings: Settings;
   toolpaths: Toolpaths;
@@ -29,6 +30,8 @@ export function MachineTile({
   camera?: CameraPlacement;
   /** No background behind the machine. Read once, like `camera`. */
   transparent?: boolean;
+  /** A close-up of the graver in the corner. Read once, like `camera`. */
+  inset?: boolean;
 }) {
   const body = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -38,19 +41,17 @@ export function MachineTile({
   const size = useElementSize(body);
 
   useEffect(() => {
-    scene.current = createMachineScene(canvas.current!, camera, { transparent });
+    scene.current = createMachineScene(canvas.current!, camera, { transparent, inset });
     return () => scene.current?.dispose();
   }, []);
   useEffect(() => scene.current?.resize(size.width, size.height), [size.width, size.height]);
   useEffect(() => {
     scene.current?.update(settings, pose, at.angle, exaggerate);
   }, [settings, pose, at.angle, exaggerate]);
-  const trail = useMemo(
-    () => cutTrail(settings, toolpaths, at, exaggerate),
-    // `at` is rebuilt every render; only where it points matters
-    [settings, toolpaths, at.pass, at.sample, exaggerate],
-  );
-  useEffect(() => scene.current?.cut(trail), [trail]);
+  const path = useMemo(() => cutPath(toolpaths), [toolpaths]);
+  useEffect(() => scene.current?.path(path, toolpaths.samples), [path]);
+  const end = cutTo(at, toolpaths.samples);
+  useEffect(() => scene.current?.cut(end), [path, end]);
   useEffect(() => scene.current?.highlight(hover?.part ?? null), [hover?.part]);
 
   const show = (part: Hover['part'] | null, x: number, y: number) => setHover(part ? { part, x, y } : null);

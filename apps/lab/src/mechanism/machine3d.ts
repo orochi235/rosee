@@ -4,7 +4,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { PALETTE } from '../palette';
 import type { PartKey } from './parts';
 import { followingRubber, type MachinePose } from './pose';
-import type { Trail } from './trail';
+import { createInset } from './inset';
 import { createTrailLine } from './trailLine';
 import { rosetteGeometry } from './rosetteGeometry';
 
@@ -16,8 +16,10 @@ import { rosetteGeometry } from './rosetteGeometry';
  *  two still touch rather than the rosette swinging through it. */
 export interface MachineScene {
   update(settings: Settings, pose: MachinePose, spindle: number, exaggerate: number): void;
-  /** Draws the recent cut on the work's face, fading with age. */
-  cut(trail: Trail): void;
+  /** The whole cut, from `cutPath`, and how many of its points make a turn. */
+  path(xy: Float32Array, perTurn: number): void;
+  /** Draws the cut on the work's face up to point `end` of the path. */
+  cut(end: number): void;
   /** The part under a point given in the canvas's CSS pixels, or null. */
   pick(x: number, y: number): PartKey | null;
   /** Tints one part to show it is the one being explained. */
@@ -42,7 +44,7 @@ export const WHOLE_MACHINE: CameraPlacement = { position: [250, 40, 290], target
 export function createMachineScene(
   canvas: HTMLCanvasElement,
   placement: CameraPlacement = CLOSE_UP,
-  { transparent = false } = {},
+  { transparent = false, inset = false } = {},
 ): MachineScene {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: transparent });
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -75,7 +77,7 @@ export function createMachineScene(
   const spindle = new THREE.Group();
   headstock.add(spindle);
   spindle.add(
-    new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 90, 24).rotateX(Math.PI / 2).translate(0, 0, -30), metal(PALETTE.steel)),
+    new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 90, 24).rotateX(Math.PI / 2).translate(0, 0, -51), metal(PALETTE.steel)),
   );
   const rosette = new THREE.Mesh(
     rosetteGeometry({ radius: 30, wave: { kind: 'sine', lobes: 12, amplitude: 1 } }),
@@ -94,7 +96,7 @@ export function createMachineScene(
   carrier.add(work);
   const mark = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 0.5), metal(PALETTE.steep));
   carrier.add(mark);
-  const trail = createTrailLine(PALETTE.cutter, 3);
+  const trail = createTrailLine(PALETTE.trailNew, PALETTE.trailOld, 1.5);
   // Just proud of the face, so it never fights the face for depth.
   trail.object.position.z = 0.05;
   carrier.add(trail.object);
@@ -123,11 +125,18 @@ export function createMachineScene(
   const raycaster = new THREE.Raycaster();
 
   let shownRosette: Rosette | null = null;
+  const closeUp = inset ? createInset(renderer, scene, PALETTE.background, PALETTE.faint) : null;
+  let width = 1;
+  let height = 1;
   let frame = 0;
   const requestRender = () => {
     frame ||= requestAnimationFrame(() => {
       frame = 0;
       renderer.render(scene, camera);
+      if (!closeUp) return;
+      // Fat lines are sized against the viewport they draw into.
+      closeUp.render(width, height, (w, h) => trail.resize(w, h));
+      trail.resize(width, height);
     });
   };
   controls.addEventListener('change', requestRender);
@@ -173,10 +182,15 @@ export function createMachineScene(
       const [rx, ry] = followingRubber(pose, P, exaggerate);
       rubber.position.set(rx + drawn - reach, ry, ROSETTE_Z + 2);
       cutter.position.set(pose.cutter[0], pose.cutter[1], 0);
+      closeUp?.aim(pose.cutter, pose.stock);
       requestRender();
     },
-    cut(t) {
-      trail.set(t);
+    path(xy, perTurn) {
+      trail.path(xy, perTurn);
+      requestRender();
+    },
+    cut(end) {
+      trail.cut(end);
       requestRender();
     },
     pick(x, y) {
@@ -191,7 +205,9 @@ export function createMachineScene(
       }
       requestRender();
     },
-    resize(width, height) {
+    resize(w, h) {
+      width = w;
+      height = h;
       renderer.setSize(width, height, false);
       trail.resize(width, height);
       camera.aspect = width / Math.max(1, height);

@@ -1,61 +1,69 @@
-import { SAMPLES_PER_TURN } from 'rosee';
 import * as THREE from 'three';
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
 import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js';
-import type { Trail } from './trail';
 
-/** The recent cut as a line `width` px wide, fading with age. */
+/** The cut so far as a line `width` px wide, `fresh` at the graver and
+ *  shading to `old` over the last `turns`. */
 export interface TrailLine {
   object: THREE.Object3D;
-  set(trail: Trail): void;
+  /** The whole cut, from `cutPath`, and how many points make a turn. */
+  path(xy: Float32Array, perTurn: number): void;
+  /** Draws the path up to point `end`. */
+  cut(end: number): void;
   resize(width: number, height: number): void;
   dispose(): void;
 }
 
-const SEGMENTS = SAMPLES_PER_TURN.max;
-
-export function createTrailLine(color: string, width: number): TrailLine {
-  // Allocated once at the most a trail can hold, and rewritten in place.
-  const ends = new THREE.InstancedInterleavedBuffer(new Float32Array(SEGMENTS * 6), 6, 1).setUsage(THREE.DynamicDrawUsage);
-  const colors = new THREE.InstancedInterleavedBuffer(new Float32Array(SEGMENTS * 8), 8, 1).setUsage(THREE.DynamicDrawUsage);
+export function createTrailLine(fresh: string, old: string, width: number, turns = 1): TrailLine {
   const geometry = new LineSegmentsGeometry();
-  geometry.setAttribute('instanceStart', new THREE.InterleavedBufferAttribute(ends, 3, 0));
-  geometry.setAttribute('instanceEnd', new THREE.InterleavedBufferAttribute(ends, 3, 3));
-  geometry.setAttribute('instanceColorStart', new THREE.InterleavedBufferAttribute(colors, 4, 0));
-  geometry.setAttribute('instanceColorEnd', new THREE.InterleavedBufferAttribute(colors, 4, 4));
-  geometry.instanceCount = 0;
-
-  const material = new LineMaterial({ linewidth: width, vertexColors: true, transparent: true, depthWrite: false });
-  // Three's fat lines carry rgb per vertex; widen it to rgba so the fade is alpha, not a guess at the face's color.
-  material.onBeforeCompile = (shader) => {
-    shader.vertexShader = shader.vertexShader
-      .replace('attribute vec3 instanceColorStart;', 'attribute vec4 instanceColorStart;')
-      .replace('attribute vec3 instanceColorEnd;', 'attribute vec4 instanceColorEnd;')
-      .replace('vColor.xyz = ( position.y < 0.5 )', 'vColor = ( position.y < 0.5 )');
-    shader.fragmentShader = shader.fragmentShader.replace(
-      'gl_FragColor = vec4( diffuseColor.rgb, alpha );',
-      'gl_FragColor = vec4( diffuseColor.rgb, alpha * vColor.a );',
-    );
-  };
-
+  const material = new LineMaterial({ linewidth: width, vertexColors: true });
   const line = new LineSegments2(geometry, material);
   line.frustumCulled = false;
-  const rgb = new THREE.Color(color);
+  const from = new THREE.Color(fresh);
+  const to = new THREE.Color(old);
+  const rgb = new THREE.Color();
+
+  let colors = new Float32Array(0);
+  let colorBuffer: THREE.InstancedInterleavedBuffer | null = null;
+  let segments = 0;
+  let span = 1;
+  // The lowest segment the last `cut` shaded; everything from it up may need recoloring.
+  let shaded = 0;
+
+  const paint = (k: number, end: number) => {
+    for (let v = 0; v < 2; v++) {
+      rgb.lerpColors(from, to, Math.min(1, (end - k - v) / span));
+      colors.set([rgb.r, rgb.g, rgb.b], k * 6 + v * 3);
+    }
+  };
 
   return {
     object: line,
-    set({ xy, age }) {
-      const n = Math.min(age.length - 1, SEGMENTS);
-      const e = ends.array as Float32Array;
-      const c = colors.array as Float32Array;
-      for (let k = 0; k < n; k++) {
-        e.set([xy[k * 2], xy[k * 2 + 1], 0, xy[k * 2 + 2], xy[k * 2 + 3], 0], k * 6);
-        c.set([rgb.r, rgb.g, rgb.b, (1 - age[k]) ** 2, rgb.r, rgb.g, rgb.b, (1 - age[k + 1]) ** 2], k * 8);
-      }
-      ends.needsUpdate = true;
-      colors.needsUpdate = true;
-      geometry.instanceCount = Math.max(n, 0);
+    path(xy, perTurn) {
+      segments = xy.length / 2 - 1;
+      span = Math.max(1, perTurn * turns);
+      const ends = new Float32Array(segments * 6);
+      for (let k = 0; k < segments; k++) ends.set([xy[k * 2], xy[k * 2 + 1], 0, xy[k * 2 + 2], xy[k * 2 + 3], 0], k * 6);
+      colors = new Float32Array(segments * 6);
+      for (let k = 0; k < segments; k++) colors.set([to.r, to.g, to.b, to.r, to.g, to.b], k * 6);
+      geometry.dispose();
+      const endBuffer = new THREE.InstancedInterleavedBuffer(ends, 6, 1);
+      colorBuffer = new THREE.InstancedInterleavedBuffer(colors, 6, 1).setUsage(THREE.DynamicDrawUsage);
+      geometry.setAttribute('instanceStart', new THREE.InterleavedBufferAttribute(endBuffer, 3, 0));
+      geometry.setAttribute('instanceEnd', new THREE.InterleavedBufferAttribute(endBuffer, 3, 3));
+      geometry.setAttribute('instanceColorStart', new THREE.InterleavedBufferAttribute(colorBuffer, 3, 0));
+      geometry.setAttribute('instanceColorEnd', new THREE.InterleavedBufferAttribute(colorBuffer, 3, 3));
+      geometry.instanceCount = 0;
+      shaded = 0;
+    },
+    cut(end) {
+      const drawn = Math.max(0, Math.min(end, segments));
+      const low = Math.max(0, drawn - Math.ceil(span));
+      for (let k = Math.min(shaded, low); k < drawn; k++) paint(k, drawn);
+      shaded = low;
+      if (colorBuffer) colorBuffer.needsUpdate = true;
+      geometry.instanceCount = drawn;
     },
     resize(width, height) {
       material.resolution.set(width, height);

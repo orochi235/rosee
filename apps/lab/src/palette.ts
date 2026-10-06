@@ -1,6 +1,8 @@
 const BRASS = '#c9a35a';
 const AMBER = '#e8a33d';
 const RED = '#e5484d';
+const CYAN = '#3fd6e6';
+const EMBER = '#ff8a3d';
 
 /** Every color the lab draws with, by what it marks: the canvases, the 3D
  *  machine, the GL surface, and (through `installPaletteVars`) the stylesheet. */
@@ -14,6 +16,9 @@ export const PALETTE = {
   contact: '#e8e2d0',
   steep: RED,
   cutter: AMBER,
+  /** The cut on the work's face, from just cut to oldest. */
+  trailNew: EMBER,
+  trailOld: CYAN,
   stock: 'rgba(200, 200, 210, 0.12)',
   steel: '#8d9096',
   work: '#d8d6d0',

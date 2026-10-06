@@ -32,7 +32,7 @@ export const DEFAULT_LOOK: Look = {
   elevation: 35,
   metal: 'silver',
   resolution: 2048,
-  exaggerate: 10,
+  exaggerate: 1,
 };
 
 export const DEFAULT_STATE: LabState = { preset: 'swirl', settings: PRESETS.swirl, look: DEFAULT_LOOK };

@@ -13,7 +13,7 @@ export const lookPanel: Panel<Look> = {
       elevation: f.number(35).range(2, 90).step(1).label('Light elevation').suffix('°').manual(),
       resolution: f.enum<string>('2048', RESOLUTIONS.map(String)).label('Carve resolution').manual(),
       exaggerate: f
-        .number(10)
+        .number(1)
         .range(1, 100)
         .step(1)
         .label('Exaggerate motion')
