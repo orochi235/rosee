@@ -90,8 +90,8 @@ export async function splitZoom(page, url) {
   return Math.abs(off - 40 * Math.exp(0.75)) < 5 ? '' : `a burst of five wheel steps left the dot ${off.toFixed(1)} px off, not 84.7`;
 }
 
-/** `?bare` draws the surface alone in a tile-sized frame and adds the machine
- *  once the frame is wide, with no lab chrome either way. */
+/** `?bare` draws the lines alone in a tile-sized frame and adds the machine
+ *  once the frame is wide, over a transparent page with no lab chrome. */
 export async function bareView(page, url) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
@@ -104,7 +104,13 @@ export async function bareView(page, url) {
   await page.waitForTimeout(800);
   const wide = await page.locator('.rs-bare canvas').count();
   const chrome = await page.locator('.rs-sidebar, .rs-transport, .rs-parts').count();
+  // An opaque root, or a color scheme unlike the embedder's, hides the page behind the frame.
+  const [ground, scheme] = await page.evaluate(() => {
+    const root = getComputedStyle(document.documentElement);
+    return [root.backgroundColor, root.colorScheme];
+  });
   if (errors.length) return errors.join('; ');
+  if (ground !== 'rgba(0, 0, 0, 0)' || scheme !== 'normal') return `root is ${ground}, color-scheme ${scheme}`;
   if (chrome) return 'lab chrome drawn in the bare view';
   return narrow === 1 && wide === 2 ? '' : `${narrow} canvases narrow, ${wide} wide`;
 }

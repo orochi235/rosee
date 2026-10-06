@@ -2,19 +2,23 @@ import type { Toolpaths } from 'rosee';
 import type { View } from 'rosee/gl';
 import type { PlayheadAt } from '../playhead';
 
-/** The toolpaths as lines, cut up to the playhead, with the cutter marked. */
+/** The toolpaths as lines, cut up to the playhead, with the cutter marked.
+ *  A null background leaves the canvas transparent behind them. */
 export function drawLines(
   ctx: CanvasRenderingContext2D,
   t: Toolpaths,
   upTo: PlayheadAt,
   view: View,
   size: { width: number; height: number; dpr: number },
-  colors: { line: string; cutter: string; background: string },
+  colors: { line: string; cutter: string; background: string | null },
 ) {
   const { width, height, dpr } = size;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.fillStyle = colors.background;
-  ctx.fillRect(0, 0, width, height);
+  ctx.clearRect(0, 0, width, height);
+  if (colors.background) {
+    ctx.fillStyle = colors.background;
+    ctx.fillRect(0, 0, width, height);
+  }
   const toX = (x: number) => width / 2 + (x - view.center[0]) / view.mmPerPixel;
   const toY = (y: number) => height / 2 - (y - view.center[1]) / view.mmPerPixel;
   ctx.strokeStyle = colors.line;

@@ -16,11 +16,16 @@ const HOLD_MS = 3000;
 const WIDE_PX = 760;
 /** `?bare=still` is the finished cut alone at any size, never replayed: the
  *  frame a capture shoots to stand in for the narrow view. */
-const STILL = new URLSearchParams(location.search).get('bare') === 'still';
+const params = new URLSearchParams(location.search);
+const STILL = params.get('bare') === 'still';
+/** `&bg=rrggbb` paints a backdrop where the page is otherwise transparent,
+ *  for a capture that has to land on the embedder's color. */
+const GROUND = params.get('bg')?.match(/^[0-9a-f]{3,8}$/i)?.[0];
+if (GROUND) document.documentElement.style.setProperty('--rs-bare-ground', `#${GROUND}`);
 
 /** `?bare` is the cut and nothing else, for embedding the lab as a picture:
- *  the surface carving itself on a loop, and the machine cutting it beside
- *  it once the frame is wide enough to hold both. Reads the hash, never
+ *  the cut drawn as lines on a loop over a transparent page, and the machine
+ *  cutting it beside it once the frame is wide enough to hold both. Reads the hash, never
  *  writes it. */
 export function Bare() {
   const state = useMemo(initialState, []);
@@ -51,7 +56,13 @@ export function Bare() {
       {error && <p className="rs-error" role="alert">{error}</p>}
       {toolpaths && pose && (
         <>
-          <OutputTile toolpaths={toolpaths} cutter={state.settings.cutter} upTo={head} look={state.look} />
+          <OutputTile
+            toolpaths={toolpaths}
+            cutter={state.settings.cutter}
+            upTo={head}
+            look={{ ...state.look, mode: 'lines' }}
+            background={null}
+          />
           {wide && (
             <MachineTile
               settings={state.settings}
@@ -61,6 +72,7 @@ export function Bare() {
               exaggerate={state.look.exaggerate}
               parts={false}
               camera={WHOLE_MACHINE}
+              transparent
             />
           )}
         </>

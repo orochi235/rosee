@@ -43,11 +43,15 @@ function rosetteGeometry(r: Rosette): THREE.ExtrudeGeometry {
   return new THREE.ExtrudeGeometry(shape, { depth: 4, bevelEnabled: false });
 }
 
-export function createMachineScene(canvas: HTMLCanvasElement, placement: CameraPlacement = CLOSE_UP): MachineScene {
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+export function createMachineScene(
+  canvas: HTMLCanvasElement,
+  placement: CameraPlacement = CLOSE_UP,
+  { transparent = false } = {},
+): MachineScene {
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: transparent });
   renderer.setPixelRatio(window.devicePixelRatio);
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(PALETTE.background);
+  if (!transparent) scene.background = new THREE.Color(PALETTE.background);
   scene.add(new THREE.HemisphereLight('#ffffff', PALETTE.ground, 2.2));
   const sun = new THREE.DirectionalLight('#ffffff', 2);
   sun.position.set(80, 120, 160);

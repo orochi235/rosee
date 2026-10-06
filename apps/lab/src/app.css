@@ -248,12 +248,26 @@
   white-space: pre-wrap;
 }
 
+/* The embedding page shows through. A color scheme other than the
+   embedder's makes the browser paint an opaque backdrop behind the frame,
+   so labkit's dark one is dropped. */
+:root:has(.rs-bare) {
+  color-scheme: normal;
+}
+
+:root:has(.rs-bare) {
+  background: var(--rs-bare-ground, transparent);
+}
+
+:root:has(.rs-bare) body {
+  background: transparent;
+}
+
 .rs-bare {
   position: fixed;
   inset: 0;
   display: grid;
   grid-template-rows: minmax(0, 1fr);
-  background: var(--rs-background);
 }
 
 .rs-bare-wide {

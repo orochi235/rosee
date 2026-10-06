@@ -14,6 +14,7 @@ export function MachineTile({
   exaggerate,
   parts = true,
   camera = CLOSE_UP,
+  transparent = false,
 }: {
   settings: Settings;
   toolpaths: Toolpaths;
@@ -24,6 +25,8 @@ export function MachineTile({
   parts?: boolean;
   /** Read once, when the scene is made. */
   camera?: CameraPlacement;
+  /** No background behind the machine. Read once, like `camera`. */
+  transparent?: boolean;
 }) {
   const body = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -33,7 +36,7 @@ export function MachineTile({
   const size = useElementSize(body);
 
   useEffect(() => {
-    scene.current = createMachineScene(canvas.current!, camera);
+    scene.current = createMachineScene(canvas.current!, camera, { transparent });
     return () => scene.current?.dispose();
   }, []);
   useEffect(() => scene.current?.resize(size.width, size.height), [size.width, size.height]);
