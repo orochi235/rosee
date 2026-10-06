@@ -1,6 +1,7 @@
-import { PRESETS, type Settings } from 'rosee';
+import { computeToolpaths, PRESETS, type Settings } from 'rosee';
 import { describe, expect, it } from 'vitest';
-import { cutPanel, lookPanel, type Panel, pumpPanel, rosettePanel, rubberPanel } from './panels';
+import { DEFAULT_CHUCKS } from './defaults';
+import { chuckPanel, cutPanel, lookPanel, type Panel, pumpPanel, rosettePanel, rubberPanel } from './panels';
 import { DEFAULT_LOOK } from './state';
 
 const withPump: Settings = {
@@ -10,7 +11,7 @@ const withPump: Settings = {
 };
 
 describe('panels', () => {
-  const panels: Panel<Settings>[] = [rosettePanel, rubberPanel, pumpPanel, cutPanel];
+  const panels: Panel<Settings>[] = [rosettePanel, rubberPanel, pumpPanel, chuckPanel, cutPanel];
   for (const panel of panels) {
     it(`${panel.title}: writing back what it read changes nothing`, () => {
       for (const s of [...Object.values(PRESETS), withPump]) expect(panel.write(s, panel.read(s))).toEqual(s);
@@ -28,5 +29,18 @@ describe('panels', () => {
 
   it('turning the pump off clears it', () => {
     expect(pumpPanel.write(withPump, { ...pumpPanel.read(withPump), on: false }).pump).toBeNull();
+  });
+
+  it('removing the chuck resets its job fields, so the job still cuts', () => {
+    const off = chuckPanel.write(PRESETS.wheel, { ...chuckPanel.read(PRESETS.wheel), kind: 'none' });
+    expect(off.chuck).toBeNull();
+    expect(off.job.wheelCount).toBe(1);
+    expect(off.job.eccentricityStep).toBe(0);
+    expect(() => computeToolpaths({ ...off, samplesPerTurn: 256 })).not.toThrow();
+  });
+
+  it('fitting a chuck starts from its defaults', () => {
+    const on = chuckPanel.write(PRESETS.swirl, { ...chuckPanel.read(PRESETS.swirl), kind: 'elliptical' });
+    expect(on.chuck).toEqual(DEFAULT_CHUCKS.elliptical);
   });
 });

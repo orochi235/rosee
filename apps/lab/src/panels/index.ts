@@ -1,3 +1,4 @@
+export { chuckPanel } from './chuck';
 export { cutPanel } from './cut';
 export { lookPanel } from './look';
 export type { Panel } from './panel';

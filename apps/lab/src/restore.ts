@@ -1,6 +1,6 @@
-import { PRESETS, type PresetName, type Pump, type Rosette, type Rubber, type Settings, type Wave } from 'rosee';
+import { type Chuck, PRESETS, type PresetName, type Pump, type Rosette, type Rubber, type Settings, type Wave } from 'rosee';
 import { METALS } from 'rosee/gl';
-import { DEFAULT_PUMP, defaultWave, RUBBERS, SIMPLE_KINDS } from './defaults';
+import { DEFAULT_CHUCKS, DEFAULT_PUMP, defaultWave, RUBBERS, SIMPLE_KINDS } from './defaults';
 import { DEFAULT_STATE, type LabState, type Look, OUTPUT_MODES, RESOLUTIONS } from './state';
 
 type Raw = Record<string, unknown>;
@@ -55,6 +55,13 @@ function pump(raw: unknown, fallback: Pump | null): Pump | null {
   };
 }
 
+function chuck(raw: unknown, fallback: Chuck | null): Chuck | null {
+  if (raw === null) return null;
+  if (!isObject(raw)) return fallback;
+  const kind = oneOf(raw.kind, Object.keys(DEFAULT_CHUCKS) as Chuck['kind'][], 'eccentric');
+  return numbers(raw, DEFAULT_CHUCKS[kind]);
+}
+
 function settings(raw: Raw): Settings {
   const d = DEFAULT_STATE.settings;
   return {
@@ -62,7 +69,7 @@ function settings(raw: Raw): Settings {
     rubber: rubber(raw.rubber, d.rubber),
     pivotDistance: finite(raw.pivotDistance) ? raw.pivotDistance : d.pivotDistance,
     pump: pump(raw.pump, d.pump),
-    chuck: d.chuck,
+    chuck: chuck(raw.chuck, d.chuck),
     cutter: numbers(raw.cutter, d.cutter),
     job: numbers(raw.job, d.job),
     samplesPerTurn: finite(raw.samplesPerTurn) ? raw.samplesPerTurn : d.samplesPerTurn,
