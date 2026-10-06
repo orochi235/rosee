@@ -1,9 +1,10 @@
-import { machineToHeadstock, type Rosette, rubberReach, type Settings } from 'rosee';
+import { machineToHeadstock, type Rosette, rubberReach, SAMPLES_PER_TURN, type Settings } from 'rosee';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { PALETTE } from '../palette';
 import type { PartKey } from './parts';
 import { followingRubber, type MachinePose } from './pose';
+import type { Trail } from './trail';
 import { rosetteGeometry } from './rosetteGeometry';
 
 /** A crude rose engine in three.js, in machine-frame mm: x toward the rubber
@@ -14,6 +15,8 @@ import { rosetteGeometry } from './rosetteGeometry';
  *  two still touch rather than the rosette swinging through it. */
 export interface MachineScene {
   update(settings: Settings, pose: MachinePose, spindle: number, exaggerate: number): void;
+  /** Draws the recent cut on the work's face, fading with age. */
+  cut(trail: Trail): void;
   /** The part under a point given in the canvas's CSS pixels, or null. */
   pick(x: number, y: number): PartKey | null;
   /** Tints one part to show it is the one being explained. */
@@ -90,6 +93,19 @@ export function createMachineScene(
   carrier.add(work);
   const mark = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 0.5), metal(PALETTE.steep));
   carrier.add(mark);
+  const trailPoints = SAMPLES_PER_TURN.max + 1;
+  const trailGeometry = new THREE.BufferGeometry();
+  const trailXyz = new THREE.BufferAttribute(new Float32Array(trailPoints * 3), 3).setUsage(THREE.DynamicDrawUsage);
+  const trailRgba = new THREE.BufferAttribute(new Float32Array(trailPoints * 4), 4).setUsage(THREE.DynamicDrawUsage);
+  trailGeometry.setAttribute('position', trailXyz);
+  trailGeometry.setAttribute('color', trailRgba);
+  trailGeometry.setDrawRange(0, 0);
+  const trailMaterial = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false });
+  const trail = new THREE.Line(trailGeometry, trailMaterial);
+  // Just proud of the face, so it never fights the face for depth.
+  trail.position.z = 0.05;
+  carrier.add(trail);
+  const trailColor = new THREE.Color(PALETTE.cutter);
   const ring = new THREE.Mesh(new THREE.TorusGeometry(1, 0.02, 12, 96), metal(PALETTE.steel));
   headstock.add(ring);
 
@@ -167,6 +183,17 @@ export function createMachineScene(
       cutter.position.set(pose.cutter[0], pose.cutter[1], 0);
       requestRender();
     },
+    cut({ xy, age }) {
+      const n = Math.min(age.length, trailPoints);
+      for (let k = 0; k < n; k++) {
+        trailXyz.setXYZ(k, xy[k * 2], xy[k * 2 + 1], 0);
+        trailRgba.setXYZW(k, trailColor.r, trailColor.g, trailColor.b, (1 - age[k]) ** 2);
+      }
+      trailXyz.needsUpdate = true;
+      trailRgba.needsUpdate = true;
+      trailGeometry.setDrawRange(0, n);
+      requestRender();
+    },
     pick(x, y) {
       const ndc = new THREE.Vector2((x / canvas.clientWidth) * 2 - 1, -(y / canvas.clientHeight) * 2 + 1);
       raycaster.setFromCamera(ndc, camera);
@@ -194,6 +221,8 @@ export function createMachineScene(
         o.geometry.dispose();
         (o.material as THREE.Material).dispose();
       });
+      trailGeometry.dispose();
+      trailMaterial.dispose();
       renderer.dispose();
     },
   };
