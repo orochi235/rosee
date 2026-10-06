@@ -9,8 +9,8 @@ import { OutputTile } from './tiles/OutputTile';
 import { Transport } from './Transport';
 import { useToolpaths } from './useToolpaths';
 
-/** Seconds one whole cut takes to replay, whatever the pattern's pass count. */
-const CUT_SECONDS = 12;
+/** Spindle turns per second the loop plays at, so every pattern cuts at one pace. */
+const SPEED = 0.5;
 /** How long the finished pattern holds before it is cut again. */
 const HOLD_MS = 3000;
 /** Wider than this, and landscape, the machine gets the right half. */
@@ -44,7 +44,7 @@ export function Bare() {
   const wide = !STILL && size.width >= WIDE_PX && size.width >= size.height * 1.4;
 
   const { setSpeed, toggle } = playhead;
-  useEffect(() => setSpeed(passes / CUT_SECONDS), [passes]);
+  useEffect(() => setSpeed(SPEED), []);
   /** Once the viewer touches the transport, the loop stops replaying under them. */
   const [held, setHeld] = useState(false);
   const hold =
