@@ -1,7 +1,7 @@
 # rosee: rose engine lathe simulator — design
 
-**Status: v1 built (library, carve and lab); the roadmap is not started.** This is the design for v1 plus
-the roadmap after it. It is for whoever implements it; it assumes familiarity with
+**Status: v1 built (library, carve and lab). Chucks (roadmap item 1) are designed below but not
+built; the rest of the roadmap is not started.** This is the design for v1 plus the roadmap after it. It is for whoever implements it; it assumes familiarity with
 TypeScript and labkit (`@weasel-js/labkit`), not with ornamental turning.
 
 ## What it is
@@ -29,7 +29,8 @@ widening and narrowing.
 ## Scope
 
 v1 models rocking, pumping, phasing and indexing, rubber shape and pivot geometry,
-on a flat face. Roadmap at the end.
+on a flat face. Eccentric and elliptical chucks come next (designed in
+[Chucks](#chucks)). Roadmap at the end.
 
 ## Layout
 
@@ -119,11 +120,38 @@ the spindle. Output is the pump offset at θ.
 ### Machine and cutter
 
 The machine is a chain of motion steps, each mapping a point from work frame to
-machine frame at angle θ: spindle rotation, swing about the pivot, pump slide. The
-cutter tip is fixed in the machine frame at (slide radius, 0, depth), on center
-height; its
-position in the work frame is the tip run back through the chain in reverse. A
-chuck later is one more step (roadmap item 1).
+machine frame at angle θ: chuck, spindle rotation (with the division plate's
+index), swing about the pivot, pump slide. The cutter tip is fixed in the machine
+frame at (slide radius, 0, depth), on center height; its position in the work
+frame is the tip run back through the chain in reverse.
+
+### Chucks
+
+*Designed, not built.* `Settings.chuck` is `null` (work on the faceplate) or one
+of:
+
+- `{ kind: 'eccentric', eccentricity, wheel }`: a slide on the faceplate holds the
+  work `eccentricity` mm off the spindle axis, and a dividing wheel on the slide
+  turns it by `wheel`°. Fixed for the whole turn.
+- `{ kind: 'elliptical', eccentricity, ring, wheel }`: a ring bolted to the
+  headstock, set `eccentricity` mm off the spindle axis toward angle `ring`°,
+  drives the slide as the spindle turns. Fixed per pass except the slide.
+
+The chuck sits after the division plate, so indexing turns the whole chuck. Let
+α = spindle − index be the chuck slide's direction in the headstock frame. The
+slide offset is s = e for the eccentric chuck and s = e·cos(α − ring) for the
+elliptical one (the ring center projected onto the slide). A work point p maps to
+the chuck frame as rot(wheel)·p + (s, 0), and from there to the headstock frame by
+the existing spindle rotation. With a round rosette, no swing, wheel and ring at
+0, a cutter at radius r cuts a circle of radius r centered e off the spindle
+(eccentric), or an ellipse with semi-axes |r − e| along the slide and r across it
+(elliptical); at r = 0 the elliptical chuck cuts a straight line 2e long.
+
+The chuck never touches a rosette, so the reach and swing tables are unchanged;
+`toolpath.ts` gains one call per sample through new `chuckToWork` /
+`workToChuck` in `machine/`. The graver's `across` angle loses the wheel:
+`index − spindle − swing − wheel`. `PassPath` gains `slide` (s per sample, mm)
+for the views, so none recomputes it.
 
 The cutter is `{ vAngle, tipFlat }`. It doesn't affect the toolpath, only the
 carve.
@@ -136,6 +164,15 @@ every `phaseGroup` passes the rosette is phased on by `phaseStep`, the pump by
 expands to passes `{ radius, depth, phase, pumpPhase, index }`. One program covers
 the swirl (small phase step), barleycorn (half a lobe every pass) and basket weave
 (half a lobe every group).
+
+For the chuck *(designed, not built)*, the job gains `wheelCount`, which repeats
+the sweep at that many even turns of the chuck's wheel (nested inside
+`indexCount`), and `eccentricityStep`, mm added to the chuck's eccentricity every
+pass. Passes gain `wheel` and `eccentricity`, each added to the chuck's own
+setting. Their defaults (1 and 0) leave every existing job and hash cutting what
+it cut before. With `chuck: null`, `computeToolpaths` refuses a job whose
+`wheelCount` isn't 1 or whose `eccentricityStep` isn't 0; the lab hides those
+fields without a chuck and resets them when the chuck is removed.
 
 ### Surfaces
 
@@ -161,7 +198,7 @@ current one in full and the current one up to θ.
 ## Lab
 
 One page; labkit `ControlPanel` on the left (groups: Rosette, Rubber, Headstock,
-Pumping, Cutter, Job, Surface, Presets) and a `WorkspaceGrid`:
+Pumping, Chuck, Cutter, Job, Surface, Presets) and a `WorkspaceGrid`:
 
 - **Output**: Lines / Surface / Split, carved to the transport position.
 - **Mechanism 2D**: tabs Top (rosette, rubber, headstock on its pivot, cutter),
@@ -178,6 +215,13 @@ Pumping, Cutter, Job, Surface, Presets) and a `WorkspaceGrid`:
 - **Transport**: play/pause, pass `n/N`, scrubber, speed; the angle readout pinned
   to a fixed width.
 
+With a chuck set *(designed, not built)*: the Top view and the 3D machine draw
+the slide on the faceplate with the work offset along it, and the ring for the
+elliptical chuck, each with a callout (live value: the slide offset); the motion
+plots add the slide offset against spindle angle. Two presets join the list: off-
+center rosettes repeated around the eccentric chuck's wheel, and an elliptical
+swirl.
+
 Panes stay under about 400 px tall. All state lives in the URL hash. Presets
 (phased swirl, basket weave, barleycorn) are settings objects.
 
@@ -193,6 +237,11 @@ Vitest in Node for the library, against cases with known answers:
 | Short pivot arm | Arc distortion matches hand-derived geometry |
 | Pumping rosette | z = −(depth + gain × the pump rosette's wave), deeper on a pump lobe |
 | Phase step of one full lobe | Same path as phase 0 |
+| Eccentric chuck, round rosette | Circle of radius r centered e off the spindle |
+| Elliptical chuck, round rosette | Ellipse with semi-axes \|r − e\| and r; a line 2e long at r = 0 |
+| Wheel turned 360° | Same path as wheel 0 |
+| `wheelCount` n | Each wheel position's paths are the first's rotated about the chuck slide |
+| Hash from before chucks | Restores to `chuck: null`, `wheelCount` 1, `eccentricityStep` 0 |
 
 The carve gets a headless-Chromium test: one straight groove of known V angle and
 depth must measure 2·depth·tan(vAngle/2) wide within one pixel. `npm run smoke`
@@ -200,11 +249,17 @@ loads every preset headless and screenshots it.
 
 ## Roadmap
 
-In order; each builds on the last.
+In order.
 
-1. **Eccentric and elliptical chucks**: one motion step each.
-2. **Surface work**: cylinder and dome `Surface`s; the carve target becomes the
+1. **Eccentric and elliptical chucks**: one motion step each. Designed in
+   [Chucks](#chucks); not built.
+2. **The math as equations**: each stage of a simulation written out as MathML with
+   the settings' numbers in it: rosette outline, reach and swing as definitions,
+   the motion chain as composed transforms. Each stage is an expression tree that
+   both prints and evaluates, and a test checks the evaluation against
+   `computeToolpaths`, so an equation can't disagree with the code.
+3. **Surface work**: cylinder and dome `Surface`s; the carve target becomes the
    unrolled surface, and the 3D view shows the curved part.
-3. **Straight-line engine**: a second machine whose chain has a linear slide where
+4. **Straight-line engine**: a second machine whose chain has a linear slide where
    spindle rotation was; same cutter, job, surface and carve.
-4. **Rosette import**: outlines from DXF/SVG, or traced from a photo.
+5. **Rosette import**: outlines from DXF/SVG, or traced from a photo.
