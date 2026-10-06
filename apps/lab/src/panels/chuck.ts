@@ -28,7 +28,6 @@ export const chuckPanel: Panel<Settings> = {
         .step(0.05)
         .label('Eccentricity step')
         .suffix('mm')
-        .describe('Added to the eccentricity every pass.')
         .manual()
         .showIf(fitted),
     }),

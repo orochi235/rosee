@@ -23,6 +23,8 @@ const SERIES: Series[] = [
   },
 ];
 
+const SLIDE: Series = { label: 'Chuck slide', unit: 'mm', values: (t, k) => t.passes[k].slide };
+
 function range(v: Float32Array): [number, number] {
   let lo = Infinity;
   let hi = -Infinity;
@@ -35,17 +37,18 @@ function range(v: Float32Array): [number, number] {
 }
 
 /** Each motion against spindle angle for the current pass, cursor at the playhead. */
-export function PlotsTile({ toolpaths, at }: { toolpaths: Toolpaths; at: PlayheadAt }) {
+export function PlotsTile({ toolpaths, at, chuck }: { toolpaths: Toolpaths; at: PlayheadAt; chuck: boolean }) {
   const body = useRef<HTMLDivElement>(null);
   const { width, height } = useElementSize(body);
-  const rowHeight = Math.max(40, (height - SERIES.length * 18) / SERIES.length);
+  const shown = useMemo(() => (chuck ? [...SERIES, SLIDE] : SERIES), [chuck]);
+  const rowHeight = Math.max(40, (height - shown.length * 18) / shown.length);
   const series = useMemo(
     () =>
-      SERIES.map((s) => {
+      shown.map((s) => {
         const values = s.values(toolpaths, at.pass);
         return { ...s, values, yRange: range(values) };
       }),
-    [toolpaths, at.pass],
+    [toolpaths, at.pass, shown],
   );
   const lines = useMemo(
     () =>

@@ -38,4 +38,27 @@ describe('machinePose', () => {
     expect(rosette[0][0]).toBeCloseTo(rosette[rosette.length - 1][0], 9);
     expect(rosette[0][1]).toBeCloseTo(rosette[rosette.length - 1][1], 9);
   });
+
+  it('puts the work center at the slide offset, turned with the spindle', () => {
+    const w = { ...PRESETS.wheel, samplesPerTurn: 256 };
+    const wt = computeToolpaths(w);
+    const pose = machinePose(w, wt, at(64, 256, wt.passes.length));
+    expect(Math.hypot(pose.work[0] - pose.spindle[0], pose.work[1] - pose.spindle[1])).toBeCloseTo(9, 3);
+    expect(pose.chuck?.slide).toBe(9);
+    expect(pose.stock).toBeGreaterThanOrEqual(6 + 9);
+  });
+
+  it('places the elliptical ring e off the spindle', () => {
+    const o = { ...PRESETS.oval, samplesPerTurn: 256 };
+    const ot = computeToolpaths(o);
+    const pose = machinePose(o, ot, at(10, 256, ot.passes.length));
+    const [rx, ry] = pose.chuck!.ring!;
+    expect(Math.hypot(rx - pose.spindle[0], ry - pose.spindle[1])).toBeCloseTo(4, 3);
+  });
+
+  it('has no chuck and the work on the spindle without one', () => {
+    const pose = machinePose(s, t, at(10, 256, t.passes.length));
+    expect(pose.chuck).toBeNull();
+    expect(pose.work).toEqual(pose.spindle);
+  });
 });

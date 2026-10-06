@@ -1,5 +1,30 @@
-import { headstockToMachine, machineToHeadstock, rad, radiusAt, type Settings, TAU, type Toolpaths, type Vec2 } from 'rosee';
+import {
+  type Chuck,
+  chuckToHeadstock,
+  headstockToMachine,
+  machineToHeadstock,
+  rad,
+  radiusAt,
+  type Settings,
+  TAU,
+  type Toolpaths,
+  type Vec2,
+  wheelOf,
+} from 'rosee';
 import type { PlayheadAt } from '../playhead';
+
+/** The chuck at one instant, machine frame. */
+export interface ChuckPose {
+  kind: Chuck['kind'];
+  /** The work's offset along the slide, mm. */
+  slide: number;
+  /** The wheel's turn, radians. */
+  wheel: number;
+  /** The slide's two ends. */
+  ends: [Vec2, Vec2];
+  /** The elliptical chuck's ring center; null on an eccentric chuck. */
+  ring: Vec2 | null;
+}
 
 /** The machine at one instant, in machine-frame mm, ready to draw. */
 export interface MachinePose {
@@ -16,8 +41,13 @@ export interface MachinePose {
   pump: number;
   /** The rosette's phase against the work for this pass, radians. */
   phase: number;
-  /** The stock's radius, drawn around the spindle. */
+  /** The stock's radius, drawn around the work center. */
   stock: number;
+  /** The work's center. */
+  work: Vec2;
+  /** The chuck slide's direction round the headstock, radians: spindle − index. */
+  slideAngle: number;
+  chuck: ChuckPose | null;
 }
 
 const OUTLINE_POINTS = 720;
@@ -33,6 +63,22 @@ export function machinePose(s: Settings, t: Toolpaths, at: PlayheadAt): MachineP
     const a = local + rosetteAngle;
     return headstockToMachine([r * Math.cos(a), r * Math.sin(a)], P, swing);
   };
+  const index = rad(path.pass.index);
+  const onHeadstock = (p: Vec2) => headstockToMachine(chuckToHeadstock(p, at.angle, index), P, swing);
+  const slide = path.slide[i];
+  const c = s.chuck;
+  const eccentricity = c ? Math.max(...t.passes.map((q) => Math.abs(c.eccentricity + q.pass.eccentricity))) : 0;
+  const stock = Math.max(s.job.from, s.job.to) + eccentricity + 1;
+  const chuck: ChuckPose | null = c && {
+    kind: c.kind,
+    slide,
+    wheel: wheelOf(c, path.pass),
+    ends: [onHeadstock([-stock, 0]), onHeadstock([stock, 0])],
+    ring:
+      c.kind === 'elliptical'
+        ? headstockToMachine([c.eccentricity * Math.cos(rad(c.ring)), c.eccentricity * Math.sin(rad(c.ring))], P, swing)
+        : null,
+  };
   const rosette: Vec2[] = [];
   for (let k = 0; k <= OUTLINE_POINTS; k++) rosette.push(toMachine((k / OUTLINE_POINTS) * TAU));
   return {
@@ -46,7 +92,10 @@ export function machinePose(s: Settings, t: Toolpaths, at: PlayheadAt): MachineP
     swing,
     pump: path.pump[i],
     phase: rad(path.pass.phase),
-    stock: Math.max(s.job.from, s.job.to) + 1,
+    stock,
+    work: onHeadstock([slide, 0]),
+    slideAngle: at.angle - index,
+    chuck,
   };
 }
 

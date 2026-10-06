@@ -26,4 +26,22 @@ describe('pickTop', () => {
   it('finds nothing in empty space', () => {
     expect(pick([pose.spindle[0] - 34, 30])).toBeNull();
   });
+
+  it('finds the chuck slide and the elliptical ring', () => {
+    for (const preset of [PRESETS.wheel, PRESETS.oval]) {
+      const cs = { ...preset, samplesPerTurn: 256 };
+      const ct = computeToolpaths(cs);
+      const cp = machinePose(cs, ct, playheadAt(40, ct.samples, ct.passes.length));
+      const [a, b] = cp.chuck!.ends;
+      const onSlide: Vec2 = [cp.spindle[0] + 0.4 * (b[0] - cp.spindle[0]), cp.spindle[1] + 0.4 * (b[1] - cp.spindle[1])];
+      const cframe: Frame = { center: cp.spindle, scale: 4 };
+      const cat = toCanvas(cframe, size);
+      expect(pickTop(cp, cs.rubber, cframe, size, cat(onSlide))).toBe('chuck');
+      expect(a).not.toEqual(b);
+      if (cp.chuck!.ring) {
+        const r = cp.chuck!.ring;
+        expect(pickTop(cp, cs.rubber, cframe, size, cat([r[0], r[1] + cp.stock]))).toBe('ring');
+      }
+    }
+  });
 });
