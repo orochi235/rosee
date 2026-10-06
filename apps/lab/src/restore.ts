@@ -62,6 +62,7 @@ function settings(raw: Raw): Settings {
     rubber: rubber(raw.rubber, d.rubber),
     pivotDistance: finite(raw.pivotDistance) ? raw.pivotDistance : d.pivotDistance,
     pump: pump(raw.pump, d.pump),
+    chuck: d.chuck,
     cutter: numbers(raw.cutter, d.cutter),
     job: numbers(raw.job, d.job),
     samplesPerTurn: finite(raw.samplesPerTurn) ? raw.samplesPerTurn : d.samplesPerTurn,

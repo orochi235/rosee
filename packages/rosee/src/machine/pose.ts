@@ -22,10 +22,21 @@ export function headstockToMachine(p: Vec2, pivotDistance: number, swing: number
   return [x, y - pivotDistance];
 }
 
-/** A headstock-frame point in the work frame. The work turns with the
- *  spindle (`spindle` radians) and is set back on the division plate by
- *  `index` radians, so a positive index turns the cut pattern positively. */
-export const headstockToWork = (p: Vec2, spindle: number, index: number): Vec2 => rotate(p, index - spindle);
+/** A headstock-frame point in the chuck frame, which turns with the spindle
+ *  (`spindle` radians) and is set back on the division plate by `index`
+ *  radians, so a positive index turns the cut pattern positively. With no
+ *  chuck fitted it is the work frame. */
+export const headstockToChuck = (p: Vec2, spindle: number, index: number): Vec2 => rotate(p, index - spindle);
 
-/** A work-frame point in the headstock frame. */
-export const workToHeadstock = (p: Vec2, spindle: number, index: number): Vec2 => rotate(p, spindle - index);
+/** A chuck-frame point in the headstock frame. */
+export const chuckToHeadstock = (p: Vec2, spindle: number, index: number): Vec2 => rotate(p, spindle - index);
+
+/** A chuck-frame point in the work frame. The work sits `slide` mm along the
+ *  chuck's slide, turned `wheel` radians on its dividing wheel. */
+export const chuckToWork = ([x, y]: Vec2, slide: number, wheel: number): Vec2 => rotate([x - slide, y], -wheel);
+
+/** A work-frame point in the chuck frame. */
+export function workToChuck(p: Vec2, slide: number, wheel: number): Vec2 {
+  const [x, y] = rotate(p, wheel);
+  return [x + slide, y];
+}

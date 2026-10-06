@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { TAU } from '../angle';
 import type { Job } from '../job/job';
-import { machineToHeadstock, workToHeadstock } from '../machine/pose';
+import { machineToHeadstock, chuckToHeadstock } from '../machine/pose';
 import { radiusAt } from '../rosette/rosette';
 import type { Settings } from './settings';
 import { computeToolpaths } from './toolpath';
@@ -25,6 +25,7 @@ const settings = (over: Partial<Settings> = {}): Settings => ({
   rubber: { shape: 'round', radius: 0 },
   pivotDistance: 1e5,
   pump: null,
+  chuck: null,
   cutter: { vAngle: 90, tipFlat: 0 },
   job: job(),
   samplesPerTurn: 720,
@@ -79,7 +80,7 @@ describe('computeToolpaths', () => {
     for (let i = 0; i <= n; i += 7) {
       const spindle = (i / n) * TAU;
       const phi = path.swing[i];
-      const [hx, hy] = workToHeadstock([path.xyz[i * 3], path.xyz[i * 3 + 1]], spindle, 0);
+      const [hx, hy] = chuckToHeadstock([path.xyz[i * 3], path.xyz[i * 3 + 1]], spindle, 0);
       expect(hx).toBeCloseTo(Rc * Math.cos(phi) + P * Math.sin(phi), 5);
       expect(hy).toBeCloseTo(-Rc * Math.sin(phi) - P * (1 - Math.cos(phi)), 5);
 
@@ -224,7 +225,11 @@ describe('computeToolpaths', () => {
   });
 
   it('counts wheel repeats against the sample budget', () => {
-    const s = settings({ job: job({ from: 1, to: 20, step: 1, wheelCount: 24 }), samplesPerTurn: 4096 });
+    const s = settings({
+      job: job({ from: 1, to: 20, step: 1, wheelCount: 24 }),
+      samplesPerTurn: 4096,
+      chuck: { kind: 'eccentric', eccentricity: 0, wheel: 0 },
+    });
     expect(() => computeToolpaths(s)).toThrow(/over the budget/);
   });
 });

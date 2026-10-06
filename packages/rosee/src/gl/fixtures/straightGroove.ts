@@ -13,6 +13,7 @@ export function straightGroove(depth: number, length = 10, samples = 20): Toolpa
     contact: new Float32Array(n),
     steep: new Uint8Array(n),
     across: new Float32Array(n).fill(Math.PI / 2),
+    slide: new Float32Array(n),
   };
   return { samples, rubberX: 30, passes: [path] };
 }
