@@ -1,6 +1,6 @@
 import { Plot2D } from '@weasel-js/ui';
 import type { Toolpaths } from 'rosee';
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { useElementSize } from '../hooks/useElementSize';
 import type { PlayheadAt } from '../playhead';
 
@@ -38,30 +38,41 @@ function range(v: Float32Array): [number, number] {
 export function PlotsTile({ toolpaths, at }: { toolpaths: Toolpaths; at: PlayheadAt }) {
   const body = useRef<HTMLDivElement>(null);
   const { width, height } = useElementSize(body);
-  const pass = Math.min(at.pass, toolpaths.passes.length - 1);
   const rowHeight = Math.max(40, (height - SERIES.length * 18) / SERIES.length);
-  const cursor = (at.sample / toolpaths.samples) * 360;
+  const series = useMemo(
+    () =>
+      SERIES.map((s) => {
+        const values = s.values(toolpaths, at.pass);
+        return { ...s, values, yRange: range(values) };
+      }),
+    [toolpaths, at.pass],
+  );
+  const lines = useMemo(
+    () =>
+      series.map(({ values, yRange }) =>
+        Array.from(values, (v, i) => {
+          const x = (i / toolpaths.samples) * width;
+          const y = rowHeight - ((v - yRange[0]) / (yRange[1] - yRange[0])) * rowHeight;
+          return `${x},${y}`;
+        }).join(' '),
+      ),
+    [series, toolpaths.samples, width, rowHeight],
+  );
+  const cursor = (at.degrees / 360) * width;
   return (
     <div className="rs-plots" ref={body}>
       {width > 0 &&
-        SERIES.map((s) => {
-          const values = s.values(toolpaths, pass);
-          const yRange = range(values);
-          const toX = (deg: number) => (deg / 360) * width;
-          const toY = (v: number) => rowHeight - ((v - yRange[0]) / (yRange[1] - yRange[0])) * rowHeight;
-          const points = Array.from(values, (v, i) => `${toX((i / toolpaths.samples) * 360)},${toY(v)}`).join(' ');
-          return (
-            <figure key={s.label} className="rs-plot">
-              <figcaption>
-                {s.label} <span className="rs-unit">{s.unit}</span>
-              </figcaption>
-              <Plot2D width={width} height={rowHeight} xRange={[0, 360]} yRange={yRange} axes={false} yTicks={{}}>
-                <polyline points={points} className="rs-plot-line" />
-                <line x1={toX(cursor)} x2={toX(cursor)} y1={0} y2={rowHeight} className="rs-plot-cursor" />
-              </Plot2D>
-            </figure>
-          );
-        })}
+        series.map((s, k) => (
+          <figure key={s.label} className="rs-plot">
+            <figcaption>
+              {s.label} <span className="rs-unit">{s.unit}</span>
+            </figcaption>
+            <Plot2D width={width} height={rowHeight} xRange={[0, 360]} yRange={s.yRange} axes={false} yTicks={{}}>
+              <polyline points={lines[k]} className="rs-plot-line" />
+              <line x1={cursor} x2={cursor} y1={0} y2={rowHeight} className="rs-plot-cursor" />
+            </Plot2D>
+          </figure>
+        ))}
     </div>
   );
 }

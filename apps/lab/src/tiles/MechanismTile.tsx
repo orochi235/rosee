@@ -1,35 +1,22 @@
-import type { Settings, Toolpaths } from 'rosee';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { rubberReach, type Settings, type Toolpaths } from 'rosee';
+import { useEffect, useRef, useState } from 'react';
 import { Callout, type Hover, PartsList } from '../Callout';
 import { useCanvasSize } from '../hooks/useCanvasSize';
 import { drawSide } from '../mechanism/drawSide';
-import { drawTop, type Frame, type Palette } from '../mechanism/drawTop';
+import { drawTop, type Frame } from '../mechanism/drawTop';
 import type { PartKey } from '../mechanism/parts';
 import { pickTop } from '../mechanism/pickTop';
-import { type MachinePose, machinePose } from '../mechanism/pose';
+import type { MachinePose } from '../mechanism/pose';
+import { PALETTE } from '../palette';
 import type { PlayheadAt } from '../playhead';
 
 const TABS = ['Top', 'Side', 'Contact'] as const;
 type Tab = (typeof TABS)[number];
 
-const PALETTE: Palette = {
-  background: '#101012',
-  ink: '#c8c4bb',
-  faint: '#3a3a40',
-  rosette: '#c9a35a',
-  rubber: '#7fb3d5',
-  contact: '#e8e2d0',
-  steep: '#e5484d',
-  cutter: '#e8a33d',
-  stock: 'rgba(200, 200, 210, 0.12)',
-};
-
-const rubberReach = (s: Settings) => (s.rubber.shape === 'round' ? s.rubber.radius : s.rubber.width / 2);
-
 /** Frames the rosette and rubber together. */
 function topFrame(s: Settings, pose: MachinePose, size: { width: number; height: number }): Frame {
   const left = -s.rosette.radius - 4;
-  const right = pose.rubberX + rubberReach(s) + 4;
+  const right = pose.rubberX + rubberReach(s.rubber) + 4;
   const half = s.rosette.radius + 6;
   return {
     center: [(left + right) / 2, 0],
@@ -39,7 +26,7 @@ function topFrame(s: Settings, pose: MachinePose, size: { width: number; height:
 
 /** Close on the contact, at true scale. */
 function contactFrame(s: Settings, pose: MachinePose, size: { width: number; height: number }): Frame {
-  const half = Math.max(rubberReach(s) * 3, 2) + 2 * ('amplitude' in s.rosette.wave ? s.rosette.wave.amplitude : 1);
+  const half = Math.max(rubberReach(s.rubber) * 3, 2) + 2 * ('amplitude' in s.rosette.wave ? s.rosette.wave.amplitude : 1);
   return { center: pose.contact, scale: Math.min(size.width, size.height) / (2 * half) };
 }
 
@@ -47,18 +34,19 @@ export function MechanismTile({
   settings,
   toolpaths,
   at,
+  pose,
   exaggerate,
 }: {
   settings: Settings;
   toolpaths: Toolpaths;
   at: PlayheadAt;
+  pose: MachinePose;
   exaggerate: number;
 }) {
   const [tab, setTab] = useState<Tab>('Top');
   const ref = useRef<HTMLCanvasElement>(null);
   const size = useCanvasSize(ref);
   const [hover, setHover] = useState<Hover | null>(null);
-  const pose = useMemo(() => machinePose(settings, toolpaths, at), [settings, toolpaths, at]);
   const frame = tab === 'Side' ? null : tab === 'Top' ? topFrame(settings, pose, size) : contactFrame(settings, pose, size);
   useEffect(() => {
     const ctx = ref.current?.getContext('2d');

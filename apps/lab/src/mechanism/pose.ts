@@ -23,11 +23,11 @@ export interface MachinePose {
 const OUTLINE_POINTS = 720;
 
 export function machinePose(s: Settings, t: Toolpaths, at: PlayheadAt): MachinePose {
-  const path = t.passes[Math.min(at.pass, t.passes.length - 1)];
-  const i = Math.min(at.sample, t.samples);
+  const path = t.passes[at.pass];
+  const i = at.sample;
   const swing = path.swing[i];
   const P = s.pivotDistance;
-  const rosetteAngle = (i / t.samples) * TAU + rad(path.pass.phase);
+  const rosetteAngle = at.angle + rad(path.pass.phase);
   const toMachine = (local: number): Vec2 => {
     const r = radiusAt(s.rosette, local);
     const a = local + rosetteAngle;

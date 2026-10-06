@@ -1,6 +1,7 @@
-import { radiusAt, type Rosette, type Settings, TAU } from 'rosee';
+import { radiusAt, type Rosette, rubberReach, type Settings, TAU } from 'rosee';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { PALETTE } from '../palette';
 import type { PartKey } from './parts';
 import type { MachinePose } from './pose';
 
@@ -35,8 +36,8 @@ export function createMachineScene(canvas: HTMLCanvasElement): MachineScene {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color('#101012');
-  scene.add(new THREE.HemisphereLight('#ffffff', '#303036', 2.2));
+  scene.background = new THREE.Color(PALETTE.background);
+  scene.add(new THREE.HemisphereLight('#ffffff', PALETTE.ground, 2.2));
   const sun = new THREE.DirectionalLight('#ffffff', 2);
   sun.position.set(80, 120, 160);
   scene.add(sun);
@@ -47,35 +48,39 @@ export function createMachineScene(canvas: HTMLCanvasElement): MachineScene {
   controls.target.set(0, -10, -20);
   controls.update();
 
+  // Each mesh gets its own material so one part can glow alone.
   const metal = (color: string) => new THREE.MeshStandardMaterial({ color, metalness: 0.6, roughness: 0.4 });
-  const steel = metal('#8d9096');
-  const brass = metal('#c9a35a');
 
-  const bed = new THREE.Mesh(new THREE.BoxGeometry(260, 10, 160), metal('#3a3a40'));
+  const bed = new THREE.Mesh(new THREE.BoxGeometry(260, 10, 160), metal(PALETTE.faint));
   scene.add(bed);
-  const pivot = new THREE.Mesh(new THREE.CylinderGeometry(4, 4, 120, 24).rotateX(Math.PI / 2), steel);
+  const pivot = new THREE.Mesh(new THREE.CylinderGeometry(4, 4, 120, 24).rotateX(Math.PI / 2), metal(PALETTE.steel));
   scene.add(pivot);
 
   // Everything that rocks hangs off the pivot; the pump slides it along z.
   const headstock = new THREE.Group();
   scene.add(headstock);
-  const arm = new THREE.Mesh(new THREE.BoxGeometry(24, 1, 70), steel);
+  const arm = new THREE.Mesh(new THREE.BoxGeometry(24, 1, 70), metal(PALETTE.steel));
   headstock.add(arm);
   const spindle = new THREE.Group();
   headstock.add(spindle);
-  spindle.add(new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 90, 24).rotateX(Math.PI / 2).translate(0, 0, -30), steel));
-  const rosette = new THREE.Mesh(rosetteGeometry({ radius: 30, wave: { kind: 'sine', lobes: 12, amplitude: 1 } }), brass);
+  spindle.add(
+    new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 90, 24).rotateX(Math.PI / 2).translate(0, 0, -30), metal(PALETTE.steel)),
+  );
+  const rosette = new THREE.Mesh(
+    rosetteGeometry({ radius: 30, wave: { kind: 'sine', lobes: 12, amplitude: 1 } }),
+    metal(PALETTE.rosette),
+  );
   rosette.position.z = ROSETTE_Z;
   spindle.add(rosette);
-  const work = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 6, 64).rotateX(Math.PI / 2).translate(0, 0, -3), metal('#d8d6d0'));
+  const work = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 6, 64).rotateX(Math.PI / 2).translate(0, 0, -3), metal(PALETTE.work));
   spindle.add(work);
-  const mark = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 0.5), metal('#e5484d'));
+  const mark = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 0.5), metal(PALETTE.steep));
   spindle.add(mark);
 
-  const rubber = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 8, 24).rotateX(Math.PI / 2), metal('#7fb3d5'));
+  const rubber = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 8, 24).rotateX(Math.PI / 2), metal(PALETTE.rubber));
   rubber.position.z = ROSETTE_Z + 2;
   scene.add(rubber);
-  const cutter = new THREE.Mesh(new THREE.ConeGeometry(2.5, 14, 4).rotateX(-Math.PI / 2).translate(0, 0, 7), metal('#e8a33d'));
+  const cutter = new THREE.Mesh(new THREE.ConeGeometry(2.5, 14, 4).rotateX(-Math.PI / 2).translate(0, 0, 7), metal(PALETTE.cutter));
   scene.add(cutter);
 
   const parts = new Map<PartKey, THREE.Mesh[]>([
@@ -88,23 +93,18 @@ export function createMachineScene(canvas: HTMLCanvasElement): MachineScene {
     ['rubber', [rubber]],
     ['cutter', [cutter]],
   ]);
-  for (const [key, meshes] of parts) {
-    for (const m of meshes) {
-      m.userData.part = key;
-      // Each mesh gets its own material so one part can glow alone.
-      m.material = (m.material as THREE.MeshStandardMaterial).clone();
-    }
-  }
+  for (const [key, meshes] of parts) for (const m of meshes) m.userData.part = key;
   const raycaster = new THREE.Raycaster();
 
   let shownRosette: Rosette | null = null;
   let frame = 0;
-  const render = () => {
-    controls.update();
-    renderer.render(scene, camera);
-    frame = requestAnimationFrame(render);
+  const requestRender = () => {
+    frame ||= requestAnimationFrame(() => {
+      frame = 0;
+      renderer.render(scene, camera);
+    });
   };
-  frame = requestAnimationFrame(render);
+  controls.addEventListener('change', requestRender);
 
   return {
     update(settings, pose, spindleAngle, exaggerate) {
@@ -126,10 +126,11 @@ export function createMachineScene(canvas: HTMLCanvasElement): MachineScene {
       work.scale.set(pose.stock, pose.stock, 1);
       mark.scale.set(pose.stock * 0.9, 1.2, 1);
       mark.position.set((pose.stock * 0.9) / 2, 0, 0.3);
-      const reach = settings.rubber.shape === 'round' ? Math.max(settings.rubber.radius, 0.6) : settings.rubber.width / 2;
+      const reach = Math.max(rubberReach(settings.rubber), 0.6);
       rubber.scale.set(reach, reach, 1);
       rubber.position.set(pose.rubberX, 0, ROSETTE_Z + 2);
       cutter.position.set(pose.cutter[0], pose.cutter[1], 0);
+      requestRender();
     },
     pick(x, y) {
       const ndc = new THREE.Vector2((x / canvas.clientWidth) * 2 - 1, -(y / canvas.clientHeight) * 2 + 1);
@@ -139,17 +140,25 @@ export function createMachineScene(canvas: HTMLCanvasElement): MachineScene {
     },
     highlight(part) {
       for (const [key, meshes] of parts) {
-        for (const m of meshes) (m.material as THREE.MeshStandardMaterial).emissive.set(key === part ? '#3a2a10' : '#000000');
+        for (const m of meshes) (m.material as THREE.MeshStandardMaterial).emissive.set(key === part ? PALETTE.glow : '#000000');
       }
+      requestRender();
     },
     resize(width, height) {
       renderer.setSize(width, height, false);
       camera.aspect = width / Math.max(1, height);
       camera.updateProjectionMatrix();
+      requestRender();
     },
     dispose() {
       cancelAnimationFrame(frame);
+      controls.removeEventListener('change', requestRender);
       controls.dispose();
+      scene.traverse((o) => {
+        if (!(o instanceof THREE.Mesh)) return;
+        o.geometry.dispose();
+        (o.material as THREE.Material).dispose();
+      });
       renderer.dispose();
     },
   };

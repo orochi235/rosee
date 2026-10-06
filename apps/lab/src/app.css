@@ -83,6 +83,21 @@
   gap: 4px;
 }
 
+.rs-pane {
+  position: relative;
+  display: grid;
+  min-height: 0;
+}
+
+.rs-pane-error {
+  position: absolute;
+  inset: 0 0 auto;
+}
+
+.rs-hidden {
+  display: none;
+}
+
 .rs-tabs {
   display: flex;
   gap: 4px;
@@ -90,8 +105,8 @@
 }
 
 .rs-tabs [aria-selected='true'] {
-  background: var(--wzl-accent, #c9a35a);
-  color: #111;
+  background: var(--wzl-accent, var(--rs-rosette));
+  color: var(--rs-background);
 }
 
 .rs-plots {
@@ -115,12 +130,12 @@
 
 .rs-plot-line {
   fill: none;
-  stroke: #c9a35a;
+  stroke: var(--rs-rosette);
   stroke-width: 1.25;
 }
 
 .rs-plot-cursor {
-  stroke: #e8a33d;
+  stroke: var(--rs-cutter);
   stroke-dasharray: 3 3;
 }
 
@@ -142,7 +157,7 @@
 }
 
 .rs-pass {
-  min-width: 11ch;
+  min-width: 15ch;
 }
 
 .rs-angle {
@@ -151,7 +166,7 @@
 
 .rs-error {
   margin: 8px 12px;
-  color: #e5484d;
+  color: var(--rs-error);
 }
 
 .rs-profile {
@@ -171,7 +186,7 @@
   padding: 8px 10px;
   border: 1px solid var(--wzl-border, #2a2a30);
   border-radius: var(--wzl-radius-md, 6px);
-  background: rgba(16, 16, 18, 0.94);
+  background: color-mix(in srgb, var(--rs-background) 94%, transparent);
   font-size: 0.8rem;
   line-height: 1.35;
   pointer-events: none;
@@ -195,7 +210,7 @@
 }
 
 .rs-callout-live {
-  color: #e8a33d;
+  color: var(--rs-cutter);
   font-variant-numeric: tabular-nums;
 }
 
@@ -216,11 +231,19 @@
   list-style: none;
   margin: 4px 0 0;
   padding: 4px;
-  background: rgba(16, 16, 18, 0.9);
+  background: color-mix(in srgb, var(--rs-background) 90%, transparent);
   border-radius: var(--wzl-radius-md, 6px);
 }
 
 .rs-parts button {
   width: 100%;
   text-align: start;
+}
+
+.rs-crash {
+  padding: 24px;
+}
+
+.rs-crash pre {
+  white-space: pre-wrap;
 }

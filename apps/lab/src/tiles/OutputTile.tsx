@@ -25,7 +25,7 @@ export function OutputTile({ toolpaths, cutter, upTo, look }: Props) {
   return (
     <div className={`rs-output rs-output-${look.mode}`} ref={body} {...handlers}>
       {look.mode !== 'surface' && <LinesCanvas toolpaths={toolpaths} upTo={upTo} view={view} />}
-      {look.mode !== 'lines' && <SurfaceCanvas toolpaths={toolpaths} cutter={cutter} upTo={upTo} view={view} look={look} />}
+      <SurfaceCanvas toolpaths={toolpaths} cutter={cutter} upTo={upTo} view={view} look={look} hidden={look.mode === 'lines'} />
     </div>
   );
 }

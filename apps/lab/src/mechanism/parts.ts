@@ -69,8 +69,8 @@ const f2 = (v: number) => v.toFixed(2);
  *  nothing changing. */
 export function liveLine(part: PartKey, c: LiveContext): string {
   const { settings: s, toolpaths: t, at, pose } = c;
-  const pass = t.passes[Math.min(at.pass, t.passes.length - 1)];
-  const i = Math.min(at.sample, t.samples);
+  const pass = t.passes[at.pass];
+  const i = at.sample;
   switch (part) {
     case 'rosette': {
       const w = s.rosette.wave;
@@ -87,7 +87,7 @@ export function liveLine(part: PartKey, c: LiveContext): string {
     case 'pivot':
       return `${f1(s.pivotDistance)} mm below the spindle`;
     case 'spindle':
-      return `${f1((i / t.samples) * 360)}° into pass ${Math.min(at.pass + 1, t.passes.length)}/${t.passes.length}`;
+      return `${f1(at.degrees)}° into ${at.label}`;
     case 'work': {
       const r = Math.hypot(pass.xyz[i * 3], pass.xyz[i * 3 + 1]);
       return `cutting at radius ${f2(r)} mm`;

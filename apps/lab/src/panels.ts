@@ -1,8 +1,9 @@
 import { f, resolveConfigSchema, type ResolvedConfig } from '@weasel-js/labkit';
-import type { ParamSpec, Rosette, Rubber, Settings, Wave } from 'rosee';
+import type { ParamSpec, Rosette, Rubber, Settings } from 'rosee';
 import { WAVE_PARAMS } from 'rosee';
 import { METALS } from 'rosee/gl';
-import type { Look } from './state';
+import { DEFAULT_POINTS, DEFAULT_PUMP, RUBBERS, SIMPLE_KINDS as KINDS, type SimpleKind, type SimpleWave as Simple } from './defaults';
+import { type Look, OUTPUT_MODES, RESOLUTIONS } from './state';
 
 /** One sidebar section: a labkit schema over a flat config, and the two
  *  mappings between that config and the lab state. */
@@ -12,10 +13,6 @@ export interface Panel<T> {
   read(from: T): Record<string, unknown>;
   write(to: T, config: Record<string, unknown>): T;
 }
-
-type Simple = Exclude<Wave, { kind: 'compound' }>;
-type SimpleKind = Simple['kind'];
-const KINDS: SimpleKind[] = ['sine', 'flat', 'petal', 'scallop', 'drawn'];
 
 const num = (s: ParamSpec & { type: 'number' }) => {
   const node = f.number(s.default).range(s.min, s.max).step(s.step).label(s.label).manual();
@@ -38,13 +35,6 @@ function waveFields() {
   }
   return fields;
 }
-
-const DEFAULT_POINTS = [
-  { u: 0, p: 1 },
-  { u: 0.25, p: 0 },
-  { u: 0.5, p: -1 },
-  { u: 0.75, p: 0 },
-];
 
 function rosetteRead(r: Rosette): Record<string, unknown> {
   const w = r.wave.kind === 'compound' ? r.wave.waves[0] : r.wave;
@@ -81,8 +71,8 @@ export const rosettePanel: Panel<Settings> = {
 
 const rubberRead = (r: Rubber) => ({
   shape: r.shape,
-  radius: r.shape === 'round' ? r.radius : 1,
-  width: r.shape === 'flat' ? r.width : 6,
+  radius: r.shape === 'round' ? r.radius : RUBBERS.round.radius,
+  width: r.shape === 'flat' ? r.width : RUBBERS.flat.width,
 });
 
 const rubberWrite = (c: Record<string, unknown>): Rubber =>
@@ -154,20 +144,21 @@ export const pumpPanel: Panel<Settings> = {
     }),
   ),
   read: (s) => {
-    const w = s.pump?.rosette.wave;
+    const w = (s.pump ?? DEFAULT_PUMP).rosette.wave;
+    const d = DEFAULT_PUMP.rosette.wave as Simple;
     return {
       on: s.pump !== null,
-      lobes: w && 'lobes' in w ? w.lobes : 6,
-      amplitude: w && 'amplitude' in w ? w.amplitude : 0.02,
-      gain: s.pump?.gain ?? 1,
+      lobes: 'lobes' in w ? w.lobes : d.lobes,
+      amplitude: 'amplitude' in w ? w.amplitude : d.amplitude,
+      gain: (s.pump ?? DEFAULT_PUMP).gain,
     };
   },
   write: (s, c) => ({
     ...s,
     pump: c.on
       ? {
-          rosette: { radius: 30, wave: { kind: 'sine', lobes: c.lobes as number, amplitude: c.amplitude as number } },
-          rubber: { shape: 'round', radius: 0 },
+          rosette: { ...DEFAULT_PUMP.rosette, wave: { kind: 'sine', lobes: c.lobes as number, amplitude: c.amplitude as number } },
+          rubber: DEFAULT_PUMP.rubber,
           gain: c.gain as number,
         }
       : null,
@@ -213,11 +204,11 @@ export const lookPanel: Panel<Look> = {
   title: 'Look',
   schema: resolveConfigSchema(
     f.schema({
-      mode: f.enum<string>('surface', ['lines', 'surface', 'split']).label('Output').manual(),
+      mode: f.enum<string>('surface', [...OUTPUT_MODES]).label('Output').manual(),
       metal: f.enum<string>('silver', Object.keys(METALS)).label('Metal').manual(),
       azimuth: f.number(120).range(-180, 180).step(1).label('Light azimuth').suffix('°').manual(),
       elevation: f.number(35).range(2, 90).step(1).label('Light elevation').suffix('°').manual(),
-      resolution: f.enum<string>('2048', ['1024', '2048', '4096']).label('Carve resolution').manual(),
+      resolution: f.enum<string>('2048', RESOLUTIONS.map(String)).label('Carve resolution').manual(),
       exaggerate: f
         .number(10)
         .range(1, 100)

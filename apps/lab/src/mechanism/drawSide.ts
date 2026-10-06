@@ -1,5 +1,5 @@
 import type { MachinePose } from './pose';
-import type { Palette } from './drawTop';
+import type { Palette } from '../palette';
 
 /** The headstock from the side, sliding along the spindle as it pumps.
  *  Travel is magnified by `exaggerate`; everything else is schematic. */

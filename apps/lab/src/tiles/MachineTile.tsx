@@ -1,20 +1,22 @@
-import { type Settings, TAU, type Toolpaths } from 'rosee';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import type { Settings, Toolpaths } from 'rosee';
+import { useEffect, useRef, useState } from 'react';
 import { Callout, type Hover, PartsList } from '../Callout';
 import { useElementSize } from '../hooks/useElementSize';
 import { createMachineScene, type MachineScene } from '../mechanism/machine3d';
-import { machinePose } from '../mechanism/pose';
+import type { MachinePose } from '../mechanism/pose';
 import type { PlayheadAt } from '../playhead';
 
 export function MachineTile({
   settings,
   toolpaths,
   at,
+  pose,
   exaggerate,
 }: {
   settings: Settings;
   toolpaths: Toolpaths;
   at: PlayheadAt;
+  pose: MachinePose;
   exaggerate: number;
 }) {
   const body = useRef<HTMLDivElement>(null);
@@ -23,7 +25,6 @@ export function MachineTile({
   const dragging = useRef(false);
   const [hover, setHover] = useState<Hover | null>(null);
   const size = useElementSize(body);
-  const pose = useMemo(() => machinePose(settings, toolpaths, at), [settings, toolpaths, at]);
 
   useEffect(() => {
     scene.current = createMachineScene(canvas.current!);
@@ -31,11 +32,14 @@ export function MachineTile({
   }, []);
   useEffect(() => scene.current?.resize(size.width, size.height), [size.width, size.height]);
   useEffect(() => {
-    scene.current?.update(settings, pose, (at.sample / toolpaths.samples) * TAU, exaggerate);
-  });
+    scene.current?.update(settings, pose, at.angle, exaggerate);
+  }, [settings, pose, at.angle, exaggerate]);
   useEffect(() => scene.current?.highlight(hover?.part ?? null), [hover?.part]);
 
   const show = (part: Hover['part'] | null, x: number, y: number) => setHover(part ? { part, x, y } : null);
+  const release = () => {
+    dragging.current = false;
+  };
   return (
     <div className="rs-tile-body rs-stage" ref={body}>
       <canvas
@@ -45,9 +49,9 @@ export function MachineTile({
           dragging.current = true;
           setHover(null);
         }}
-        onPointerUp={() => {
-          dragging.current = false;
-        }}
+        onPointerUp={release}
+        onPointerCancel={release}
+        onLostPointerCapture={release}
         onPointerMove={(e) => {
           if (dragging.current || !scene.current) return;
           const r = e.currentTarget.getBoundingClientRect();

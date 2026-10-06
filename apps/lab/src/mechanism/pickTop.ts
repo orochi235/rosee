@@ -1,4 +1,4 @@
-import type { Rubber, Vec2 } from 'rosee';
+import { type Rubber, rubberReach, type Vec2 } from 'rosee';
 import { type Frame, toCanvas } from './drawTop';
 import type { PartKey } from './parts';
 import type { MachinePose } from './pose';
@@ -25,9 +25,10 @@ export function pickTop(
 ): PartKey | null {
   const at = toCanvas(frame, size);
   const rubberAt = at([pose.rubberX, 0]);
+  const reach = rubberReach(rubber);
   if (rubber.shape === 'round') {
-    if (Math.hypot(p[0] - rubberAt[0], p[1] - rubberAt[1]) <= rubber.radius * frame.scale + REACH) return 'rubber';
-  } else if (toSegment(p, at([pose.rubberX, -rubber.width / 2]), at([pose.rubberX, rubber.width / 2])) <= REACH) {
+    if (Math.hypot(p[0] - rubberAt[0], p[1] - rubberAt[1]) <= reach * frame.scale + REACH) return 'rubber';
+  } else if (toSegment(p, at([pose.rubberX, -reach]), at([pose.rubberX, reach])) <= REACH) {
     return 'rubber';
   }
   const cutter = at(pose.cutter);

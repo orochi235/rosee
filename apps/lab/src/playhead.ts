@@ -1,3 +1,4 @@
+import { deg, TAU } from 'rosee';
 import { useEffect, useRef, useState } from 'react';
 
 /** Where the cut has got, as a sample count from the first pass's start:
@@ -9,15 +10,25 @@ export interface Playhead {
   speed: number;
 }
 
+/** The playhead resolved against a cut: `pass` and `sample` are clamped to
+ *  the toolpaths, `angle` is the spindle's in radians and `degrees` the same,
+ *  and `label` names the pass for display, counting from 1. */
 export interface PlayheadAt {
   pass: number;
   sample: number;
+  angle: number;
+  degrees: number;
+  label: string;
 }
 
-export const at = (position: number, samples: number, passes: number): PlayheadAt => {
-  const p = Math.min(Math.floor(position / samples), passes - 1);
-  return { pass: Math.max(p, 0), sample: Math.round(position - Math.max(p, 0) * samples) };
-};
+const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi);
+
+export function at(position: number, samples: number, passes: number): PlayheadAt {
+  const pass = clamp(Math.floor(position / samples), 0, passes - 1);
+  const sample = clamp(Math.round(position - pass * samples), 0, samples);
+  const angle = (sample / samples) * TAU;
+  return { pass, sample, angle, degrees: deg(angle), label: `pass ${pass + 1}/${passes}` };
+}
 
 /** Plays the cut forward, a pass at a time, stopping at the end. */
 export function usePlayhead(samples: number, passes: number) {

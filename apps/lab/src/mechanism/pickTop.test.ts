@@ -2,11 +2,13 @@ import { computeToolpaths, PRESETS, type Vec2 } from 'rosee';
 import { describe, expect, it } from 'vitest';
 import { type Frame, toCanvas } from './drawTop';
 import { pickTop } from './pickTop';
+import { at as playheadAt } from '../playhead';
 import { machinePose } from './pose';
 
 describe('pickTop', () => {
   const s = { ...PRESETS.swirl, samplesPerTurn: 256 };
-  const pose = machinePose(s, computeToolpaths(s), { pass: 0, sample: 0 });
+  const t = computeToolpaths(s);
+  const pose = machinePose(s, t, playheadAt(0, t.samples, t.passes.length));
   const size = { width: 400, height: 300 };
   const frame: Frame = { center: [5, 0], scale: 4 };
   const at = toCanvas(frame, size);

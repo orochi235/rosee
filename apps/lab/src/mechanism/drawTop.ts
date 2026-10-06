@@ -1,4 +1,5 @@
-import type { Rubber, Vec2 } from 'rosee';
+import { type Rubber, rubberReach, type Vec2 } from 'rosee';
+import type { Palette } from '../palette';
 import type { MachinePose } from './pose';
 
 export interface Frame {
@@ -6,18 +7,6 @@ export interface Frame {
   center: Vec2;
   /** CSS pixels per mm. */
   scale: number;
-}
-
-export interface Palette {
-  background: string;
-  ink: string;
-  faint: string;
-  rosette: string;
-  rubber: string;
-  contact: string;
-  steep: string;
-  cutter: string;
-  stock: string;
 }
 
 /** Machine-frame mm to canvas CSS pixels, for drawing and for hit tests. */
@@ -75,16 +64,15 @@ export function drawTop(
   ctx.strokeStyle = c.rubber;
   ctx.fillStyle = c.rubber;
   ctx.lineWidth = 1.5;
+  const reach = rubberReach(rubber);
+  ctx.beginPath();
   if (rubber.shape === 'round') {
-    ctx.beginPath();
-    ctx.arc(X([pose.rubberX, 0]), Y([pose.rubberX, 0]), Math.max(rubber.radius * frame.scale, 1.5), 0, Math.PI * 2);
-    ctx.stroke();
+    ctx.arc(X([pose.rubberX, 0]), Y([pose.rubberX, 0]), Math.max(reach * frame.scale, 1.5), 0, Math.PI * 2);
   } else {
-    ctx.beginPath();
-    ctx.moveTo(X([pose.rubberX, -rubber.width / 2]), Y([pose.rubberX, -rubber.width / 2]));
-    ctx.lineTo(X([pose.rubberX, rubber.width / 2]), Y([pose.rubberX, rubber.width / 2]));
-    ctx.stroke();
+    ctx.moveTo(X([pose.rubberX, -reach]), Y([pose.rubberX, -reach]));
+    ctx.lineTo(X([pose.rubberX, reach]), Y([pose.rubberX, reach]));
   }
+  ctx.stroke();
 
   ctx.fillStyle = pose.steep ? c.steep : c.contact;
   ctx.beginPath();
