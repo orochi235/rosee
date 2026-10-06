@@ -131,18 +131,35 @@ describe('computeToolpaths', () => {
     for (let i = 2; i < path.xyz.length; i += 3) expect(path.xyz[i]).toBeCloseTo(-0.05, 7);
   });
 
-  it('pumps the depth by gain × the pumping rosette\'s wave', () => {
+  it('pumps deeper on a pump lobe, read where the pump rubber faces the swung headstock', () => {
+    const P = 60;
     const s = settings({
+      pivotDistance: P,
+      job: job({ from: 20, to: 21, pumpPhaseStep: 10 }),
       pump: {
         rosette: { radius: 30, wave: { kind: 'sine', lobes: 6, amplitude: 0.02 } },
         rubber: { shape: 'round', radius: 0 },
         gain: 2,
       },
     });
-    const path = computeToolpaths(s).passes[0];
-    const z = [...path.xyz].filter((_, i) => i % 3 === 2);
-    expect(Math.min(...z)).toBeCloseTo(-0.09, 4);
-    expect(Math.max(...z)).toBeCloseTo(-0.01, 4);
+    const path = computeToolpaths(s).passes[1];
+    const pumpPhase = (10 * Math.PI) / 180;
+    const n = s.samplesPerTurn;
+    let deepest = 0;
+    let unswung = 0;
+    for (let i = 0; i <= n; i++) {
+      const spindle = (i / n) * TAU;
+      const [hx, hy] = machineToHeadstock([30, 0], P, path.swing[i]);
+      const facing = Math.atan2(hy, hx);
+      const z = path.xyz[i * 3 + 2];
+      expect(z).toBeCloseTo(-(0.05 + 2 * 0.02 * Math.cos(6 * (facing - spindle - pumpPhase))), 5);
+      unswung = Math.max(unswung, Math.abs(z + 0.05 + 2 * 0.02 * Math.cos(6 * (-spindle - pumpPhase))));
+      if (z < path.xyz[deepest * 3 + 2]) deepest = i;
+    }
+    expect(unswung).toBeGreaterThan(1e-3);
+    expect(path.xyz[deepest * 3 + 2]).toBeCloseTo(-0.09, 4);
+    const spindle = (deepest / n) * TAU;
+    expect(offPeriod(spindle + pumpPhase, TAU / 6)).toBeLessThan((2 * Math.PI) / 180);
   });
 
   it('records the rubber touching where the rosette faces it', () => {

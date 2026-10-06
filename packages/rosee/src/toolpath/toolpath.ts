@@ -53,7 +53,9 @@ export function computeToolpaths(s: Settings): Toolpaths {
       const [x, y] = headstockToWork(tip, spindle, index);
       let travel = 0;
       if (pump) {
-        travel = pump.gain * (reachAt(pump.table, -(spindle + rad(pass.pumpPhase))) - pump.table.mean);
+        const [px, py] = machineToHeadstock([pump.table.mean, 0], s.pivotDistance, sw);
+        const facing = Math.atan2(py, px);
+        travel = pump.gain * (reachAt(pump.table, facing - spindle - rad(pass.pumpPhase)) - pump.table.mean);
       }
       xyz[i * 3] = x;
       xyz[i * 3 + 1] = y;
