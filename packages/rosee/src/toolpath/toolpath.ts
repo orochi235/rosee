@@ -62,7 +62,9 @@ export function computeToolpaths(s: Settings): Toolpaths {
       xyz[i * 3 + 2] = -(pass.depth + travel);
       swing[i] = sw;
       pumpTravel[i] = travel;
-      contact[i] = at.contact;
+      // Float32 rounds angles just under 2π up to fround(2π), which is past it.
+      const c = Math.fround(at.contact);
+      contact[i] = c < TAU ? c : 0;
       steep[i] = at.steep ? 1 : 0;
     }
     return { pass, xyz, swing, pump: pumpTravel, contact, steep };

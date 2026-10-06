@@ -173,6 +173,16 @@ describe('computeToolpaths', () => {
     }
   });
 
+  it('keeps a contact just short of a full turn below 2π once stored', () => {
+    const s = settings({
+      rosette: { radius: 30, wave: { kind: 'sine', lobes: 12, amplitude: 0 } },
+      job: job({ to: 21, phaseStep: 1e-6 }),
+    });
+    const c = computeToolpaths(s).passes[1].contact[0];
+    expect(c).toBeGreaterThanOrEqual(0);
+    expect(c).toBeLessThan(TAU);
+  });
+
   it('records a big rubber touching a neighboring peak across a valley', () => {
     const s = settings({
       rosette: { radius: 30, wave: { kind: 'sine', lobes: 24, amplitude: 1.5 } },
