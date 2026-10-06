@@ -1,0 +1,11 @@
+{
+  "name": "rosee-monorepo",
+  "private": true,
+  "type": "module",
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "build": "npm run build -w rosee",
+    "test": "npm test -w rosee --",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  }
+}
