@@ -19,8 +19,9 @@ averaged when a pixel spans several texels. Spec:
 **Tech stack:** WebGL2 (no three.js), Vitest 5 browser mode on Playwright's
 headless Chromium for the GL tests, TypeScript 7.
 
-Every code block below has run: the full suite (69 tests, 4 of them in headless
-Chromium) passed in a scratch copy, and the presets were rendered and looked at.
+Every code block below has run: the full suite (70 tests, 6 of them in headless
+Chromium) passed in a scratch copy, the presets were rendered and looked at, and
+the lab (plan 3) ran against this code.
 
 ## Two decisions made while prototyping
 
@@ -429,7 +430,15 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     projects: [
-      { test: { name: 'node', include: ['src/**/*.test.ts'], exclude: ['src/**/*.browser.test.ts'] } },
+      {
+        test: {
+          name: 'node',
+          include: ['src/**/*.test.ts'],
+          exclude: ['src/**/*.browser.test.ts'],
+          // The dense contact references take seconds when every project runs at once.
+          testTimeout: 30_000,
+        },
+      },
       {
         test: {
           name: 'browser',
@@ -524,6 +533,15 @@ describe('createCarve', () => {
     const at = (u: number) => h[row * carve.resolution + Math.floor(((u / carve.extent + 1) / 2) * carve.resolution)];
     expect(at(-2)).toBeLessThan(-0.15);
     expect(at(2)).toBeCloseTo(0, 9);
+  });
+
+  it('carves nothing of a pass at a negative sample, without a GL error', () => {
+    const gl = context();
+    const carve = createCarve(gl, 256);
+    carve.load(carveMesh(straightGroove(0.2), cutter));
+    carve.carve({ pass: 0, sample: -3 });
+    expect(gl.getError()).toBe(gl.NO_ERROR);
+    expect(Math.min(...carve.heights())).toBeCloseTo(0, 9);
   });
 
   it('carves a preset to its pass depth', () => {
@@ -695,7 +713,7 @@ export function createCarve(gl: WebGL2RenderingContext, resolution = 4096): Carv
       const last = upTo ? Math.min(upTo.pass, buffers.length - 1) : buffers.length - 1;
       for (let k = 0; k <= last; k++) {
         const b = buffers[k];
-        const count = upTo && k === upTo.pass ? Math.min(b.count, upTo.sample * b.perSegment) : b.count;
+        const count = upTo && k === upTo.pass ? Math.min(b.count, Math.max(0, upTo.sample) * b.perSegment) : b.count;
         if (count === 0) continue;
         gl.bindBuffer(gl.ARRAY_BUFFER, b.buffer);
         gl.vertexAttribPointer(positionAt, 3, gl.FLOAT, false, 0, 0);
@@ -745,7 +763,7 @@ export function createCarve(gl: WebGL2RenderingContext, resolution = 4096): Carv
 - [ ] **Step 9: Run it and watch it pass**
 
 Run: `npx vitest run` and `npx tsc --noEmit`
-Expected: node and browser projects both pass (the browser project: 4 tests).
+Expected: node and browser projects both pass (the browser project: 5 tests).
 
 - [ ] **Step 10: Commit**
 
@@ -852,8 +870,7 @@ float heightAt(ivec2 t) {
 }
 
 vec3 shadeAt(vec2 mm) {
-  vec2 uv = (mm / extent + 1.0) * 0.5;
-  if (any(lessThan(uv, vec2(0.0))) || any(greaterThanEqual(uv, vec2(1.0)))) return background;
+  vec2 uv = clamp((mm / extent + 1.0) * 0.5, vec2(0.0), vec2(1.0 - 0.5 / resolution));
   ivec2 t = ivec2(uv * resolution);
   float texel = 2.0 * extent / resolution;
   float dx = (heightAt(t + ivec2(1, 0)) - heightAt(t - ivec2(1, 0))) / (2.0 * texel);
@@ -871,6 +888,11 @@ vec3 shadeAt(vec2 mm) {
 }
 
 void main() {
+  vec2 here = center + (gl_FragCoord.xy - 0.5 * canvas) * mmPerPixel;
+  if (any(greaterThan(abs(here), vec2(extent)))) {
+    color = vec4(background, 1.0);
+    return;
+  }
   // average the pixel's footprint: a pixel wider than a texel sees many facets at once
   float texel = 2.0 * extent / resolution;
   int k = int(clamp(ceil(mmPerPixel / texel), 1.0, 6.0));
@@ -954,7 +976,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - [ ] **Step 1: Run the suite and build**
 
 Run: `npm test` then `npm run build` (repo root)
-Expected: 13 test files, 69 tests passing; `packages/rosee/dist/gl/` holds
+Expected: 13 test files, 70 tests passing; `packages/rosee/dist/gl/` holds
 `carve`, `mesh`, `program`, `shade` and `index`, and no `fixtures/`.
 
 - [ ] **Step 2: Update the spec's status line**
