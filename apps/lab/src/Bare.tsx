@@ -14,6 +14,9 @@ const CUT_SECONDS = 12;
 const HOLD_MS = 3000;
 /** Wider than this, and landscape, the machine gets the right half. */
 const WIDE_PX = 760;
+/** `?bare=cut` keeps the machine out at any size, for a still that has to
+ *  match the narrow view. */
+const CUT_ONLY = new URLSearchParams(location.search).get('bare') === 'cut';
 
 /** `?bare` is the cut and nothing else, for embedding the lab as a picture:
  *  the surface carving itself on a loop, and the machine cutting it beside
@@ -32,7 +35,7 @@ export function Bare() {
   );
   const root = useRef<HTMLDivElement>(null);
   const size = useElementSize(root);
-  const wide = size.width >= WIDE_PX && size.width >= size.height * 1.4;
+  const wide = !CUT_ONLY && size.width >= WIDE_PX && size.width >= size.height * 1.4;
 
   const { setSpeed, toggle } = playhead;
   useEffect(() => setSpeed(passes / CUT_SECONDS), [passes]);

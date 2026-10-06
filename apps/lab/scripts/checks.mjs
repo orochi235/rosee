@@ -108,3 +108,12 @@ export async function bareView(page, url) {
   if (chrome) return 'lab chrome drawn in the bare view';
   return narrow === 1 && wide === 2 ? '' : `${narrow} canvases narrow, ${wide} wide`;
 }
+
+/** `?bare=cut` stays the surface alone however wide the frame. */
+export async function bareCut(page, url) {
+  await page.setViewportSize({ width: 1100, height: 600 });
+  await page.goto(`${url}?bare=cut`);
+  await page.waitForTimeout(1500);
+  const n = await page.locator('.rs-bare canvas').count();
+  return n === 1 ? '' : `${n} canvases`;
+}
