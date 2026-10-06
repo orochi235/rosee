@@ -3,7 +3,7 @@ import { PRESETS, type PresetName, toolpathsSvg } from 'rosee';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { Bare } from './Bare';
 import { ErrorBoundary } from './ErrorBoundary';
-import { initialState, readHash, resetToDefault, writeHash } from './hash';
+import { initialState, readHash, resetToDefault, shareLink, writeHash } from './hash';
 import { machinePose } from './mechanism/pose';
 import { Sidebar } from './Sidebar';
 import type { LabState } from './state';
@@ -67,7 +67,14 @@ function Lab() {
         setSettings={(settings) => setState((s) => ({ ...s, settings, preset: '' }))}
         setLook={(look) => setState((s) => ({ ...s, look }))}
         loadPreset={(name: PresetName) => setState((s) => ({ ...s, preset: name, settings: PRESETS[name] }))}
-        onExportSvg={() => toolpaths && download(toolpathsSvg(toolpaths), `rosee-${state.preset || 'custom'}.svg`, 'image/svg+xml')}
+        onExportSvg={() => {
+          if (!toolpaths) return;
+          // What is on screen: the cut as far as the playhead, which is all of it once finished.
+          const partial = playhead.head.position < playhead.end;
+          const svg = toolpathsSvg(toolpaths, { upTo: head, metadata: shareLink(state) });
+          const name = `rosee-${state.preset || 'custom'}${partial ? `-pass${head.pass + 1}` : ''}.svg`;
+          download(svg, name, 'image/svg+xml');
+        }}
       />
       <div className="rs-main">
         {error && <p className="rs-error" role="alert">{error}</p>}

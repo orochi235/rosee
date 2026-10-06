@@ -137,3 +137,17 @@ export async function bareStill(page, url) {
   if (n !== 1) return `${n} canvases`;
   return before.equals(after) ? '' : 'the cut changed after the hold';
 }
+
+/** Export SVG downloads the finished cut with a link back to its settings. */
+export async function exportSvg(page, url) {
+  await page.goto(url);
+  await page.waitForTimeout(1000);
+  const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Export SVG' }).click()]);
+  const chunks = [];
+  for await (const c of await download.createReadStream()) chunks.push(c);
+  const svg = Buffer.concat(chunks).toString();
+  const lines = svg.match(/<polyline /g)?.length ?? 0;
+  if (!/<metadata>[^<]*#s=[A-Za-z0-9_-]+<\/metadata>/.test(svg)) return 'no settings link in the metadata';
+  if (download.suggestedFilename() !== 'rosee-swirl.svg') return `named ${download.suggestedFilename()}`;
+  return lines > 1 ? '' : `${lines} polylines`;
+}

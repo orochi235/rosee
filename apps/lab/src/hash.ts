@@ -23,6 +23,12 @@ export function writeHash(s: LabState): void {
   history.replaceState(null, '', `#s=${encode(s)}`);
 }
 
+/** A link that opens the lab in this state. */
+export function shareLink(s: LabState): string {
+  writeHash(s);
+  return location.href;
+}
+
 /** The state in the URL hash, or null when there is none or it is unreadable. */
 export function readHash(): LabState | null {
   const m = location.hash.match(/^#s=([A-Za-z0-9_-]+)$/);

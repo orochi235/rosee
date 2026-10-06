@@ -1,7 +1,7 @@
 export { deg, rad, TAU } from './angle';
 export { CONTACT_SAMPLES, type ContactTable, contactTable, reachAt, type Rubber, rubberReach } from './contact/table';
 export { type Cutter, grooveWidth } from './cutter/cutter';
-export { toolpathsSvg } from './export/svg';
+export { type SvgOptions, toolpathsSvg } from './export/svg';
 export { expandJob, type Job, type Pass, passCount } from './job/job';
 export { headstockToMachine, headstockToWork, machineToHeadstock, type Vec2, workToHeadstock } from './machine/pose';
 export { contactGap, solveSwing } from './machine/swing';

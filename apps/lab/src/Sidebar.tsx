@@ -1,7 +1,7 @@
 import { ControlPanel } from '@weasel-js/labkit';
 import { PRESETS, type PresetName, type Settings } from 'rosee';
 import { cutPanel, lookPanel, type Panel, pumpPanel, rosettePanel, rubberPanel } from './panels';
-import { writeHash } from './hash';
+import { shareLink } from './hash';
 import { ProfileEditor } from './ProfileEditor';
 import type { LabState, Look } from './state';
 
@@ -50,10 +50,7 @@ export function Sidebar({ state, setSettings, setLook, loadPreset, onExportSvg }
           </button>
           <button
             type="button"
-            onClick={() => {
-              writeHash(state);
-              navigator.clipboard?.writeText(location.href);
-            }}
+            onClick={() => navigator.clipboard?.writeText(shareLink(state))}
           >
             Copy link
           </button>
