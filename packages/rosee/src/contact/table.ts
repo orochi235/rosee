@@ -5,6 +5,10 @@ import { radiusAt, type Rosette, type Wave } from '../rosette/rosette';
  *  a knife edge. A flat rubber is a face square to its line of approach. */
 export type Rubber = { shape: 'round'; radius: number } | { shape: 'flat'; width: number };
 
+/** How far the rubber spreads from its center line: a round one's radius,
+ *  half a flat one's width. */
+export const rubberReach = (r: Rubber): number => (r.shape === 'round' ? r.radius : r.width / 2);
+
 /** How far from the rosette's center the rubber's reference point sits when
  *  touching, for each direction around the rosette. The reference point is
  *  the center of a round rubber and the face of a flat one. Directions are
@@ -109,7 +113,7 @@ export function contactTable(rosette: Rosette, rubber: Rubber, samples = CONTACT
   const reach = new Float64Array(samples);
   const touch = new Float64Array(samples);
   const round = rubber.shape === 'round';
-  const half = round ? rubber.radius : rubber.width / 2;
+  const half = rubberReach(rubber);
   if (half === 0) {
     for (let k = 0; k < samples; k++) {
       touch[k] = (k / samples) * TAU;

@@ -1,3 +1,4 @@
+import { rad } from '../angle';
 import type { Carve } from './carve';
 import { compile, FULLSCREEN_VERTEX } from './program';
 
@@ -67,7 +68,7 @@ vec3 shadeAt(vec2 mm) {
 void main() {
   vec2 here = center + (gl_FragCoord.xy - 0.5 * canvas) * mmPerPixel;
   if (any(greaterThan(abs(here), vec2(extent)))) {
-    color = vec4(background, 1.0);
+    color = vec4(pow(background, vec3(1.0 / 2.2)), 1.0);
     return;
   }
   // average the pixel's footprint: a pixel wider than a texel sees many facets at once
@@ -85,6 +86,7 @@ void main() {
 }`;
 
 export interface Shade {
+  /** `background`, shown outside the carve, is linear RGB like a metal's color. */
   render(carve: Carve, view: View, light: Light, metal: Metal, background?: [number, number, number]): void;
   dispose(): void;
 }
@@ -95,11 +97,11 @@ export function createShade(gl: WebGL2RenderingContext): Shade {
   const program = compile(gl, FULLSCREEN_VERTEX, SHADE_FRAGMENT);
   const u = (name: string) => gl.getUniformLocation(program, name);
   return {
-    render(carve, view, light, metal, background = [0.1, 0.1, 0.11]) {
+    render(carve, view, light, metal, background = [0.006, 0.006, 0.008]) {
       const w = gl.drawingBufferWidth;
       const h = gl.drawingBufferHeight;
-      const az = (light.azimuth * Math.PI) / 180;
-      const el = (light.elevation * Math.PI) / 180;
+      const az = rad(light.azimuth);
+      const el = rad(light.elevation);
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       gl.viewport(0, 0, w, h);
       gl.useProgram(program);

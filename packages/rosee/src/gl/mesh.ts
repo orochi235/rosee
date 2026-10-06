@@ -1,5 +1,4 @@
-import { rad } from '../angle';
-import type { Cutter } from '../cutter/cutter';
+import { type Cutter, grooveWidth } from '../cutter/cutter';
 import { flatFace, type Surface } from '../surface/surface';
 import type { Toolpaths } from '../toolpath/toolpath';
 
@@ -22,7 +21,6 @@ export interface CarveMesh {
  *  profile across `across`; consecutive profiles are joined by quads, which
  *  is exact for a V moved without turning and close when it turns slowly. */
 export function carveMesh(t: Toolpaths, cutter: Cutter, surface: Surface = flatFace): CarveMesh {
-  const slope = Math.tan(rad(cutter.vAngle) / 2);
   const flat = cutter.tipFlat / 2;
   const quads = flat > 0 ? 3 : 2;
   const vertsPerSegment = quads * 6;
@@ -38,7 +36,7 @@ export function carveMesh(t: Toolpaths, cutter: Cutter, surface: Surface = flatF
       const z = Math.min(p.xyz[i * 3 + 2], 0);
       const ax = Math.cos(p.across[i]);
       const ay = Math.sin(p.across[i]);
-      const half = flat - z * slope;
+      const half = grooveWidth(cutter, -z) / 2;
       const corners: [number, number][] = [
         [-half, 0],
         [-flat, z],

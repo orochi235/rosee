@@ -1,5 +1,5 @@
 export { deg, rad, TAU } from './angle';
-export { CONTACT_SAMPLES, type ContactTable, contactTable, reachAt, type Rubber } from './contact/table';
+export { CONTACT_SAMPLES, type ContactTable, contactTable, reachAt, type Rubber, rubberReach } from './contact/table';
 export { type Cutter, grooveWidth } from './cutter/cutter';
 export { toolpathsSvg } from './export/svg';
 export { expandJob, type Job, type Pass, passCount } from './job/job';
