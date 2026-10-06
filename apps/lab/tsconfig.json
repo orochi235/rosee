@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "skipLibCheck": true,
+    "types": ["vite/client", "node"],
+    "paths": {
+      "rosee": ["../../packages/rosee/src/index.ts"],
+      "rosee/gl": ["../../packages/rosee/src/gl/index.ts"]
+    }
+  },
+  "include": ["src", "vite.config.ts"]
+}
