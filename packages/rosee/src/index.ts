@@ -1,0 +1,14 @@
+export { deg, rad, TAU } from './angle';
+export { CONTACT_SAMPLES, type ContactTable, contactTable, reachAt, type Rubber } from './contact/table';
+export { type Cutter, grooveWidth } from './cutter/cutter';
+export { toolpathsSvg } from './export/svg';
+export { expandJob, type Job, type Pass } from './job/job';
+export { headstockToMachine, headstockToWork, machineToHeadstock, type Vec2, workToHeadstock } from './machine/pose';
+export { contactGap, solveSwing } from './machine/swing';
+export { choice, type ChoiceParam, num, type NumberParam, type ParamSpec } from './params';
+export { PRESETS, type PresetName } from './presets';
+export type { ProfilePoint } from './rosette/profile';
+export { displacement, radiusAt, type Rosette, WAVE_PARAMS, type Wave, type WaveKind } from './rosette/rosette';
+export { flatFace, type Surface } from './surface/surface';
+export type { Pump, Settings } from './toolpath/settings';
+export { computeToolpaths, type PassPath, type Toolpaths } from './toolpath/toolpath';
