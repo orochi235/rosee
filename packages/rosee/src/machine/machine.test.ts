@@ -49,7 +49,56 @@ describe('swing solve', () => {
   });
 });
 
+/** Every swing in [-0.15, 0.25] at which the rubber touches, by a dense scan. */
+function roots(t: ReturnType<typeof contactTable>, pivot: number, a: number): number[] {
+  const out: number[] = [];
+  const n = 20000;
+  let prev = contactGap(t, t.mean, pivot, a, -0.15);
+  for (let i = 1; i <= n; i++) {
+    const sw = -0.15 + (0.4 * i) / n;
+    const g = contactGap(t, t.mean, pivot, a, sw);
+    if (prev <= 0 !== g <= 0) out.push(sw);
+    prev = g;
+  }
+  return out;
+}
+
+describe('swing on a wall steeper than the arc', () => {
+  const petal: Rosette = { radius: 30, wave: { kind: 'petal', lobes: 24, amplitude: 3, sharpness: 6 } };
+  const t = contactTable(petal, { shape: 'round', radius: 0 });
+  const st = swingTable(t, t.mean, 150);
+
+  it('rests at the largest touching swing, flagging where there are several', () => {
+    let steep = 0;
+    for (let k = 0; k < 400; k++) {
+      const a = (k / st.swing.length) * 2 * Math.PI;
+      const r = roots(t, 150, a);
+      expect(st.swing[k]).toBeCloseTo(r[r.length - 1], 4);
+      expect(st.steep[k]).toBe(r.length > 1 ? 1 : 0);
+      steep += st.steep[k];
+    }
+    expect(steep).toBeGreaterThan(0);
+  });
+
+  it('only jumps where flagged steep', () => {
+    const n = st.swing.length;
+    for (let k = 0; k < n; k++) {
+      const j = (k + 1) % n;
+      if (Math.abs(st.swing[j] - st.swing[k]) > 4e-3) expect(st.steep[k] | st.steep[j]).toBe(1);
+    }
+  });
+});
+
 describe('swing table', () => {
+  it('moves smoothly where nothing is steep', () => {
+    const sine: Rosette = { radius: 30, wave: { kind: 'sine', lobes: 12, amplitude: 1.5 } };
+    const t = contactTable(sine, { shape: 'round', radius: 1 });
+    const st = swingTable(t, t.mean, 60);
+    const n = st.swing.length;
+    expect(st.steep.every((s) => s === 0)).toBe(true);
+    for (let k = 0; k < n; k++) expect(Math.abs(st.swing[(k + 1) % n] - st.swing[k])).toBeLessThan(4e-3);
+  });
+
   it('agrees with solving directly, between its samples too', () => {
     const sine: Rosette = { radius: 30, wave: { kind: 'sine', lobes: 12, amplitude: 1.5 } };
     const t = contactTable(sine, { shape: 'round', radius: 1 });

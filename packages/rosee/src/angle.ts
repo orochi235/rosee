@@ -9,9 +9,14 @@ export const turnFraction = (a: number): number => (((a / TAU) % 1) + 1) % 1;
 /** An angle wrapped to [0, 2π). */
 export const wrapAngle = (a: number): number => turnFraction(a) * TAU;
 
+/** Neighbors moving more than this many samples' worth of turn apart have
+ *  jumped (a contact point crossing from one peak to the next), not swept. */
+const JUMP_SAMPLES = 16;
+
 /** Linear interpolation at angle `a` in `values`, sampled evenly over a turn
  *  from 0. With `angular`, the values are themselves angles: they blend the
- *  short way round and the result is wrapped to [0, 2π). */
+ *  short way round, a jump between neighbors takes the nearer one instead,
+ *  and the result is wrapped to [0, 2π). */
 export function lerpTurn(values: ArrayLike<number>, a: number, angular = false): number {
   const n = values.length;
   const x = turnFraction(a) * n;
@@ -21,5 +26,6 @@ export function lerpTurn(values: ArrayLike<number>, a: number, angular = false):
   let d = values[(i + 1) % n] - v;
   if (!angular) return v + d * f;
   d -= TAU * Math.round(d / TAU);
+  if (Math.abs(d) > (JUMP_SAMPLES * TAU) / n) return wrapAngle(f < 0.5 ? v : v + d);
   return wrapAngle(v + d * f);
 }

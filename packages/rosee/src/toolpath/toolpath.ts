@@ -16,8 +16,12 @@ export interface PassPath {
   swing: Float32Array;
   /** Headstock travel toward the cutter from pumping, mm. */
   pump: Float32Array;
-  /** Rosette-local angle at which the rubber touches, radians. */
+  /** Rosette-local angle of the outline point the rubber touches, radians
+   *  in [0, 2π). */
   contact: Float32Array;
+  /** 1 where the rosette's wall is steeper than the headstock's arc, so
+   *  several swings touch and a real machine jumps. */
+  steep: Uint8Array;
 }
 
 export interface Toolpaths {
@@ -29,34 +33,37 @@ export interface Toolpaths {
 
 export function computeToolpaths(s: Settings): Toolpaths {
   const table = contactTable(s.rosette, s.rubber);
-  const pumpTable = s.pump ? contactTable(s.pump.rosette, s.pump.rubber) : null;
+  const pump = s.pump && { gain: s.pump.gain, table: contactTable(s.pump.rosette, s.pump.rubber) };
   const rubberX = table.mean;
   const swings = swingTable(table, rubberX, s.pivotDistance);
   const n = s.samplesPerTurn;
   const passes = expandJob(s.job).map((pass): PassPath => {
     const xyz = new Float32Array((n + 1) * 3);
     const swing = new Float32Array(n + 1);
-    const pump = new Float32Array(n + 1);
+    const pumpTravel = new Float32Array(n + 1);
     const contact = new Float32Array(n + 1);
+    const steep = new Uint8Array(n + 1);
     const index = rad(pass.index);
     for (let i = 0; i <= n; i++) {
       const spindle = (i / n) * TAU;
       const rosetteAngle = spindle + rad(pass.phase);
-      const { swing: sw, contact: touch } = swingAt(swings, rosetteAngle);
+      const at = swingAt(swings, rosetteAngle);
+      const sw = at.swing;
       const tip = machineToHeadstock([pass.radius, 0], s.pivotDistance, sw);
       const [x, y] = headstockToWork(tip, spindle, index);
-      const travel =
-        s.pump && pumpTable
-          ? s.pump.gain * (reachAt(pumpTable, -(spindle + rad(pass.pumpPhase))) - pumpTable.mean)
-          : 0;
+      let travel = 0;
+      if (pump) {
+        travel = pump.gain * (reachAt(pump.table, -(spindle + rad(pass.pumpPhase))) - pump.table.mean);
+      }
       xyz[i * 3] = x;
       xyz[i * 3 + 1] = y;
       xyz[i * 3 + 2] = -(pass.depth + travel);
       swing[i] = sw;
-      pump[i] = travel;
-      contact[i] = touch;
+      pumpTravel[i] = travel;
+      contact[i] = at.contact;
+      steep[i] = at.steep ? 1 : 0;
     }
-    return { pass, xyz, swing, pump, contact };
+    return { pass, xyz, swing, pump: pumpTravel, contact, steep };
   });
   return { samples: n, rubberX, passes };
 }
