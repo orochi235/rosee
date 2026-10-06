@@ -15,5 +15,5 @@ export function straightGroove(depth: number, length = 10, samples = 20): Toolpa
     across: new Float32Array(n).fill(Math.PI / 2),
     slide: new Float32Array(n),
   };
-  return { samples, rubberX: 30, passes: [path] };
+  return { samples, rubberX: 30, pumpX: null, passes: [path] };
 }

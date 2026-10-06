@@ -30,7 +30,7 @@ describe('toolpathsSvg', () => {
   });
 
   it('draws an empty, finite picture with no passes', () => {
-    const svg = toolpathsSvg({ samples: 90, rubberX: 30, passes: [] });
+    const svg = toolpathsSvg({ samples: 90, rubberX: 30, pumpX: null, passes: [] });
     expect(svg).not.toMatch(/Infinity|NaN/);
     expect(svg.match(/<polyline /g)).toBeNull();
   });
