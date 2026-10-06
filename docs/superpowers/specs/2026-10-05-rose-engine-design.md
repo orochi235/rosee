@@ -1,7 +1,6 @@
 # rosee: rose engine lathe simulator — design
 
-**Status: v1 built (library, carve and lab). Chucks (roadmap item 1) are designed below but not
-built; the rest of the roadmap is not started.** This is the design for v1 plus the roadmap after it. It is for whoever implements it; it assumes familiarity with
+**Status: v1 and chucks (roadmap item 1) built; the rest of the roadmap is not started.** This is the design for v1 plus the roadmap after it. It is for whoever implements it; it assumes familiarity with
 TypeScript and labkit (`@weasel-js/labkit`), not with ornamental turning.
 
 ## What it is
@@ -29,8 +28,8 @@ widening and narrowing.
 ## Scope
 
 v1 models rocking, pumping, phasing and indexing, rubber shape and pivot geometry,
-on a flat face. Eccentric and elliptical chucks come next (designed in
-[Chucks](#chucks)). Roadmap at the end.
+on a flat face, plus eccentric and elliptical [chucks](#chucks). Roadmap at the
+end.
 
 ## Layout
 
@@ -40,7 +39,7 @@ npm workspaces, following agnew.
 packages/rosee        library, pure TypeScript, no DOM
   rosette/            rosette definitions (data) → outline radius at angle
   contact/            rubber shape vs rosette outline
-  machine/            headstock pivot, pump slide, phase → work pose at angle
+  machine/            chuck, headstock pivot, pump slide, phase → work pose at angle
   cutter/             V angle, tip flat, slide-rest position
   job/                program of passes, as data
   toolpath/           job × machine → cutter-tip paths in work coordinates
@@ -127,7 +126,7 @@ frame is the tip run back through the chain in reverse.
 
 ### Chucks
 
-*Designed, not built.* `Settings.chuck` is `null` (work on the faceplate) or one
+`Settings.chuck` is `null` (work on the faceplate) or one
 of:
 
 - `{ kind: 'eccentric', eccentricity, wheel }`: a slide on the faceplate holds the
@@ -148,8 +147,9 @@ the existing spindle rotation. With a round rosette, no swing, wheel and ring at
 (elliptical); at r = 0 the elliptical chuck cuts a straight line 2e long.
 
 The chuck never touches a rosette, so the reach and swing tables are unchanged;
-`toolpath.ts` gains one call per sample through new `chuckToWork` /
-`workToChuck` in `machine/`. The graver's `across` angle loses the wheel:
+`toolpath.ts` runs each tip from the headstock to the chuck frame
+(`headstockToChuck`, the work frame when no chuck is fitted) and on to the work
+(`chuckToWork`). The graver's `across` angle loses the wheel:
 `index − spindle − swing − wheel`. `PassPath` gains `slide` (s per sample, mm)
 for the views, so none recomputes it.
 
@@ -165,7 +165,7 @@ expands to passes `{ radius, depth, phase, pumpPhase, index }`. One program cove
 the swirl (small phase step), barleycorn (half a lobe every pass) and basket weave
 (half a lobe every group).
 
-For the chuck *(designed, not built)*, the job gains `wheelCount`, which repeats
+For the chuck, the job gains `wheelCount`, which repeats
 the sweep at that many even turns of the chuck's wheel (nested inside
 `indexCount`), and `eccentricityStep`, mm added to the chuck's eccentricity every
 pass. Passes gain `wheel` and `eccentricity`, each added to the chuck's own
@@ -215,15 +215,15 @@ Pumping, Chuck, Cutter, Job, Surface, Presets) and a `WorkspaceGrid`:
 - **Transport**: play/pause, pass `n/N`, scrubber, speed; the angle readout pinned
   to a fixed width.
 
-With a chuck set *(designed, not built)*: the Top view and the 3D machine draw
+With a chuck fitted, the Top view and the 3D machine draw
 the slide on the faceplate with the work offset along it, and the ring for the
 elliptical chuck, each with a callout (live value: the slide offset); the motion
-plots add the slide offset against spindle angle. Two presets join the list: off-
-center rosettes repeated around the eccentric chuck's wheel, and an elliptical
-swirl.
+plots add the slide offset against spindle angle. Two presets use them:
+`wheel` (off-center roses repeated around the eccentric chuck's wheel) and `oval`
+(the swirl on an elliptical chuck).
 
 Panes stay under about 400 px tall. All state lives in the URL hash. Presets
-(phased swirl, basket weave, barleycorn) are settings objects.
+(phased swirl, basket weave, barleycorn, wheel, oval) are settings objects.
 
 ## Testing
 
@@ -251,8 +251,7 @@ loads every preset headless and screenshots it.
 
 In order.
 
-1. **Eccentric and elliptical chucks**: one motion step each. Designed in
-   [Chucks](#chucks); not built.
+1. **Eccentric and elliptical chucks**: built; see [Chucks](#chucks).
 2. **The math as equations**: each stage of a simulation written out as MathML with
    the settings' numbers in it: rosette outline, reach and swing as definitions,
    the motion chain as composed transforms. Each stage is an expression tree that
