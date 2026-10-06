@@ -1,6 +1,7 @@
 # rosee: rose engine lathe simulator — design
 
-**Status: v1 and chucks (roadmap item 1) built; the rest of the roadmap is not started.** This is the design for v1 plus the roadmap after it. It is for whoever implements it; it assumes familiarity with
+**Status: v1 and chucks (roadmap item 1) built. Equations (item 2) are designed below but not
+built; the rest of the roadmap is not started.** This is the design for v1 plus the roadmap after it. It is for whoever implements it; it assumes familiarity with
 TypeScript and labkit (`@weasel-js/labkit`), not with ornamental turning.
 
 ## What it is
@@ -247,16 +248,63 @@ The carve gets a headless-Chromium test: one straight groove of known V angle an
 depth must measure 2·depth·tan(vAngle/2) wide within one pixel. `npm run smoke`
 loads every preset headless and screenshots it.
 
+## Equations
+
+*Designed, not built.* Each stage of a simulation written out as MathML with the
+settings' numbers in it, shown in the lab beside the playhead's values. The
+equations describe the code rather than run it: tests evaluate them against the
+library, so an equation cannot disagree with the cut without a test failing.
+
+### Library (`math/`)
+
+`expr.ts` is a small expression tree: numbers, named symbols, sums, products,
+quotients, powers, `cos`, `sin`, `sqrt`, `abs`, a piecewise node, and a
+"max over α" node whose body may carry a condition. Two functions read it:
+`evaluate(expr, env)` and `toMathML(expr)`, which emits MathML Core with text
+escaped. No TeX step and no dependency.
+
+`describe(settings)` returns stages, each a title and its equations. An equation
+is a left side, a right side and a kind: a **formula** can be evaluated; a
+**definition** is implicit and only printed.
+
+| Stage | Equation | Kind | Checked against |
+|---|---|---|---|
+| Rosette | r(α) = R + A·p(nα/2π mod 1), p written per wave kind: `sine`, `flat`, `petal`, `scallop` piecewise in u; `compound` a sum | formula | `radiusAt` |
+| Rosette, `drawn` | p is the monotone cubic through the drawn points, shown as a table | definition | — |
+| Reach, round ρ | R(β) = max over α with \|r(α) sin(α−β)\| ≤ ρ of r(α) cos(α−β) + √(ρ² − r(α)² sin²(α−β)) | formula | contact table `reach` |
+| Reach, flat w | R(β) = max over α with \|r(α) sin(α−β)\| ≤ w/2 of r(α) cos(α−β) | formula | contact table `reach` |
+| Swing | φ(θ) = the largest φ at which the rubber's distance from the spindle equals R(θ + phase − ψ(φ)) | definition | — |
+| Chain | p = Rot(−wheel)·(Rot(index − θ)·H_φ⁻¹(r_c, 0) − (s, 0)), s per chuck | formula, given each sample's φ | `PassPath.xyz` |
+| Pump | z = −(depth + g·(R_pump(β) − R̄_pump)) | formula, given β | `PassPath.xyz` z |
+| Groove | width = 2·depth·tan(V/2) + tip flat | formula | `grooveWidth` |
+
+Symbols: α is a rosette-local angle; β the rubber's direction from the
+rosette's center in the rosette's frame; ψ(φ) that direction as the swing φ
+moves the rubber relative to the headstock; R̄_pump the pumping reach table's
+mean; H_φ the swing about the pivot.
+
+If the reach formula disagrees with the contact table beyond sampling error, it
+is demoted to a definition rather than shipped wrong.
+
+### Lab
+
+The Motion tile gains tabs, Plots and Equations. Equations lists the stages top
+to bottom, scrolling within the tile, each equation with the playhead's value
+beside it (r at the contact, φ, s, the tip).
+
+### Testing
+
+Every formula is evaluated at a few hundred angles for every preset and every
+wave kind and compared with what it checks against. A formula printing a symbol
+its environment does not bind fails. MathML gets a snapshot per preset, and a
+headless test renders the Equations tab and finds `<math>` and no error.
+
 ## Roadmap
 
 In order.
 
 1. **Eccentric and elliptical chucks**: built; see [Chucks](#chucks).
-2. **The math as equations**: each stage of a simulation written out as MathML with
-   the settings' numbers in it: rosette outline, reach and swing as definitions,
-   the motion chain as composed transforms. Each stage is an expression tree that
-   both prints and evaluates, and a test checks the evaluation against
-   `computeToolpaths`, so an equation can't disagree with the code.
+2. **The math as equations**: designed in [Equations](#equations); not built.
 3. **Surface work**: cylinder and dome `Surface`s; the carve target becomes the
    unrolled surface, and the 3D view shows the curved part.
 4. **Straight-line engine**: a second machine whose chain has a linear slide where
