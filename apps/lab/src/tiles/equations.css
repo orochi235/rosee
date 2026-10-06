@@ -1,0 +1,54 @@
+.rs-equations {
+  min-height: 0;
+  overflow-y: auto;
+  padding-inline-end: 4px;
+}
+
+.rs-eq-stage h3 {
+  margin: 10px 0 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--wzl-text-muted, #9a978f);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rs-eq {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+  padding-block: 4px;
+  border-block-end: 1px solid var(--wzl-border, #2a2a30);
+}
+
+.rs-eq-math {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.rs-eq-math math {
+  /* Block math centers itself; inline math at display size sits flush left. */
+  display: inline math;
+  math-style: normal;
+  margin: 2px 0;
+  color: var(--rs-ink);
+}
+
+.rs-eq-numbers math {
+  color: var(--wzl-text-muted, #9a978f);
+  font-size: 0.9em;
+}
+
+.rs-eq-note {
+  margin: 2px 0 0;
+  font-size: 0.75rem;
+  color: var(--wzl-text-muted, #9a978f);
+}
+
+/* Wide enough for "(−12.345, −12.345) mm" so the column never shifts. */
+.rs-eq-value {
+  min-width: 22ch;
+  font-size: 0.8rem;
+  padding-block-start: 4px;
+}

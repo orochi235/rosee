@@ -10,7 +10,7 @@ import type { LabState } from './state';
 import { MachineTile } from './tiles/MachineTile';
 import { MechanismTile } from './tiles/MechanismTile';
 import { OutputTile } from './tiles/OutputTile';
-import { PlotsTile } from './tiles/PlotsTile';
+import { MotionTile } from './tiles/MotionTile';
 import { Transport } from './Transport';
 import { at, usePlayhead } from './playhead';
 import { useToolpaths } from './useToolpaths';
@@ -88,7 +88,7 @@ function Lab() {
                 <MechanismTile settings={state.settings} toolpaths={toolpaths} at={head} pose={pose} exaggerate={state.look.exaggerate} />
               </Tile>
               <Tile title="Motion">
-                <PlotsTile toolpaths={toolpaths} at={head} chuck={state.settings.chuck !== null} />
+                <MotionTile settings={state.settings} toolpaths={toolpaths} at={head} />
               </Tile>
               <Tile title="Machine">
                 <MachineTile settings={state.settings} toolpaths={toolpaths} at={head} pose={pose} exaggerate={state.look.exaggerate} />

@@ -14,6 +14,8 @@ interface Printed {
   prec: number;
   /** Starts with a digit, so juxtaposing it after a factor needs a dot. */
   numeric: boolean;
+  /** Starts with a named function, which juxtaposition would run into. */
+  word?: boolean;
 }
 
 export interface MathMLOptions {
@@ -36,8 +38,7 @@ function word(s: string): string {
 }
 
 export function nameML(n: Name): string {
-  let base = word(n.base);
-  if (n.bar) base = `<mover accent="true">${base}${mo('¯')}</mover>`;
+  const base = word(n.base);
   const sub = n.sub && word(n.sub);
   const sup = n.sup && `<mn>${escape(n.sup)}</mn>`;
   if (sub && sup) return `<msubsup>${base}${sub}${sup}</msubsup>`;
@@ -73,9 +74,10 @@ function print(e: Expr, o: MathMLOptions): Printed {
     case 'add': {
       const parts = e.terms.map((t, i) => {
         const p = print(t, o);
-        if (t.op === 'neg') return row(mo('−'), at(t.arg, MUL));
-        // A negative setting already carries its minus sign.
-        if ((t.op === 'num' || t.op === 'param') && p.prec === NEG) return p.ml;
+        // A minus inside the sum's own row is infix and spaced; wrapped in a row of its own it is a tight prefix.
+        const minus = i === 0 ? (ml: string) => row(mo('−'), ml) : (ml: string) => mo('−') + ml;
+        if (t.op === 'neg') return minus(at(t.arg, MUL));
+        if ((t.op === 'num' || t.op === 'param') && p.prec === NEG) return minus(number(-t.value, t.op === 'param' && !!t.deg).ml);
         return (i === 0 ? '' : mo('+')) + (p.prec <= ADD ? paren(p.ml) : p.ml);
       });
       const first = print(e.terms[0], o);
@@ -87,7 +89,7 @@ function print(e: Expr, o: MathMLOptions): Printed {
       const parts: string[] = [];
       e.factors.forEach((f, i) => {
         const p = print(f, o);
-        if (i > 0) parts.push(mo(p.numeric ? '·' : '⁢'));
+        if (i > 0) parts.push(mo(p.numeric ? '·' : '⁢') + (p.word ? '<mspace width="0.1667em"/>' : ''));
         parts.push(p.prec < MUL ? paren(p.ml) : p.ml);
       });
       return { ml: row(...parts), prec: MUL, numeric: print(e.factors[0], o).numeric };
@@ -110,17 +112,17 @@ function print(e: Expr, o: MathMLOptions): Printed {
           return atom(row(mo('|'), print(e.args[0], o).ml, mo('|')));
         case 'arg': {
           const p = print(e.args[0], o);
-          return { ml: row(word('arg'), mo('⁡'), p.prec < ATOM ? paren(p.ml) : p.ml), prec: MUL, numeric: false };
+          return { ml: row(word('arg'), mo('⁡'), p.prec < ATOM ? paren(p.ml) : `<mspace width="0.1667em"/>${p.ml}`), prec: MUL, numeric: false, word: true };
         }
         default:
-          return atom(row(word(e.fn), mo('⁡'), paren(list(e.args))));
+          return { ...atom(row(word(e.fn), mo('⁡'), paren(list(e.args)))), word: true };
       }
     case 'mod':
       return { ml: row(at(e.arg, MUL), mo('mod'), at(e.by, MUL)), prec: MOD, numeric: print(e.arg, o).numeric };
     case 'vec':
       return atom(paren(list(e.items)));
     case 'rot':
-      return { ml: row(word('Rot'), paren(print(e.angle, o).ml), at(e.arg, ATOM)), prec: MUL, numeric: false };
+      return { ml: row(word('Rot'), paren(print(e.angle, o).ml), at(e.arg, ATOM)), prec: MUL, numeric: false, word: true };
     case 'rel':
       return { ml: row(at(e.a, ADD), mo(e.rel), at(e.b, ADD)), prec: REL, numeric: false };
     case 'cases': {

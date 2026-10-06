@@ -1,10 +1,9 @@
-/** How a symbol prints: a base with an optional subscript, superscript and
- *  bar, e.g. `{ base: 'R', sub: 'pump', bar: true }` for R̄ with "pump" below. */
+/** How a symbol prints: a base with an optional subscript and superscript,
+ *  e.g. `{ base: 'H', sub: 'φ', sup: '−1' }`. */
 export interface Name {
   base: string;
   sub?: string;
   sup?: string;
-  bar?: boolean;
 }
 
 export type Fn = 'cos' | 'sin' | 'tan' | 'sqrt' | 'abs' | 'arg' | 'min';

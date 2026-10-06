@@ -9,6 +9,7 @@ import { pickTop } from '../mechanism/pickTop';
 import type { MachinePose } from '../mechanism/pose';
 import { PALETTE } from '../palette';
 import type { PlayheadAt } from '../playhead';
+import { Tabs } from '../Tabs';
 
 const TABS = ['Top', 'Side', 'Contact'] as const;
 type Tab = (typeof TABS)[number];
@@ -57,13 +58,7 @@ export function MechanismTile({
   const show = (part: PartKey | null, x: number, y: number) => setHover(part ? { part, x, y } : null);
   return (
     <div className="rs-tile-body rs-stage">
-      <div className="rs-tabs" role="tablist">
-        {TABS.map((t) => (
-          <button key={t} type="button" role="tab" aria-selected={tab === t} onClick={() => setTab(t)}>
-            {t}
-          </button>
-        ))}
-      </div>
+      <Tabs tabs={TABS} value={tab} onChange={setTab} />
       <canvas
         ref={ref}
         className="rs-canvas"

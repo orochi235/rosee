@@ -104,7 +104,7 @@ export function describe(s: Settings, toolpaths: Toolpaths, pass: number, o: Des
   if (s.pump && toolpaths.pumpX !== null) {
     const pumpRosette = rosetteMath(s.pump.rosette, name('r', 'pump'), 'pump.rosette');
     const Rpump = name('R', 'pump');
-    const mean = param(name('R', 'pump', { bar: true }), toolpaths.pumpX);
+    const mean = param(name('X', 'pump'), toolpaths.pumpX);
     const pumpBeta = sym('β_pump', name('β', 'pump'));
     const pumpFacing = fn('arg', headstock(mean, num(0)));
     const reachHere = alias(apply(Rpump, pumpBeta), sym('R_pump', Rpump));

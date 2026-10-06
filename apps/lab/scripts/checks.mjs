@@ -151,3 +151,21 @@ export async function exportSvg(page, url) {
   if (download.suggestedFilename() !== 'rosee-swirl.svg') return `named ${download.suggestedFilename()}`;
   return lines > 1 ? '' : `${lines} polylines`;
 }
+
+/** The Motion tile's Equations tab prints every stage as MathML, with a
+ *  value at the playhead beside the formulas. */
+export async function equationsTab(page, url) {
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
+  await page.goto(url);
+  await page.waitForTimeout(1000);
+  await page.getByRole('tab', { name: 'Equations' }).click();
+  await page.waitForTimeout(500);
+  const maths = await page.locator('.rs-equations math').count();
+  const values = await page.locator('.rs-eq-value').evaluateAll((els) => els.filter((e) => e.textContent).length);
+  const broken = await page.locator('.rs-equations merror').count();
+  if (errors.length) return errors.join('; ');
+  if (broken) return `${broken} merror elements`;
+  return maths > 10 && values > 5 ? '' : `${maths} equations, ${values} values`;
+}
