@@ -2,7 +2,7 @@ import type { Settings, Toolpaths } from 'rosee';
 import { useEffect, useRef, useState } from 'react';
 import { Callout, type Hover, PartsList } from '../Callout';
 import { useElementSize } from '../hooks/useElementSize';
-import { createMachineScene, type MachineScene } from '../mechanism/machine3d';
+import { type CameraPlacement, CLOSE_UP, createMachineScene, type MachineScene } from '../mechanism/machine3d';
 import type { MachinePose } from '../mechanism/pose';
 import type { PlayheadAt } from '../playhead';
 
@@ -12,12 +12,18 @@ export function MachineTile({
   at,
   pose,
   exaggerate,
+  parts = true,
+  camera = CLOSE_UP,
 }: {
   settings: Settings;
   toolpaths: Toolpaths;
   at: PlayheadAt;
   pose: MachinePose;
   exaggerate: number;
+  /** The keyboard and touch list of parts, which the bare view leaves out. */
+  parts?: boolean;
+  /** Read once, when the scene is made. */
+  camera?: CameraPlacement;
 }) {
   const body = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -27,7 +33,7 @@ export function MachineTile({
   const size = useElementSize(body);
 
   useEffect(() => {
-    scene.current = createMachineScene(canvas.current!);
+    scene.current = createMachineScene(canvas.current!, camera);
     return () => scene.current?.dispose();
   }, []);
   useEffect(() => scene.current?.resize(size.width, size.height), [size.width, size.height]);
@@ -59,7 +65,7 @@ export function MachineTile({
         }}
         onPointerLeave={() => setHover(null)}
       />
-      <PartsList onShow={show} />
+      {parts && <PartsList onShow={show} />}
       {hover && <Callout hover={hover} live={{ settings, toolpaths, at, pose, exaggerate }} />}
     </div>
   );

@@ -1,6 +1,7 @@
 import { LabShell, Workspace } from '@weasel-js/labkit';
 import { PRESETS, type PresetName, toolpathsSvg } from 'rosee';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import { Bare } from './Bare';
 import { ErrorBoundary } from './ErrorBoundary';
 import { initialState, readHash, resetToDefault, writeHash } from './hash';
 import { machinePose } from './mechanism/pose';
@@ -101,7 +102,16 @@ function Lab() {
   );
 }
 
+/** `?bare` is the output alone, for embedding the lab as a picture. */
+const BARE = new URLSearchParams(location.search).has('bare');
+
 export function App() {
+  if (BARE)
+    return (
+      <ErrorBoundary onReset={resetToDefault}>
+        <Bare />
+      </ErrorBoundary>
+    );
   return (
     <LabShell title="rosee" mode="dark" documentTitle="rosee — rose engine lab">
       <ErrorBoundary onReset={resetToDefault}>

@@ -89,3 +89,22 @@ export async function splitZoom(page, url) {
   const off = d2 ? d2[1] - cursor[1] : Number.NaN;
   return Math.abs(off - 40 * Math.exp(0.75)) < 5 ? '' : `a burst of five wheel steps left the dot ${off.toFixed(1)} px off, not 84.7`;
 }
+
+/** `?bare` draws the surface alone in a tile-sized frame and adds the machine
+ *  once the frame is wide, with no lab chrome either way. */
+export async function bareView(page, url) {
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const bare = `${url}?bare`;
+  await page.setViewportSize({ width: 560, height: 315 });
+  await page.goto(bare);
+  await page.waitForTimeout(1500);
+  const narrow = await page.locator('.rs-bare canvas').count();
+  await page.setViewportSize({ width: 1100, height: 600 });
+  await page.waitForTimeout(800);
+  const wide = await page.locator('.rs-bare canvas').count();
+  const chrome = await page.locator('.rs-sidebar, .rs-transport, .rs-parts').count();
+  if (errors.length) return errors.join('; ');
+  if (chrome) return 'lab chrome drawn in the bare view';
+  return narrow === 1 && wide === 2 ? '' : `${narrow} canvases narrow, ${wide} wide`;
+}

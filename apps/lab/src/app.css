@@ -247,3 +247,19 @@
 .rs-crash pre {
   white-space: pre-wrap;
 }
+
+.rs-bare {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  background: var(--rs-background);
+}
+
+.rs-bare-wide {
+  grid-template-columns: 1fr 1fr;
+}
+
+.rs-bare .rs-stage {
+  grid-template-rows: minmax(0, 1fr);
+}

@@ -21,6 +21,17 @@ export interface MachineScene {
 
 const ROSETTE_Z = -40;
 
+/** Where the camera sits and what it orbits, in machine-frame mm. */
+export interface CameraPlacement {
+  position: [number, number, number];
+  target: [number, number, number];
+}
+
+/** The spindle head close up, for the lab's tile. */
+export const CLOSE_UP: CameraPlacement = { position: [110, 50, 170], target: [0, -10, -20] };
+/** Bed to rosette, so the rocking reads as the whole headstock moving. */
+export const WHOLE_MACHINE: CameraPlacement = { position: [250, 40, 290], target: [20, -60, -30] };
+
 function rosetteGeometry(r: Rosette): THREE.ExtrudeGeometry {
   const shape = new THREE.Shape();
   for (let k = 0; k <= 360; k++) {
@@ -32,7 +43,7 @@ function rosetteGeometry(r: Rosette): THREE.ExtrudeGeometry {
   return new THREE.ExtrudeGeometry(shape, { depth: 4, bevelEnabled: false });
 }
 
-export function createMachineScene(canvas: HTMLCanvasElement): MachineScene {
+export function createMachineScene(canvas: HTMLCanvasElement, placement: CameraPlacement = CLOSE_UP): MachineScene {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
   const scene = new THREE.Scene();
@@ -43,9 +54,9 @@ export function createMachineScene(canvas: HTMLCanvasElement): MachineScene {
   scene.add(sun);
 
   const camera = new THREE.PerspectiveCamera(35, 1, 1, 5000);
-  camera.position.set(110, 50, 170);
+  camera.position.set(...placement.position);
   const controls = new OrbitControls(camera, canvas);
-  controls.target.set(0, -10, -20);
+  controls.target.set(...placement.target);
   controls.update();
 
   // Each mesh gets its own material so one part can glow alone.
