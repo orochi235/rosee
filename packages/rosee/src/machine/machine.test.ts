@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { contactTable } from '../contact/table';
 import type { Rosette } from '../rosette/rosette';
-import { headstockToMachine, headstockToWork, machineToHeadstock, workToHeadstock } from './pose';
+import { headstockToMachine, headstockToChuck, machineToHeadstock, chuckToHeadstock } from './pose';
 import { contactGap, solveSwing, swingAt, swingTable } from './swing';
 
 describe('pose', () => {
@@ -11,14 +11,14 @@ describe('pose', () => {
     expect(y).toBeCloseTo(-10 + 10 * Math.cos(0.1), 12);
   });
 
-  it('round-trips machine ↔ headstock and headstock ↔ work', () => {
+  it('round-trips machine ↔ headstock and headstock ↔ chuck', () => {
     const p = [3.2, -1.1] as const;
     const [hx, hy] = machineToHeadstock(p, 120, 0.03);
     const back = headstockToMachine([hx, hy], 120, 0.03);
     expect(back[0]).toBeCloseTo(p[0], 12);
     expect(back[1]).toBeCloseTo(p[1], 12);
-    const w = headstockToWork(p, 1.3, 0.4);
-    const h = workToHeadstock(w, 1.3, 0.4);
+    const w = headstockToChuck(p, 1.3, 0.4);
+    const h = chuckToHeadstock(w, 1.3, 0.4);
     expect(h[0]).toBeCloseTo(p[0], 12);
     expect(h[1]).toBeCloseTo(p[1], 12);
   });

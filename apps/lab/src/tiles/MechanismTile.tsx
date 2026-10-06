@@ -4,7 +4,7 @@ import { Callout, type Hover, PartsList } from '../Callout';
 import { useCanvasSize } from '../hooks/useCanvasSize';
 import { drawSide } from '../mechanism/drawSide';
 import { drawTop, type Frame } from '../mechanism/drawTop';
-import type { PartKey } from '../mechanism/parts';
+import { type PartKey, partsFor } from '../mechanism/parts';
 import { pickTop } from '../mechanism/pickTop';
 import type { MachinePose } from '../mechanism/pose';
 import { PALETTE } from '../palette';
@@ -74,7 +74,7 @@ export function MechanismTile({
         }}
         onPointerLeave={() => setHover(null)}
       />
-      {frame && <PartsList parts={['rosette', 'rubber', 'headstock', 'spindle', 'work', 'cutter']} onShow={show} />}
+      {frame && <PartsList parts={partsFor(settings, ['rosette', 'rubber', 'headstock', 'spindle', 'work', 'cutter'])} onShow={show} />}
       {hover && frame && (
         <Callout hover={hover} live={{ settings, toolpaths, at, pose, exaggerate }} />
       )}

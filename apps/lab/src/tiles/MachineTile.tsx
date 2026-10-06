@@ -2,6 +2,7 @@ import type { Settings, Toolpaths } from 'rosee';
 import { useEffect, useRef, useState } from 'react';
 import { Callout, type Hover, PartsList } from '../Callout';
 import { useElementSize } from '../hooks/useElementSize';
+import { ALL_PARTS, partsFor } from '../mechanism/parts';
 import { type CameraPlacement, CLOSE_UP, createMachineScene, type MachineScene } from '../mechanism/machine3d';
 import type { MachinePose } from '../mechanism/pose';
 import type { PlayheadAt } from '../playhead';
@@ -68,7 +69,7 @@ export function MachineTile({
         }}
         onPointerLeave={() => setHover(null)}
       />
-      {parts && <PartsList onShow={show} />}
+      {parts && <PartsList parts={partsFor(settings, ALL_PARTS)} onShow={show} />}
       {hover && <Callout hover={hover} live={{ settings, toolpaths, at, pose, exaggerate }} />}
     </div>
   );

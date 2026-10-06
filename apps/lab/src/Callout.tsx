@@ -29,10 +29,8 @@ export function Callout({ hover, live }: { hover: Hover; live: LiveContext }) {
   );
 }
 
-const ORDER: PartKey[] = ['rosette', 'rubber', 'headstock', 'pivot', 'spindle', 'work', 'cutter', 'bed'];
-
 /** The same callouts for a keyboard or a touch screen: focus or tap a name. */
-export function PartsList({ parts = ORDER, onShow }: { parts?: PartKey[]; onShow(part: PartKey | null, x: number, y: number): void }) {
+export function PartsList({ parts, onShow }: { parts: PartKey[]; onShow(part: PartKey | null, x: number, y: number): void }) {
   return (
     <details className="rs-parts">
       <summary>Parts</summary>

@@ -1,4 +1,4 @@
-import { type ProfilePoint, type Pump, type Rubber, WAVE_PARAMS, type Wave } from 'rosee';
+import { type Chuck, type ProfilePoint, type Pump, type Rubber, WAVE_PARAMS, type Wave } from 'rosee';
 
 export type SimpleWave = Exclude<Wave, { kind: 'compound' }>;
 export type SimpleKind = SimpleWave['kind'];
@@ -31,4 +31,10 @@ export const DEFAULT_PUMP: Pump = {
   rosette: { radius: 30, wave: { kind: 'sine', lobes: 6, amplitude: 0.02 } },
   rubber: { shape: 'round', radius: 0 },
   gain: 1,
+};
+
+/** Each chuck as it starts when fitted. */
+export const DEFAULT_CHUCKS: { [K in Chuck['kind']]: Extract<Chuck, { kind: K }> } = {
+  eccentric: { kind: 'eccentric', eccentricity: 8, wheel: 0 },
+  elliptical: { kind: 'elliptical', eccentricity: 4, ring: 0, wheel: 0 },
 };

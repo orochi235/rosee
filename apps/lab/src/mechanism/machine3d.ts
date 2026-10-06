@@ -1,10 +1,10 @@
-import { radiusAt, type Rosette, rubberReach, type Settings, TAU } from 'rosee';
+import { machineToHeadstock, type Rosette, rubberReach, type Settings } from 'rosee';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { PALETTE } from '../palette';
 import type { PartKey } from './parts';
 import { followingRubber, type MachinePose } from './pose';
+import { rosetteGeometry } from './rosetteGeometry';
 
 /** A crude rose engine in three.js, in machine-frame mm: x toward the rubber
  *  and cutter, y up, z along the spindle toward the cutter. It exists to make
@@ -34,58 +34,6 @@ export interface CameraPlacement {
 export const CLOSE_UP: CameraPlacement = { position: [110, 50, 170], target: [0, -10, -20] };
 /** Bed to rosette, so the rocking reads as the whole headstock moving. */
 export const WHOLE_MACHINE: CameraPlacement = { position: [250, 40, 290], target: [20, -60, -30] };
-
-const ROSETTE_POINTS = 1440;
-const ROSETTE_THICKNESS = 4;
-
-/** The rosette as a plate: flat faces, and a rim whose normals follow the
- *  outline so it shades smoothly rather than in one flat strip per segment,
- *  which is what an extrusion gives. */
-function rosetteGeometry(r: Rosette): THREE.BufferGeometry {
-  const outline: THREE.Vector2[] = [];
-  for (let k = 0; k < ROSETTE_POINTS; k++) {
-    const a = (k / ROSETTE_POINTS) * TAU;
-    const rr = radiusAt(r, a);
-    outline.push(new THREE.Vector2(rr * Math.cos(a), rr * Math.sin(a)));
-  }
-  const n = outline.length;
-  const position: number[] = [];
-  const normal: number[] = [];
-  const uv: number[] = [];
-  const index: number[] = [];
-  for (let k = 0; k < n; k++) {
-    const prev = outline[(k + n - 1) % n];
-    const next = outline[(k + 1) % n];
-    const p = outline[k];
-    const tx = next.x - prev.x;
-    const ty = next.y - prev.y;
-    const len = Math.hypot(tx, ty) || 1;
-    for (const z of [0, ROSETTE_THICKNESS]) {
-      position.push(p.x, p.y, z);
-      normal.push(ty / len, -tx / len, 0);
-      uv.push(k / n, z / ROSETTE_THICKNESS);
-    }
-    const a = 2 * k;
-    const b = 2 * ((k + 1) % n);
-    index.push(a, b, a + 1, b, b + 1, a + 1);
-  }
-  const rim = new THREE.BufferGeometry();
-  rim.setAttribute('position', new THREE.Float32BufferAttribute(position, 3));
-  rim.setAttribute('normal', new THREE.Float32BufferAttribute(normal, 3));
-  rim.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
-  rim.setIndex(index);
-  const shape = new THREE.Shape(outline);
-  const front = new THREE.ShapeGeometry(shape).translate(0, 0, ROSETTE_THICKNESS);
-  // The back face is the same triangles wound the other way, facing -z.
-  const back = new THREE.ShapeGeometry(shape);
-  const tris = back.index!.array;
-  const reversed: number[] = [];
-  for (let i = 0; i < tris.length; i += 3) reversed.push(tris[i], tris[i + 2], tris[i + 1]);
-  back.setIndex(reversed);
-  const normals = back.getAttribute('normal');
-  for (let i = 0; i < normals.count; i++) normals.setXYZ(i, 0, 0, -1);
-  return mergeGeometries([rim, front, back])!;
-}
 
 export function createMachineScene(
   canvas: HTMLCanvasElement,
@@ -132,9 +80,18 @@ export function createMachineScene(
   rosette.position.z = ROSETTE_Z;
   spindle.add(rosette);
   const work = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 6, 64).rotateX(Math.PI / 2).translate(0, 0, -3), metal(PALETTE.work));
-  spindle.add(work);
+  // The chuck sits back on the spindle by the index; the work rides its slide.
+  const chuck = new THREE.Group();
+  spindle.add(chuck);
+  const slide = new THREE.Mesh(new THREE.BoxGeometry(1, 6, 3).translate(0, 0, -7.5), metal(PALETTE.steel));
+  chuck.add(slide);
+  const carrier = new THREE.Group();
+  chuck.add(carrier);
+  carrier.add(work);
   const mark = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 0.5), metal(PALETTE.steep));
-  spindle.add(mark);
+  carrier.add(mark);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(1, 0.02, 12, 96), metal(PALETTE.steel));
+  headstock.add(ring);
 
   const rubber = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 8, 24).rotateX(Math.PI / 2), metal(PALETTE.rubber));
   rubber.position.z = ROSETTE_Z + 2;
@@ -149,6 +106,8 @@ export function createMachineScene(
     ['spindle', [spindle.children[0] as THREE.Mesh]],
     ['rosette', [rosette]],
     ['work', [work, mark]],
+    ['chuck', [slide]],
+    ['ring', [ring]],
     ['rubber', [rubber]],
     ['cutter', [cutter]],
   ]);
@@ -182,6 +141,19 @@ export function createMachineScene(
       spindle.position.set(0, P, 0);
       spindle.rotation.z = spindleAngle;
       rosette.rotation.z = pose.phase;
+      const ch = pose.chuck;
+      chuck.rotation.z = pose.slideAngle - spindleAngle;
+      slide.visible = ch !== null;
+      // Longer than the work is wide, and the ring wider, so both show past it.
+      slide.scale.x = 2.6 * pose.stock;
+      carrier.position.set(ch?.slide ?? 0, 0, 0);
+      carrier.rotation.z = ch?.wheel ?? 0;
+      ring.visible = ch?.ring != null;
+      if (ch?.ring) {
+        const [hx, hy] = machineToHeadstock(ch.ring, P, pose.swing);
+        ring.position.set(hx, hy + P, -11);
+        ring.scale.setScalar(pose.stock * 1.25);
+      }
       work.scale.set(pose.stock, pose.stock, 1);
       mark.scale.set(pose.stock * 0.9, 1.2, 1);
       mark.position.set((pose.stock * 0.9) / 2, 0, 0.3);
@@ -198,7 +170,7 @@ export function createMachineScene(
     pick(x, y) {
       const ndc = new THREE.Vector2((x / canvas.clientWidth) * 2 - 1, -(y / canvas.clientHeight) * 2 + 1);
       raycaster.setFromCamera(ndc, camera);
-      const hit = raycaster.intersectObjects([...parts.values()].flat(), false)[0];
+      const hit = raycaster.intersectObjects([...parts.values()].flat().filter((m) => m.visible), false)[0];
       return (hit?.object.userData.part as PartKey | undefined) ?? null;
     },
     highlight(part) {

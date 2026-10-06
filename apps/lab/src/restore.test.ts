@@ -1,7 +1,7 @@
 import { computeToolpaths, PRESETS } from 'rosee';
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_POINTS, DEFAULT_PUMP } from './defaults';
-import { cutPanel, lookPanel, pumpPanel, rosettePanel, rubberPanel } from './panels';
+import { DEFAULT_CHUCKS, DEFAULT_POINTS, DEFAULT_PUMP } from './defaults';
+import { chuckPanel, cutPanel, lookPanel, pumpPanel, rosettePanel, rubberPanel } from './panels';
 import { restore } from './restore';
 import { DEFAULT_LOOK, type LabState } from './state';
 
@@ -21,7 +21,7 @@ describe('restore', () => {
   it('fills empty settings sections from the default preset, so every panel can read them', () => {
     const s = settingsOf({ rosette: {}, rubber: {}, job: {}, cutter: {} });
     expect(s).toEqual(PRESETS.swirl);
-    for (const panel of [rosettePanel, rubberPanel, pumpPanel, cutPanel]) expect(() => panel.read(s)).not.toThrow();
+    for (const panel of [rosettePanel, rubberPanel, pumpPanel, chuckPanel, cutPanel]) expect(() => panel.read(s)).not.toThrow();
   });
 
   it('falls back per field on values of the wrong type', () => {
@@ -65,5 +65,29 @@ describe('restore', () => {
 
   it('leaves an out-of-range sample count for the library to refuse', () => {
     expect(() => computeToolpaths(settingsOf({ samplesPerTurn: 0 }))).toThrow(/samplesPerTurn must be a whole number/);
+  });
+
+  it('restores a hash from before chucks to no chuck and a plain job', () => {
+    const { chuck: _, ...old } = PRESETS.swirl;
+    const { wheelCount: __, eccentricityStep: ___, ...oldJob } = old.job;
+    expect(settingsOf({ ...old, job: oldJob })).toEqual(PRESETS.swirl);
+  });
+
+  it('fills a chuck from the defaults for its kind', () => {
+    expect(settingsOf({ chuck: { kind: 'bogus', eccentricity: 3 } }).chuck).toEqual({ ...DEFAULT_CHUCKS.eccentric, eccentricity: 3 });
+    expect(settingsOf({ chuck: { kind: 'elliptical' } }).chuck).toEqual(DEFAULT_CHUCKS.elliptical);
+    expect(settingsOf({ chuck: null }).chuck).toBeNull();
+    expect(settingsOf({ chuck: 'yes' }).chuck).toBeNull();
+  });
+
+  it('keeps a chuck preset through JSON', () => {
+    expect(settingsOf(JSON.parse(JSON.stringify(PRESETS.oval)))).toEqual(PRESETS.oval);
+  });
+
+  it('resets the chuck job fields of a hash that has no chuck, so it still cuts', () => {
+    const s = settingsOf({ chuck: null, job: { wheelCount: 3, eccentricityStep: 0.5 } });
+    expect(s.job.wheelCount).toBe(1);
+    expect(s.job.eccentricityStep).toBe(0);
+    expect(() => computeToolpaths({ ...s, samplesPerTurn: 256 })).not.toThrow();
   });
 });

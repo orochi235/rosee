@@ -6,7 +6,7 @@ import { chromium } from 'playwright';
 import { build, preview } from 'vite';
 import { bareStill, bareView, exportSvg, hostileHash, modeToggles, splitZoom } from './checks.mjs';
 
-const PRESETS = ['swirl', 'basket', 'barleycorn'];
+const PRESETS = ['swirl', 'basket', 'barleycorn', 'wheel', 'oval'];
 const root = new URL('..', import.meta.url).pathname;
 
 await build({ root, logLevel: 'warn' });

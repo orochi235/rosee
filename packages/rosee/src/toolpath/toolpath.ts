@@ -1,7 +1,8 @@
 import { rad, TAU } from '../angle';
 import { contactTable, reachAt } from '../contact/table';
 import { expandJob, type Pass, passCount } from '../job/job';
-import { headstockToWork, machineToHeadstock } from '../machine/pose';
+import { slideAt, wheelOf } from '../machine/chuck';
+import { chuckToWork, headstockToChuck, machineToHeadstock } from '../machine/pose';
 import { swingAt, swingTable } from '../machine/swing';
 import type { Settings } from './settings';
 
@@ -24,8 +25,10 @@ export interface PassPath {
   steep: Uint8Array;
   /** Work-frame angle, radians, of the line the graver's V opens across: the
    *  machine's x axis. The graver is fixed to the machine, so this turns with
-   *  the work and the swing, not with the path. */
+   *  the work, the swing and the chuck's wheel, not with the path. */
   across: Float32Array;
+  /** The work's offset along the chuck's slide, mm; 0 with no chuck. */
+  slide: Float32Array;
 }
 
 export interface Toolpaths {
@@ -52,6 +55,8 @@ export function computeToolpaths(s: Settings): Toolpaths {
     throw new Error(
       `the job needs ${total.toLocaleString('en-US')} samples, over the budget of ${SAMPLE_BUDGET.toLocaleString('en-US')}: cut fewer passes or fewer samples per turn`,
     );
+  if (!s.chuck && (s.job.wheelCount !== 1 || s.job.eccentricityStep !== 0))
+    throw new Error('wheel divisions and an eccentricity step need a chuck: fit one, or set them back to 1 and 0');
   const table = contactTable(s.rosette, s.rubber);
   const pump = s.pump && { gain: s.pump.gain, table: contactTable(s.pump.rosette, s.pump.rubber) };
   const rubberX = table.mean;
@@ -63,14 +68,18 @@ export function computeToolpaths(s: Settings): Toolpaths {
     const contact = new Float32Array(n + 1);
     const steep = new Uint8Array(n + 1);
     const across = new Float32Array(n + 1);
+    const slide = new Float32Array(n + 1);
     const index = rad(pass.index);
+    const wheel = wheelOf(s.chuck, pass);
     for (let i = 0; i <= n; i++) {
       const spindle = (i / n) * TAU;
       const rosetteAngle = spindle + rad(pass.phase);
       const at = swingAt(swings, rosetteAngle);
       const sw = at.swing;
       const tip = machineToHeadstock([pass.radius, 0], s.pivotDistance, sw);
-      const [x, y] = headstockToWork(tip, spindle, index);
+      const onChuck = headstockToChuck(tip, spindle, index);
+      const sl = s.chuck ? slideAt(s.chuck, pass, spindle - index) : 0;
+      const [x, y] = chuckToWork(onChuck, sl, wheel);
       let travel = 0;
       if (pump) {
         const [px, py] = machineToHeadstock([pump.table.mean, 0], s.pivotDistance, sw);
@@ -86,9 +95,10 @@ export function computeToolpaths(s: Settings): Toolpaths {
       const c = Math.fround(at.contact);
       contact[i] = c < TAU ? c : 0;
       steep[i] = at.steep ? 1 : 0;
-      across[i] = index - spindle - sw;
+      across[i] = index - spindle - sw - wheel;
+      slide[i] = sl;
     }
-    return { pass, xyz, swing, pump: pumpTravel, contact, steep, across };
+    return { pass, xyz, swing, pump: pumpTravel, contact, steep, across, slide };
   });
   return { samples: n, rubberX, passes };
 }

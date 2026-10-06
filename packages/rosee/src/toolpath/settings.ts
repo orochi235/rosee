@@ -1,6 +1,7 @@
 import type { Rubber } from '../contact/table';
 import type { Cutter } from '../cutter/cutter';
 import type { Job } from '../job/job';
+import type { Chuck } from '../machine/chuck';
 import type { Rosette } from '../rosette/rosette';
 
 /** A pumping rosette and its rubber. `gain` is the lever ratio from the
@@ -19,6 +20,8 @@ export interface Settings {
   rubber: Rubber;
   pivotDistance: number;
   pump: Pump | null;
+  /** The chuck holding the work, or null for work on the faceplate. */
+  chuck: Chuck | null;
   cutter: Cutter;
   job: Job;
   samplesPerTurn: number;

@@ -45,10 +45,34 @@ export function drawTop(
   ctx.stroke();
   ctx.setLineDash([]);
 
+  const chuck = pose.chuck;
+  if (chuck?.ring) {
+    ctx.strokeStyle = c.faint;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.arc(X(chuck.ring), Y(chuck.ring), pose.stock * frame.scale, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = c.faint;
+    ctx.beginPath();
+    ctx.arc(X(chuck.ring), Y(chuck.ring), 2.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
   ctx.fillStyle = c.stock;
   ctx.beginPath();
-  ctx.arc(X(pose.spindle), Y(pose.spindle), pose.stock * frame.scale, 0, Math.PI * 2);
+  ctx.arc(X(pose.work), Y(pose.work), pose.stock * frame.scale, 0, Math.PI * 2);
   ctx.fill();
+
+  if (chuck) {
+    ctx.strokeStyle = c.steel;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(X(chuck.ends[0]), Y(chuck.ends[0]));
+    ctx.lineTo(X(chuck.ends[1]), Y(chuck.ends[1]));
+    ctx.stroke();
+    ctx.lineWidth = 1;
+  }
 
   ctx.strokeStyle = c.rosette;
   ctx.lineWidth = 1.5;
@@ -60,6 +84,13 @@ export function drawTop(
   ctx.beginPath();
   ctx.arc(X(pose.spindle), Y(pose.spindle), 2.5, 0, Math.PI * 2);
   ctx.fill();
+
+  if (chuck) {
+    ctx.fillStyle = c.work;
+    ctx.beginPath();
+    ctx.arc(X(pose.work), Y(pose.work), 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
 
   ctx.strokeStyle = c.rubber;
   ctx.fillStyle = c.rubber;

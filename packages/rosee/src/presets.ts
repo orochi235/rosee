@@ -5,8 +5,9 @@ const base: Settings = {
   rubber: { shape: 'round', radius: 1 },
   pivotDistance: 150,
   pump: null,
+  chuck: null,
   cutter: { vAngle: 110, tipFlat: 0 },
-  job: { from: 4, to: 18, step: 0.35, depth: 0.15, phaseStep: 2, phaseGroup: 1, pumpPhaseStep: 0, indexCount: 1 },
+  job: { from: 4, to: 18, step: 0.35, depth: 0.15, phaseStep: 2, phaseGroup: 1, pumpPhaseStep: 0, indexCount: 1, wheelCount: 1, eccentricityStep: 0 },
   samplesPerTurn: 2048,
 };
 
@@ -23,6 +24,19 @@ export const PRESETS = {
     ...base,
     rosette: { radius: 30, wave: { kind: 'sine', lobes: 24, amplitude: 0.6 } },
     job: { ...base.job, step: 0.25, depth: 0.1, phaseStep: 7.5, phaseGroup: 1 },
+  },
+  /** A small rose cut off center, repeated at six turns of the eccentric
+   *  chuck's wheel, so the roses ring the work. */
+  wheel: {
+    ...base,
+    chuck: { kind: 'eccentric', eccentricity: 9, wheel: 0 },
+    job: { ...base.job, from: 2, to: 6, step: 0.3, phaseStep: 3, wheelCount: 6 },
+  },
+  /** The swirl cut on an elliptical chuck: every ring an ellipse. */
+  oval: {
+    ...base,
+    chuck: { kind: 'elliptical', eccentricity: 4, ring: 0, wheel: 0 },
+    job: { ...base.job, from: 6, to: 18 },
   },
 } satisfies Record<string, Settings>;
 

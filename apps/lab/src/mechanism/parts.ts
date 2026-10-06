@@ -2,7 +2,18 @@ import { deg, grooveWidth, type Settings, type Toolpaths } from 'rosee';
 import type { PlayheadAt } from '../playhead';
 import type { MachinePose } from './pose';
 
-export type PartKey = 'rosette' | 'rubber' | 'headstock' | 'pivot' | 'spindle' | 'work' | 'cutter' | 'bed';
+export type PartKey = 'rosette' | 'rubber' | 'headstock' | 'pivot' | 'spindle' | 'work' | 'cutter' | 'bed' | 'chuck' | 'ring';
+
+/** Every part, in the order the parts lists show them. */
+export const ALL_PARTS: PartKey[] = ['rosette', 'rubber', 'headstock', 'pivot', 'spindle', 'work', 'cutter', 'bed', 'chuck', 'ring'];
+
+/** `base` without the chuck's parts unless one is fitted that has them. */
+export function partsFor(s: Settings, base: PartKey[]): PartKey[] {
+  const fitted: PartKey[] = base.filter((p) => p !== 'chuck' && p !== 'ring');
+  if (s.chuck) fitted.push('chuck');
+  if (s.chuck?.kind === 'elliptical') fitted.push('ring');
+  return fitted;
+}
 
 export interface PartText {
   title: string;
@@ -46,6 +57,16 @@ export const PARTS: Record<PartKey, PartText> = {
     title: 'Cutter',
     what: 'A V graver held still on the slide rest.',
     how: 'It cuts a groove as wide as its V at that depth. Its V stays square to the machine, so a groove narrows where the path climbs steeply.',
+  },
+  chuck: {
+    title: 'Chuck',
+    what: 'A slide on the spindle nose that holds the work off the spindle axis.',
+    how: 'An eccentric chuck sets the work off center and leaves it there, so the pattern lands off center; its wheel turns the work to repeat it around. An elliptical chuck slides the work there and back every turn, so every circle the cutter would cut becomes an ellipse.',
+  },
+  ring: {
+    title: 'Ring',
+    what: 'The elliptical chuck’s ring, bolted to the headstock off the spindle axis.',
+    how: 'Blocks on the slide ride the ring, so as the spindle turns the slide is pushed out and back by the ring’s offset. The ring angle sets which way the ellipse lies.',
   },
   bed: {
     title: 'Bed',
@@ -96,6 +117,19 @@ export function liveLine(part: PartKey, c: LiveContext): string {
       const depth = -pass.xyz[i * 3 + 2];
       return `${s.cutter.vAngle}° V · ${f2(depth)} mm deep · groove ${f2(grooveWidth(s.cutter, depth))} mm wide`;
     }
+    case 'chuck': {
+      const ch = s.chuck;
+      if (!ch || !pose.chuck) return '';
+      const wheel = `wheel ${f1(deg(pose.chuck.wheel))}°`;
+      const e = ch.eccentricity + pass.pass.eccentricity;
+      return ch.kind === 'eccentric'
+        ? `eccentric · ${f2(e)} mm off center · ${wheel}`
+        : `elliptical · slide ${f2(pose.chuck.slide)} of ±${f2(e)} mm · ${wheel}`;
+    }
+    case 'ring':
+      return s.chuck?.kind === 'elliptical'
+        ? `${f2(s.chuck.eccentricity + pass.pass.eccentricity)} mm off the spindle toward ${f1(s.chuck.ring)}°`
+        : '';
     case 'bed':
       return '';
   }
