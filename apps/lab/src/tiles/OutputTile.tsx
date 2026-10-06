@@ -19,7 +19,7 @@ interface Props {
 }
 
 /** The pattern as lines, as the lit surface, or both side by side, sharing
- *  one pan and zoom. Drag to pan, wheel to zoom, double-click to reset. */
+ *  one pan and zoom. Drag to pan, wheel to zoom, 0 to reset. */
 export function OutputTile({ toolpaths, cutter, upTo, look, background = PALETTE.background }: Props) {
   const body = useRef<HTMLDivElement>(null);
   const size = useElementSize(body);

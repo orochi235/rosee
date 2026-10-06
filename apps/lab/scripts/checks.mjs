@@ -173,3 +173,20 @@ export async function exportSvg(page, url) {
   const notice = await page.getByRole('alert').filter({ hasText: 'other.svg' }).count();
   return notice ? '' : 'no notice for a file with no settings';
 }
+
+/** 0 over the output undoes a zoom. */
+export async function resetKey(page, url) {
+  await page.goto(url);
+  await setMode(page, 'lines');
+  await page.waitForTimeout(800);
+  const canvas = page.locator('.rs-output > canvas');
+  const box = await canvas.boundingBox();
+  const before = await canvas.screenshot();
+  await page.mouse.move(box.x + box.width / 3, box.y + box.height / 3);
+  await page.mouse.wheel(0, -400);
+  await page.waitForTimeout(300);
+  if ((await canvas.screenshot()).equals(before)) return 'the wheel did not zoom';
+  await page.keyboard.press('0');
+  await page.waitForTimeout(300);
+  return (await canvas.screenshot()).equals(before) ? '' : '0 did not restore the view';
+}
