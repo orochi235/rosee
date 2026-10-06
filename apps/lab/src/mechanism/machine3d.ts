@@ -1,4 +1,4 @@
-import { type Rosette, rubberReach, type Settings } from 'rosee';
+import { machineToHeadstock, type Rosette, rubberReach, type Settings } from 'rosee';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { PALETTE } from '../palette';
@@ -80,9 +80,18 @@ export function createMachineScene(
   rosette.position.z = ROSETTE_Z;
   spindle.add(rosette);
   const work = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 6, 64).rotateX(Math.PI / 2).translate(0, 0, -3), metal(PALETTE.work));
-  spindle.add(work);
+  // The chuck sits back on the spindle by the index; the work rides its slide.
+  const chuck = new THREE.Group();
+  spindle.add(chuck);
+  const slide = new THREE.Mesh(new THREE.BoxGeometry(1, 6, 3).translate(0, 0, -7.5), metal(PALETTE.steel));
+  chuck.add(slide);
+  const carrier = new THREE.Group();
+  chuck.add(carrier);
+  carrier.add(work);
   const mark = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 0.5), metal(PALETTE.steep));
-  spindle.add(mark);
+  carrier.add(mark);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(1, 0.02, 12, 96), metal(PALETTE.steel));
+  headstock.add(ring);
 
   const rubber = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 8, 24).rotateX(Math.PI / 2), metal(PALETTE.rubber));
   rubber.position.z = ROSETTE_Z + 2;
@@ -97,6 +106,8 @@ export function createMachineScene(
     ['spindle', [spindle.children[0] as THREE.Mesh]],
     ['rosette', [rosette]],
     ['work', [work, mark]],
+    ['chuck', [slide]],
+    ['ring', [ring]],
     ['rubber', [rubber]],
     ['cutter', [cutter]],
   ]);
@@ -130,6 +141,19 @@ export function createMachineScene(
       spindle.position.set(0, P, 0);
       spindle.rotation.z = spindleAngle;
       rosette.rotation.z = pose.phase;
+      const ch = pose.chuck;
+      chuck.rotation.z = pose.slideAngle - spindleAngle;
+      slide.visible = ch !== null;
+      // Longer than the work is wide, and the ring wider, so both show past it.
+      slide.scale.x = 2.6 * pose.stock;
+      carrier.position.set(ch?.slide ?? 0, 0, 0);
+      carrier.rotation.z = ch?.wheel ?? 0;
+      ring.visible = ch?.ring != null;
+      if (ch?.ring) {
+        const [hx, hy] = machineToHeadstock(ch.ring, P, pose.swing);
+        ring.position.set(hx, hy + P, -11);
+        ring.scale.setScalar(pose.stock * 1.25);
+      }
       work.scale.set(pose.stock, pose.stock, 1);
       mark.scale.set(pose.stock * 0.9, 1.2, 1);
       mark.position.set((pose.stock * 0.9) / 2, 0, 0.3);
@@ -146,7 +170,7 @@ export function createMachineScene(
     pick(x, y) {
       const ndc = new THREE.Vector2((x / canvas.clientWidth) * 2 - 1, -(y / canvas.clientHeight) * 2 + 1);
       raycaster.setFromCamera(ndc, camera);
-      const hit = raycaster.intersectObjects([...parts.values()].flat(), false)[0];
+      const hit = raycaster.intersectObjects([...parts.values()].flat().filter((m) => m.visible), false)[0];
       return (hit?.object.userData.part as PartKey | undefined) ?? null;
     },
     highlight(part) {
