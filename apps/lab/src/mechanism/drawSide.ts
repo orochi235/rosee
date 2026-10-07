@@ -28,7 +28,8 @@ function profile(surface: Surface, stock: number, back: number): [number, number
 }
 
 /** The headstock from the side, sliding along the spindle as it pumps, with
- *  the stock's profile and the graver set against it. Travel is magnified by
+ *  the stock's profile and the graver set against it, and a straight-line
+ *  engine's carriage and rails behind its plate. Travel is magnified by
  *  `exaggerate`; the stock and graver are to scale with each other, the rest
  *  schematic. */
 export function drawSide(
@@ -62,6 +63,13 @@ export function drawSide(
   ctx.fillRect(behind - 58 * unit, mid - 18 * unit, 45 * unit, 36 * unit);
   ctx.fillStyle = c.rosette;
   ctx.fillRect(behind - 10 * unit, mid - 14 * unit, 3 * unit, 28 * unit);
+  if (pose.carriage) {
+    // The carriage behind the plate, on its rails.
+    ctx.fillStyle = c.steel;
+    ctx.fillRect(X(-back) - 6 * unit, Y(pose.stock + 2), 6 * unit, 2 * (pose.stock + 2) * mm);
+    ctx.fillRect(X(-back) - 9 * unit, Y(pose.stock + 3), 3 * unit, 2 * unit);
+    ctx.fillRect(X(-back) - 9 * unit, Y(-pose.stock - 3) - 2 * unit, 3 * unit, 2 * unit);
+  }
   ctx.fillStyle = c.stock;
   ctx.beginPath();
   profile(surface, pose.stock, back).forEach(([x, z], k) => (k === 0 ? ctx.moveTo(X(z), Y(x)) : ctx.lineTo(X(z), Y(x))));
@@ -91,9 +99,6 @@ export function drawSide(
 
   ctx.fillStyle = c.ink;
   ctx.font = '12px system-ui, sans-serif';
-  ctx.fillText(
-    pumping ? `pump travel ${(pose.pump * 1000).toFixed(1)} µm, shown ×${exaggerate}` : 'no pumping rosette',
-    12,
-    height - 12,
-  );
+  const caption = pumping ? `pump travel ${(pose.pump * 1000).toFixed(1)} µm, shown ×${exaggerate}` : 'no pumping rosette';
+  ctx.fillText(pose.carriage ? `${caption} · carriage ${pose.carriage.travel.toFixed(2)} mm along the stroke` : caption, 12, height - 12);
 }

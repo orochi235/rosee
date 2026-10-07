@@ -1,4 +1,5 @@
 import {
+  carriageToHeadstock,
   type Chuck,
   chuckToHeadstock,
   type Graver,
@@ -60,19 +61,65 @@ export interface MachinePose {
    *  engine, the carriage's travel turned into that frame on a straight-line one. */
   carrier: Vec2;
   chuck: ChuckPose | null;
+  carriage: CarriagePose | null;
+}
+
+/** A straight-line engine's carriage at one instant. */
+export interface CarriagePose {
+  /** Its travel along the frame, mm. */
+  travel: number;
+  /** The plate's extent in the work frame, mm. */
+  plate: { min: Vec2; max: Vec2 };
+  /** The plate's corners, machine frame. */
+  plateCorners: Vec2[];
+  /** The carriage's corners, machine frame: square to the frame, wide enough
+   *  for the plate at any index. */
+  corners: Vec2[];
+  /** How far either side of the arbor the rails run, and how long they are
+   *  either side of the middle, mm, headstock frame. */
+  railX: number;
+  railHalf: number;
+  /** The rails' ends, machine frame. */
+  rails: [Vec2, Vec2][];
 }
 
 const OUTLINE_POINTS = 720;
 
 const stocks = new WeakMap<Toolpaths, number>();
+const plates = new WeakMap<Toolpaths, { min: Vec2; max: Vec2 }>();
+
+/** Margin round the cut on a straight-line engine's plate, mm. */
+const PLATE_MARGIN = 1.5;
+
+/** The plate under a straight-line engine's cut: the cut's extent on the
+ *  work, every pass and index, with a margin. */
+function plateOf(t: Toolpaths): { min: Vec2; max: Vec2 } {
+  let plate = plates.get(t);
+  if (!plate) {
+    let [x0, y0, x1, y1] = [Infinity, Infinity, -Infinity, -Infinity];
+    for (const p of t.passes)
+      for (let i = 0; i < p.uvh.length; i += 3) {
+        x0 = Math.min(x0, p.uvh[i]);
+        x1 = Math.max(x1, p.uvh[i]);
+        y0 = Math.min(y0, p.uvh[i + 1]);
+        y1 = Math.max(y1, p.uvh[i + 1]);
+      }
+    plate = { min: [x0 - PLATE_MARGIN, y0 - PLATE_MARGIN], max: [x1 + PLATE_MARGIN, y1 + PLATE_MARGIN] };
+    plates.set(t, plate);
+  }
+  return plate;
+}
+
+/** The farthest any plate corner reaches from the work's center, mm. */
+const plateReach = ({ min, max }: { min: Vec2; max: Vec2 }): number =>
+  Math.max(...[min[0], max[0]].flatMap((x) => [min[1], max[1]].map((y) => Math.hypot(x, y))));
 
 /** The stock's radius: the barrel's or the dome's rim, or on a face wide
  *  enough for every pass's cut at its largest eccentricity. */
 function stockRadius(s: Settings, t: Toolpaths): number {
   if (s.surface.kind === 'cylinder') return s.surface.radius;
   if (s.surface.kind === 'dome') return s.surface.rim;
-  if (s.engine.kind === 'straight')
-    return Math.hypot(Math.max(Math.abs(s.job.from), Math.abs(s.job.to)), s.engine.stroke / 2) + 1;
+  if (s.engine.kind === 'straight') return plateReach(plateOf(t));
   let stock = stocks.get(t);
   if (stock === undefined) {
     const c = s.chuck;
@@ -113,6 +160,7 @@ export function machinePose(s: Settings, t: Toolpaths, at: PlayheadAt): MachineP
         : null,
     ringRadius: stock * 1.25,
   };
+  const carriage = s.engine.kind === 'straight' ? carriagePose(s.engine.stroke, plateOf(t), slide, index, P, swing) : null;
   const rosette: Vec2[] = [];
   for (let k = 0; k <= OUTLINE_POINTS; k++) rosette.push(toMachine((k / OUTLINE_POINTS) * TAU));
   return {
@@ -132,7 +180,22 @@ export function machinePose(s: Settings, t: Toolpaths, at: PlayheadAt): MachineP
     slideAngle: straight ? -index : at.angle - index,
     carrier: straight ? [-Math.sin(index) * slide, Math.cos(index) * slide] : [slide, 0],
     chuck,
+    carriage,
   };
+}
+
+function carriagePose(stroke: number, plate: { min: Vec2; max: Vec2 }, travel: number, index: number, P: number, swing: number): CarriagePose {
+  const toMachine = (h: Vec2) => headstockToMachine(h, P, swing);
+  const { min, max } = plate;
+  const plateCorners = ([[min[0], min[1]], [max[0], min[1]], [max[0], max[1]], [min[0], max[1]]] as Vec2[]).map((w) =>
+    toMachine(carriageToHeadstock(w, travel, index)),
+  );
+  const half = plateReach(plate);
+  const corners = ([[-half, -half], [half, -half], [half, half], [-half, half]] as Vec2[]).map(([x, y]) => toMachine([x, y + travel]));
+  const railX = half + 2;
+  const railHalf = stroke / 2 + half + 4;
+  const rails = [-railX, railX].map((x): [Vec2, Vec2] => [toMachine([x, -railHalf]), toMachine([x, railHalf])]);
+  return { travel, plate, plateCorners, corners, railX, railHalf, rails };
 }
 
 /** Where the rubber's center is drawn when the swing is magnified

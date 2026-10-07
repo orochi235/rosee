@@ -18,7 +18,8 @@ export function toCanvas(frame: Frame, size: { width: number; height: number }) 
 }
 
 /** The machine seen along the spindle: rosette on the rocking headstock,
- *  rubber fixed to the bed, the stock and the cutter. True geometry. */
+ *  rubber fixed to the bed, the stock and the cutter; on a straight-line
+ *  engine the plate on its carriage and the rails. True geometry. */
 export function drawTop(
   ctx: CanvasRenderingContext2D,
   pose: MachinePose,
@@ -59,10 +60,34 @@ export function drawTop(
     ctx.fill();
   }
 
-  ctx.fillStyle = c.stock;
-  ctx.beginPath();
-  ctx.arc(X(pose.work), Y(pose.work), pose.stock * frame.scale, 0, Math.PI * 2);
-  ctx.fill();
+  const polygon = (points: Vec2[]) => {
+    ctx.beginPath();
+    points.forEach((p, k) => (k === 0 ? ctx.moveTo(X(p), Y(p)) : ctx.lineTo(X(p), Y(p))));
+    ctx.closePath();
+  };
+  const carriage = pose.carriage;
+  if (carriage) {
+    ctx.strokeStyle = c.steel;
+    ctx.lineWidth = 3;
+    for (const [a, b] of carriage.rails) {
+      ctx.beginPath();
+      ctx.moveTo(X(a), Y(a));
+      ctx.lineTo(X(b), Y(b));
+      ctx.stroke();
+    }
+    ctx.lineWidth = 1;
+    polygon(carriage.corners);
+    ctx.fillStyle = c.stock;
+    ctx.fill();
+    ctx.stroke();
+    polygon(carriage.plateCorners);
+    ctx.fill();
+  } else {
+    ctx.fillStyle = c.stock;
+    ctx.beginPath();
+    ctx.arc(X(pose.work), Y(pose.work), pose.stock * frame.scale, 0, Math.PI * 2);
+    ctx.fill();
+  }
 
   if (chuck) {
     ctx.strokeStyle = c.steel;

@@ -25,3 +25,9 @@ it('keeps the graver in the stock on every sample of the dome', () => {
   const t = computeToolpaths({ ...PRESETS.dome, samplesPerTurn: 512 });
   for (const p of t.passes) for (let i = 2; i < p.uvh.length; i += 3) expect(p.uvh[i]).toBeLessThan(0);
 });
+
+it('includes straight-line engine presets, each centered on the stroke', () => {
+  const lines = Object.values(PRESETS).filter((s) => s.engine.kind === 'straight');
+  expect(lines.length).toBeGreaterThan(1);
+  for (const s of lines) expect(s.job.from + s.job.to).toBe(0);
+});

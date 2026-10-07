@@ -69,7 +69,7 @@ export function MechanismTile({
         }}
         onPointerLeave={() => setHover(null)}
       />
-      {frame && <PartsList parts={partsFor(settings, ['rosette', 'rubber', 'headstock', 'spindle', 'work', 'cutter'])} onShow={show} />}
+      {frame && <PartsList parts={partsFor(settings, ['rosette', 'rubber', 'headstock', 'spindle', 'work', 'cutter'])} settings={settings} onShow={show} />}
       {hover && frame && (
         <Callout hover={hover} live={{ settings, toolpaths, at, pose, exaggerate }} />
       )}

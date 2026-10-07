@@ -64,6 +64,13 @@ describe('panels', () => {
     expect(() => computeToolpaths({ ...s, samplesPerTurn: 256 })).not.toThrow();
   });
 
+  it('switching engines centers the rows on the stroke, and turns them back into radii', () => {
+    const line = enginePanel.write(PRESETS.swirl, { ...enginePanel.read(PRESETS.swirl), kind: 'straight' });
+    expect([line.job.from, line.job.to]).toEqual([-7, 7]);
+    const rose = enginePanel.write(line, { ...enginePanel.read(line), kind: 'rose' });
+    expect([rose.job.from, rose.job.to]).toEqual([4, 18]);
+  });
+
   it('fitting a chuck starts from its defaults', () => {
     const on = chuckPanel.write(PRESETS.swirl, { ...chuckPanel.read(PRESETS.swirl), kind: 'elliptical' });
     expect(on.chuck).toEqual(DEFAULT_CHUCKS.elliptical);

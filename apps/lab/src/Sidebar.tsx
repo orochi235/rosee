@@ -1,10 +1,15 @@
 import { ControlPanel } from '@weasel-js/labkit';
-import { PRESETS, type PresetName, type Settings } from 'rosee';
+import { type Engine, PRESETS, type PresetName, type Settings } from 'rosee';
 import { useRef } from 'react';
 import { chuckPanel, cutPanel, enginePanel, lookPanel, type Panel, pumpPanel, rosettePanel, rubberPanel, surfacePanel } from './panels';
 import { shareLink } from './hash';
 import { ProfileEditor } from './ProfileEditor';
 import type { LabState, Look } from './state';
+
+const ENGINES: [Engine['kind'], string][] = [
+  ['rose', 'Rose engine'],
+  ['straight', 'Straight-line engine'],
+];
 
 interface Props {
   state: LabState;
@@ -42,10 +47,16 @@ export function Sidebar({ state, setSettings, setLook, loadPreset, onExportSvg, 
           Preset
           <select value={state.preset} onChange={(e) => loadPreset(e.target.value as PresetName)}>
             {state.preset === '' && <option value="">Custom</option>}
-            {Object.keys(PRESETS).map((name) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
+            {ENGINES.map(([kind, label]) => (
+              <optgroup key={kind} label={label}>
+                {(Object.keys(PRESETS) as PresetName[])
+                  .filter((name) => PRESETS[name].engine.kind === kind)
+                  .map((name) => (
+                    <option key={name} value={name}>
+                      {name}
+                    </option>
+                  ))}
+              </optgroup>
             ))}
           </select>
         </label>

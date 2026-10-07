@@ -69,4 +69,22 @@ describe('machinePose', () => {
     const [rx, ry] = pose.chuck!.ring!;
     expect(Math.hypot(rx - pose.spindle[0], ry - pose.spindle[1])).toBeCloseTo(4 + 4 * 0.5, 3);
   });
+
+  it("keeps the graver on the straight-line engine's plate, at every index, as the carriage slides", () => {
+    const g = { ...PRESETS.lattice, samplesPerTurn: 64 };
+    const gt = computeToolpaths(g);
+    for (const pass of [0, 70, gt.passes.length - 1])
+      for (const sample of [0, 20, 63]) {
+        const pose = machinePose(g, gt, at(pass * 64 + sample, 64, gt.passes.length));
+        const c = pose.carriage!;
+        expect(c.travel).toBe(gt.passes[pass].slide[sample]);
+        const [x, y] = pose.cutter;
+        const xs = c.plateCorners.map((p) => p[0]);
+        const ys = c.plateCorners.map((p) => p[1]);
+        expect(x).toBeGreaterThan(Math.min(...xs));
+        expect(x).toBeLessThan(Math.max(...xs));
+        expect(y).toBeGreaterThan(Math.min(...ys));
+        expect(y).toBeLessThan(Math.max(...ys));
+      }
+  });
 });

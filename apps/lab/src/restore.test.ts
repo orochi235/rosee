@@ -19,10 +19,10 @@ describe('restore', () => {
     expect(settingsOf(JSON.parse(JSON.stringify(old))).surface).toEqual({ kind: 'flat' });
   });
 
-  it('restores a hash from before engines to a rose engine, and the straight preset as it was', () => {
+  it('restores a hash from before engines to a rose engine, and a straight-line preset as it was', () => {
     const { engine: _, ...old } = PRESETS.swirl;
     expect(settingsOf(JSON.parse(JSON.stringify(old))).engine).toEqual({ kind: 'rose' });
-    expect(settingsOf(JSON.parse(JSON.stringify(PRESETS.straight)))).toEqual(PRESETS.straight);
+    expect(settingsOf(JSON.parse(JSON.stringify(PRESETS.grain)))).toEqual(PRESETS.grain);
   });
 
   it('restores a barrel', () => {

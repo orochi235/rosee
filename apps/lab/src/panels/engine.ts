@@ -3,6 +3,8 @@ import type { Engine, Settings } from 'rosee';
 import { DEFAULT_ENGINES, DEFAULT_SURFACES } from '../defaults';
 import type { Panel } from './panel';
 
+const ROSE_FROM = 4;
+
 export const enginePanel: Panel<Settings> = {
   title: 'Engine',
   schema: resolveConfigSchema(
@@ -29,14 +31,22 @@ export const enginePanel: Panel<Settings> = {
   }),
   write: (s, c) => {
     const kind = c.kind as Engine['kind'];
-    if (kind === 'rose') return { ...s, engine: DEFAULT_ENGINES.rose };
-    // The carriage holds the work flat on it, with no chuck.
+    const switched = kind !== s.engine.kind;
+    const span = s.job.to - s.job.from;
+    if (kind === 'rose') {
+      // Rows across the stroke become radii, starting where a rose job does.
+      const job = switched ? { ...s.job, from: ROSE_FROM, to: ROSE_FROM + Math.abs(span) } : s.job;
+      return { ...s, engine: DEFAULT_ENGINES.rose, job };
+    }
+    // The carriage holds the work flat on it, with no chuck, and the rows sit
+    // either side of the middle of the stroke.
+    const rows = switched ? { from: -span / 2, to: span / 2 } : {};
     return {
       ...s,
       engine: { kind, stroke: c.stroke as number },
       chuck: null,
       surface: DEFAULT_SURFACES.flat,
-      job: { ...s.job, wheelCount: 1, eccentricityStep: 0 },
+      job: { ...s.job, ...rows, wheelCount: 1, eccentricityStep: 0 },
     };
   },
 };
