@@ -13,7 +13,11 @@ export function MotionTile({ settings, toolpaths, at }: { settings: Settings; to
     <div className="rs-tile-body">
       <Tabs tabs={TABS} value={tab} onChange={setTab} />
       {tab === 'Plots' ? (
-        <PlotsTile toolpaths={toolpaths} at={at} chuck={settings.chuck !== null} />
+        <PlotsTile
+          toolpaths={toolpaths}
+          at={at}
+          slide={settings.engine.kind === 'straight' ? 'carriage' : settings.chuck ? 'chuck' : null}
+        />
       ) : (
         <EquationsTile settings={settings} toolpaths={toolpaths} at={at} />
       )}

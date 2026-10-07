@@ -53,8 +53,12 @@ export interface MachinePose {
   stock: number;
   /** The work's center. */
   work: Vec2;
-  /** The chuck slide's direction round the headstock, radians: spindle − index. */
+  /** The chuck slide's direction round the headstock, radians: spindle −
+   *  index; on a straight-line engine, whose work does not turn, −index. */
   slideAngle: number;
+  /** The work's offset in the chuck's frame, mm: along the slide on a rose
+   *  engine, the carriage's travel turned into that frame on a straight-line one. */
+  carrier: Vec2;
   chuck: ChuckPose | null;
 }
 
@@ -67,6 +71,8 @@ const stocks = new WeakMap<Toolpaths, number>();
 function stockRadius(s: Settings, t: Toolpaths): number {
   if (s.surface.kind === 'cylinder') return s.surface.radius;
   if (s.surface.kind === 'dome') return s.surface.rim;
+  if (s.engine.kind === 'straight')
+    return Math.hypot(Math.max(Math.abs(s.job.from), Math.abs(s.job.to)), s.engine.stroke / 2) + 1;
   let stock = stocks.get(t);
   if (stock === undefined) {
     const c = s.chuck;
@@ -91,6 +97,7 @@ export function machinePose(s: Settings, t: Toolpaths, at: PlayheadAt): MachineP
   const index = rad(path.pass.index);
   const onHeadstock = (p: Vec2) => headstockToMachine(chuckToHeadstock(p, at.angle, index), P, swing);
   const slide = path.slide[i];
+  const straight = s.engine.kind === 'straight';
   const c = s.chuck;
   const stock = stockRadius(s, t);
   const graver = graverAt(s.surface, path.pass.at, path.pass.depth);
@@ -121,8 +128,9 @@ export function machinePose(s: Settings, t: Toolpaths, at: PlayheadAt): MachineP
     pump: path.pump[i],
     phase: rad(path.pass.phase),
     stock,
-    work: onHeadstock([slide, 0]),
-    slideAngle: at.angle - index,
+    work: straight ? headstockToMachine([0, slide], P, swing) : onHeadstock([slide, 0]),
+    slideAngle: straight ? -index : at.angle - index,
+    carrier: straight ? [-Math.sin(index) * slide, Math.cos(index) * slide] : [slide, 0],
     chuck,
   };
 }

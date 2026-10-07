@@ -22,6 +22,7 @@ const job = (over: Partial<Job> = {}): Job => ({
 const settings = (over: Partial<Settings> = {}): Settings => ({
   rosette: { radius: 30, wave: { kind: 'sine', lobes: 12, amplitude: 0 } },
   rubber: { shape: 'round', radius: 0 },
+  engine: { kind: 'rose' },
   pivotDistance: 150,
   pump: null,
   chuck: null,

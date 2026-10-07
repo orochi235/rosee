@@ -2,7 +2,8 @@ import { rad, TAU } from '../angle';
 import { contactTable, reachAt } from '../contact/table';
 import { expandJob, type Pass, passCount } from '../job/job';
 import { slideAt, wheelOf } from '../machine/chuck';
-import { chuckToWork, headstockToChuck, machineToHeadstock } from '../machine/pose';
+import { carriageAt } from '../machine/engine';
+import { chuckToWork, headstockToCarriage, headstockToChuck, machineToHeadstock } from '../machine/pose';
 import { swingAt, swingTable } from '../machine/swing';
 import { checkSurface, graverAt, type Surface, toSheet } from '../surface/surface';
 import type { Settings } from './settings';
@@ -32,7 +33,8 @@ export interface PassPath {
    *  x axis turned with the work, the swing and the chuck's wheel, not with
    *  the path; on a barrel it is always along the barrel. */
   across: Float32Array;
-  /** The work's offset along the chuck's slide, mm; 0 with no chuck. */
+  /** The work's offset along its slide, mm: the chuck's, or a straight-line
+   *  engine's carriage; 0 with neither. */
   slide: Float32Array;
 }
 
@@ -70,6 +72,12 @@ export function computeToolpaths(s: Settings): Toolpaths {
   if (!s.chuck && (s.job.wheelCount !== 1 || s.job.eccentricityStep !== 0))
     throw new Error('wheel divisions and an eccentricity step need a chuck: fit one, or set them back to 1 and 0');
   checkSurface(s.surface);
+  const straight = s.engine.kind === 'straight' ? s.engine : null;
+  if (straight) {
+    if (!(straight.stroke > 0)) throw new Error(`the carriage's stroke must be positive, got ${straight.stroke}`);
+    if (s.surface.kind !== 'flat') throw new Error('a straight-line engine cuts a flat face: set the surface to flat');
+    if (s.chuck) throw new Error('a straight-line engine holds the work on its carriage, with no chuck: remove the chuck');
+  }
   const table = contactTable(s.rosette, s.rubber);
   const pump = s.pump && { gain: s.pump.gain, table: contactTable(s.pump.rosette, s.pump.rubber) };
   const rubberX = table.mean;
@@ -92,9 +100,16 @@ export function computeToolpaths(s: Settings): Toolpaths {
       const at = swingAt(swings, rosetteAngle);
       const sw = at.swing;
       const tip = machineToHeadstock([graver.tip[0], graver.tip[1]], s.pivotDistance, sw);
-      const onChuck = headstockToChuck(tip, spindle, index);
-      const sl = s.chuck ? slideAt(s.chuck, pass, spindle - index) : 0;
-      const [x, y] = chuckToWork(onChuck, sl, wheel);
+      let x: number;
+      let y: number;
+      let sl: number;
+      if (straight) {
+        sl = carriageAt(straight.stroke, spindle);
+        [x, y] = headstockToCarriage(tip, sl, index);
+      } else {
+        sl = s.chuck ? slideAt(s.chuck, pass, spindle - index) : 0;
+        [x, y] = chuckToWork(headstockToChuck(tip, spindle, index), sl, wheel);
+      }
       let travel = 0;
       if (pump) {
         const [px, py] = machineToHeadstock([pump.table.mean, 0], s.pivotDistance, sw);
@@ -106,7 +121,8 @@ export function computeToolpaths(s: Settings): Toolpaths {
       xyz[i * 3 + 1] = y;
       xyz[i * 3 + 2] = z;
       // The V's opening carried into the work, then onto the sheet a step along it.
-      const turn = index - spindle - sw - wheel;
+      // The work turns with the spindle on a rose engine; a carriage only slides.
+      const turn = index - (straight ? 0 : spindle) - sw - wheel;
       const [ox, oy, oz] = graver.opens;
       const sheet = toSheet(s.surface, x, y, z);
       const ahead = toSheet(

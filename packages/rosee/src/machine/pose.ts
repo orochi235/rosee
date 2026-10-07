@@ -40,3 +40,14 @@ export function workToChuck(p: Vec2, slide: number, wheel: number): Vec2 {
   const [x, y] = rotate(p, wheel);
   return [x + slide, y];
 }
+
+/** A headstock-frame point in the work frame of a straight-line engine,
+ *  whose carriage has slid the work `carriage` mm along y and which sits
+ *  turned `index` radians on its division plate. */
+export const headstockToCarriage = ([x, y]: Vec2, carriage: number, index: number): Vec2 => rotate([x, y - carriage], index);
+
+/** A straight-line engine's work-frame point in the headstock frame. */
+export function carriageToHeadstock(p: Vec2, carriage: number, index: number): Vec2 {
+  const [x, y] = rotate(p, -index);
+  return [x, y + carriage];
+}

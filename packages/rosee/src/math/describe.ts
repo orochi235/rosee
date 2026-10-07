@@ -17,6 +17,7 @@ import {
   num,
   param,
   rel,
+  PI,
   rot,
   sin,
   sub,
@@ -146,7 +147,13 @@ export function describe(s: Settings, toolpaths: Toolpaths, pass: number, o: Des
   const onChuck = rot(sub(index, theta), tip);
   const chain: Equation[] = [];
   let work = onChuck;
-  if (ch) {
+  if (s.engine.kind === 'straight') {
+    const L = param(name('L'), s.engine.stroke);
+    const carriageValue = mul(L, sub(div(theta, mul(num(2), PI)), div(num(1), num(2))));
+    const carriage = alias(sym('c'), carriageValue);
+    chain.push({ id: 'slide', lhs: carriage, rhs: carriageValue, kind: 'formula', unit: 'mm', note: 'The carriage slides the work L every turn of the rosette.' });
+    work = rot(index, sub(tip, vec(num(0), carriage)));
+  } else if (ch) {
     const e = param(name('e'), ch.eccentricity + p.eccentricity);
     const slideValue = ch.kind === 'eccentric' ? e : mul(e, cos(sub(sub(theta, index), param(name('ring'), ch.ring, true))));
     const slide = alias(sym('s'), slideValue);

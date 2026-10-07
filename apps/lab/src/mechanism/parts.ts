@@ -111,6 +111,8 @@ export function liveLine(part: PartKey, c: LiveContext): string {
       return `${f1(at.degrees)}° into ${at.label}`;
     case 'work': {
       const [u, v] = [pass.uvh[i * 3], pass.uvh[i * 3 + 1]];
+      if (s.engine.kind === 'straight')
+        return `carriage ${f2(pass.slide[i])} of ±${f1(s.engine.stroke / 2)} mm · cutting row ${f2(pass.pass.at)} mm`;
       switch (s.surface.kind) {
         case 'flat':
           return `cutting at radius ${f2(Math.hypot(u, v))} mm`;
