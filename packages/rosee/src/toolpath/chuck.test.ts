@@ -24,6 +24,7 @@ const round = (chuck: Chuck | null, over: Partial<Job> = {}): Settings => ({
   pivotDistance: 150,
   pump: null,
   chuck,
+  surface: { kind: 'flat' },
   cutter: { vAngle: 90, tipFlat: 0 },
   job: job(over),
   samplesPerTurn: 360,

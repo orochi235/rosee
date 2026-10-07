@@ -24,6 +24,18 @@ export { choice, type ChoiceParam, num, type NumberParam, type ParamSpec } from 
 export { PRESETS, type PresetName } from './presets';
 export type { ProfilePoint } from './rosette/profile';
 export { displacement, radiusAt, type Rosette, WAVE_PARAMS, type Wave, type WaveKind } from './rosette/rosette';
-export { flatFace, type Surface } from './surface/surface';
+export {
+  checkSurface,
+  flatFace,
+  fromSheet,
+  type Graver,
+  graverAt,
+  reachOf,
+  sheetPeriod,
+  type Surface,
+  toSheet,
+  type Vec3,
+} from './surface/surface';
 export type { Pump, Settings } from './toolpath/settings';
+export { sheetRuns } from './toolpath/runs';
 export { computeToolpaths, type PassPath, SAMPLE_BUDGET, SAMPLES_PER_TURN, type Toolpaths } from './toolpath/toolpath';

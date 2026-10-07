@@ -1,6 +1,8 @@
 import {
   type Chuck,
   chuckToHeadstock,
+  type Graver,
+  graverAt,
   headstockToMachine,
   machineToHeadstock,
   rad,
@@ -38,12 +40,16 @@ export interface MachinePose {
   contact: Vec2;
   steep: boolean;
   rubberX: number;
+  /** The graver's tip, machine frame, seen down the spindle. */
   cutter: Vec2;
+  /** The graver in full: its tip, which way it points and opens. */
+  graver: Graver;
   swing: number;
   pump: number;
   /** The rosette's phase against the work for this pass, radians. */
   phase: number;
-  /** The stock's radius, drawn around the work center. */
+  /** The stock's radius, drawn around the work center: the barrel's or the
+   *  dome's rim on a curved surface. */
   stock: number;
   /** The work's center. */
   work: Vec2;
@@ -56,8 +62,11 @@ const OUTLINE_POINTS = 720;
 
 const stocks = new WeakMap<Toolpaths, number>();
 
-/** The stock's radius: wide enough for every pass's cut at its largest eccentricity. */
+/** The stock's radius: the barrel's or the dome's rim, or on a face wide
+ *  enough for every pass's cut at its largest eccentricity. */
 function stockRadius(s: Settings, t: Toolpaths): number {
+  if (s.surface.kind === 'cylinder') return s.surface.radius;
+  if (s.surface.kind === 'dome') return s.surface.rim;
   let stock = stocks.get(t);
   if (stock === undefined) {
     const c = s.chuck;
@@ -84,6 +93,7 @@ export function machinePose(s: Settings, t: Toolpaths, at: PlayheadAt): MachineP
   const slide = path.slide[i];
   const c = s.chuck;
   const stock = stockRadius(s, t);
+  const graver = graverAt(s.surface, path.pass.at, path.pass.depth);
   const e = c ? c.eccentricity + path.pass.eccentricity : 0;
   const chuck: ChuckPose | null = c && {
     kind: c.kind,
@@ -105,7 +115,8 @@ export function machinePose(s: Settings, t: Toolpaths, at: PlayheadAt): MachineP
     contact: toMachine(path.contact[i]),
     steep: path.steep[i] === 1,
     rubberX: t.rubberX,
-    cutter: [path.pass.radius, 0],
+    cutter: [graver.tip[0], graver.tip[1]],
+    graver,
     swing,
     pump: path.pump[i],
     phase: rad(path.pass.phase),

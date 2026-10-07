@@ -1,7 +1,7 @@
 # rosee: rose engine lathe simulator — design
 
-**Status: v1, chucks (roadmap item 1) and equations (item 2) built; the rest of
-the roadmap is not started.** This is the design for v1 plus the roadmap after it. It is for whoever implements it; it assumes familiarity with
+**Status: v1, chucks (roadmap item 1), equations (item 2) and surfaces (item 3)
+built; the rest of the roadmap is not started.** This is the design for v1 plus the roadmap after it. It is for whoever implements it; it assumes familiarity with
 TypeScript and labkit (`@weasel-js/labkit`), not with ornamental turning.
 
 ## What it is
@@ -29,8 +29,8 @@ widening and narrowing.
 ## Scope
 
 v1 models rocking, pumping, phasing and indexing, rubber shape and pivot geometry,
-on a flat face, plus eccentric and elliptical [chucks](#chucks). Roadmap at the
-end.
+on a flat face, plus eccentric and elliptical [chucks](#chucks) and barrel and
+dome [surfaces](#surfaces). Roadmap at the end.
 
 ## Layout
 
@@ -44,9 +44,9 @@ packages/rosee        library, pure TypeScript, no DOM
   cutter/             V angle, tip flat, slide-rest position
   job/                program of passes, as data
   toolpath/           job × machine → cutter-tip paths in work coordinates
-  surface/            the surface being cut (flat face in v1)
+  surface/            the stock's surface: where the graver sits, and the sheet it unrolls to
   export/             toolpaths → SVG
-packages/rosee/gl     subpath export `rosee/gl`: WebGL2 carve + lit-surface shader
+packages/rosee/gl     subpath export `rosee/gl`: WebGL2 carve, lit sheet, lit part
 apps/lab              Vite + React on @weasel-js/labkit, port 5197, host '::'
 ```
 
@@ -177,16 +177,61 @@ fields without a chuck and resets them when the chuck is removed.
 
 ### Surfaces
 
-`Surface` maps work coordinates to the 2D carve domain. v1 has `flatFace`
-(identity onto the face plane). It exists in v1 so cylinders and domes plug in
-without touching the carve.
+`Settings.surface` is the stock the graver works on: `{ kind: 'flat' }`, a
+barrel `{ kind: 'cylinder', radius, length }` cut round its side, or a dome
+`{ kind: 'dome', radius, rim }`, a cap of a sphere whose pole sits on the
+spindle axis at z = 0. A hash from before surfaces restores to `flat`.
+
+The surface does two things, and the kinematic chain is unchanged by it:
+
+- **It places the graver** (`graverAt`). The job's `from`/`to`, and each
+  pass's `Pass.at`, measure a radius on a face, the distance from the face along
+  a barrel, and the arc from the pole on a dome. The graver points into the
+  stock square to the surface, and its V opens across the direction the work
+  moves past it:
+
+  | Surface | Tip, machine frame | Points | V opens along |
+  |---|---|---|---|
+  | flat | (at, 0, −d) | down the spindle | machine x |
+  | cylinder | (R − d, 0, −at) | at the axis | the spindle |
+  | dome, γ = at/S | ((S − d) sin γ, 0, −S + (S − d) cos γ) | at the sphere's center | the meridian |
+
+  The tip's x and y run back through the chain as before; the pump subtracts
+  from its z. On a face that z is depth. On a barrel it is position along the
+  barrel, so a barrel's pattern comes from the pump, and rocking, which moves
+  the work toward and away from a graver at its side, only changes depth. On a
+  dome rocking carries the work sideways under the graver, which off the pole
+  changes depth by about the swing's travel times sin γ: the `dome` preset's
+  shallow rosette and deep cut keep the graver in the stock.
+
+- **It unrolls the cut onto a sheet** (`toSheet`, inverse `fromSheet`): a
+  work-frame point to (u, v) across the sheet and h, the height above the
+  uncut surface. A face is its own sheet. A barrel unrolls to u = R·atan2(y, x),
+  v = −z, h = √(x² + y²) − R, wrapping at u = ±πR (`sheetPeriod`). A dome maps
+  by arc from the pole, keeping the direction round the axis (an azimuthal
+  equidistant map), h being the distance from the center less S.
+
+`PassPath.uvh` holds each sample on the sheet, and `PassPath.across` is the
+V's opening as an angle on the sheet, found by stepping 1 µm along the
+opening in the work and mapping both ends. On a face both are what v1 stored.
+Every 2D output reads the sheet: the lines, the SVG export (a pass round a
+barrel breaks into two polylines at the seam, `sheetRuns`) and the carve.
 
 ## Carve and render (`rosee/gl`)
 
-WebGL2, no three.js. An orthographic camera looks straight down at the face. Each
+WebGL2, no three.js. An orthographic camera looks straight down at the sheet. Each
 toolpath is drawn as a strip whose cross-section is the cutter's V (and tip flat)
 at that sample's depth, into a float depth target with depth test keeping the
-deepest cut per pixel; overlapping cuts resolve correctly for free. The graver is
+deepest cut per pixel; overlapping cuts resolve correctly for free. The V is
+built square to the sheet, which on a curved surface is square to the surface
+under the graver.
+
+The carve holds a rectangle of the sheet (`CarveMesh.bounds`) in texels that stay
+square: `resolution` along the longer side. A face or dome is a square round the
+axis; a barrel is its whole circumference by the length cut. A pass is meshed
+with u unwrapped, so it runs unbroken past the barrel's seam, and drawn five times
+shifted by −2 to +2 periods; the texture clips what falls outside. The shading
+pass wraps u the same way. The graver is
 fixed to the machine, so the V opens across the machine's x axis carried into the
 work (`PassPath.across`), not across the path: a groove narrows where the path
 climbs steeply. `createCarve` defaults to 4096², the lab starts at 2048² for
@@ -196,12 +241,23 @@ light so facets flash as it moves, and a pixel's footprint averaged when it span
 several texels. Carving up to a transport position means drawing passes before the
 current one in full and the current one up to θ.
 
+`createPart` draws the carved part in 3D in the same context, with no
+readback: a 256² grid over the part's sheet (a face out to the carve, a barrel's
+whole length, a dome to its rim) wrapped by `fromSheet` in the vertex shader, and
+lit per pixel with normals from the carve's heights carried through the
+surface's tangents. The silhouette is the uncut surface; the cut shows in the
+light, as an engraved part does at arm's length. The light is fixed to the work,
+as in the sheet view. The two shaders share one GLSL source for the heights and
+one for the metal.
+
 ## Lab
 
 One page; labkit `ControlPanel` on the left (groups: Rosette, Rubber, Headstock,
-Pumping, Chuck, Cutter, Job, Surface, Presets) and a `WorkspaceGrid`:
+Pumping, Chuck, Surface, Cutter and job, Look, Presets) and a `WorkspaceGrid`:
 
-- **Output**: Lines / Surface / Split, carved to the transport position.
+- **Output**: Lines / Surface / Split on the sheet, carved to the transport
+  position, and Part: the carved part in 3D, drag to turn, wheel to zoom, 0 to
+  reset.
 - **Mechanism 2D**: tabs Top (rosette, rubber, headstock on its pivot, cutter),
   Side (pump), Contact zoom (rubber on rosette, magnified).
 - **Motion plots**: swing angle, pump offset and cutter radius vs spindle angle,
@@ -225,6 +281,14 @@ plots add the slide offset against spindle angle. Two presets use them:
 `wheel` (off-center roses repeated around the eccentric chuck's wheel) and `oval`
 (the swirl on an elliptical chuck).
 
+On a barrel or dome, the Side view draws the stock's profile to scale with the
+graver set square to it, the 3D machine draws the stock as the solid and the
+graver aimed the same way, with the cut laid just proud of the surface; the
+motion plots show the graver's place as the surface measures it and the depth
+of cut. The job's From and To are labeled by what they measure. Presets
+`barrel` (pump waves round a barrel, the depth breathing with a shallow
+rosette) and `dome` (a swirl on a dome) use them.
+
 Panes stay under about 400 px tall. All state lives in the URL hash. Presets
 (phased swirl, basket weave, barleycorn, wheel, oval) are settings objects.
 
@@ -245,6 +309,17 @@ Vitest in Node for the library, against cases with known answers:
 | Wheel turned 360° | Same path as wheel 0 |
 | `wheelCount` n | Each wheel position's paths are the first's rotated about the chuck slide |
 | Hash from before chucks | Restores to `chuck: null`, `wheelCount` 1, `eccentricityStep` 0 |
+| Round rosette on a barrel | A ring at v = at, h = −d all the way round |
+| Rocking rosette on a barrel | v stays at `at`; h varies |
+| Pumping rosette on a barrel | v = at + gain × the pump rosette's wave, h = −d |
+| Round rosette on a dome | A ring of arc `at` from the pole, h = −d |
+| Any surface | `fromSheet` inverts `toSheet`; the graver sits d below the surface and points square into it |
+| Hash from before surfaces | Restores to a face |
+
+A browser test carves a ring round a barrel and finds it cut the whole way
+across the seam; another draws each curved preset's part and finds it in the
+middle of the canvas. The `dome` preset keeps the graver in the stock at every
+sample.
 
 The carve gets a headless-Chromium test: one straight groove of known V angle and
 depth must measure 2·depth·tan(vAngle/2) wide within one pixel. `npm run smoke`
@@ -293,6 +368,12 @@ evaluating their own equations.
 | Chain | (x, y) = Rot(−wheel)(Rot(index − θ) H_φ⁻¹(r_c, 0) − (s, 0)); s = e, or e cos(θ − index − ring) | formula, given each sample's φ | `PassPath.xyz`, `PassPath.slide` |
 | Pump | β_pump = arg H_φ⁻¹(X_pump, 0) − θ − phase_pump; z = −(d₀ + g(R_pump(β_pump) − X_pump)); z = −d₀ with no pump | formula, given R_pump from the table | `PassPath.xyz` z |
 | Groove | w = f + 2d tan(V/2) | formula | `grooveWidth` |
+| Sheet, barrel | (u, v, h) = (R_b arg(x, y), −z, \|(x, y)\| − R_b) | formula | `PassPath.uvh` |
+| Sheet, dome | (u, v) = S·arg(z + S, \|(x, y)\|)/\|(x, y)\| · (x, y), h = \|(x, y, z + S)\| − S | formula | `PassPath.uvh` |
+
+On a barrel or dome the Chain's tip is the graver's, H_φ⁻¹(R_b − d₀, 0) or
+H_φ⁻¹((S − d₀) sin γ, 0) with γ = a/S, and the Depth stage's z is the graver's
+z less the pump's travel: −a on a barrel, −S + (S − d₀) cos γ on a dome.
 
 X is where the rubber sits, the reach table's mean (`Toolpaths.rubberX`), and
 X_pump the pumping rubber's (`Toolpaths.pumpX`); P the pivot distance; r_c the
@@ -321,8 +402,7 @@ In order.
 
 1. **Eccentric and elliptical chucks**: built; see [Chucks](#chucks).
 2. **The math as equations**: built; see [Equations](#equations).
-3. **Surface work**: cylinder and dome `Surface`s; the carve target becomes the
-   unrolled surface, and the 3D view shows the curved part.
+3. **Surface work**: built; see [Surfaces](#surfaces).
 4. **Straight-line engine**: a second machine whose chain has a linear slide where
    spindle rotation was; same cutter, job, surface and carve.
 5. **Rosette import**: outlines from DXF/SVG, or traced from a photo.

@@ -6,6 +6,7 @@ const base: Settings = {
   pivotDistance: 150,
   pump: null,
   chuck: null,
+  surface: { kind: 'flat' },
   cutter: { vAngle: 110, tipFlat: 0 },
   job: { from: 4, to: 18, step: 0.35, depth: 0.15, phaseStep: 2, phaseGroup: 1, pumpPhaseStep: 0, indexCount: 1, wheelCount: 1, eccentricityStep: 0 },
   samplesPerTurn: 2048,
@@ -37,6 +38,26 @@ export const PRESETS = {
     ...base,
     chuck: { kind: 'elliptical', eccentricity: 4, ring: 0, wheel: 0 },
     job: { ...base.job, from: 6, to: 18 },
+  },
+  /** Waves round a barrel from the pumping rosette, a pass every
+   *  0.35 mm along it. A rosette with shallow lobes rocks the barrel
+   *  into and out of the cutter, so the grooves swell and thin. */
+  barrel: {
+    ...base,
+    rosette: { radius: 30, wave: { kind: 'sine', lobes: 12, amplitude: 0.05 } },
+    pump: { rosette: { radius: 30, wave: { kind: 'sine', lobes: 9, amplitude: 1 } }, rubber: { shape: 'round', radius: 0 }, gain: 0.6 },
+    surface: { kind: 'cylinder', radius: 10, length: 24 },
+    job: { ...base.job, from: 1.5, to: 22.5, step: 0.35, phaseStep: 0, pumpPhaseStep: 0 },
+  },
+  /** A swirl cut on a dome, the graver kept square to it. Rocking carries
+   *  the dome sideways under the graver, which off the pole moves it into
+   *  and out of the cut, so the lobes are shallower than the face swirl's
+   *  and the cut deeper, or the graver would leave the stock. */
+  dome: {
+    ...base,
+    rosette: { radius: 30, wave: { kind: 'sine', lobes: 12, amplitude: 0.3 } },
+    surface: { kind: 'dome', radius: 30, rim: 20 },
+    job: { ...base.job, from: 4, to: 19, depth: 0.25 },
   },
 } satisfies Record<string, Settings>;
 

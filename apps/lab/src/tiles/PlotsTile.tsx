@@ -1,5 +1,5 @@
 import { Plot2D } from '@weasel-js/ui';
-import type { Toolpaths } from 'rosee';
+import type { Surface, Toolpaths } from 'rosee';
 import { useMemo, useRef } from 'react';
 import { useElementSize } from '../hooks/useElementSize';
 import type { PlayheadAt } from '../playhead';
@@ -13,15 +13,27 @@ interface Series {
 const SERIES: Series[] = [
   { label: 'Swing', unit: 'mrad', values: (t, k) => t.passes[k].swing.map((v) => v * 1000) },
   { label: 'Pump travel', unit: 'µm', values: (t, k) => t.passes[k].pump.map((v) => v * 1000) },
-  {
-    label: 'Cutter radius on the work',
-    unit: 'mm',
-    values: (t, k) => {
-      const xyz = t.passes[k].xyz;
-      return Float32Array.from({ length: xyz.length / 3 }, (_, i) => Math.hypot(xyz[i * 3], xyz[i * 3 + 1]));
-    },
-  },
 ];
+
+/** A value read from each sample's place on the sheet. */
+const onSheet = (f: (u: number, v: number, h: number) => number) => (t: Toolpaths, k: number) => {
+  const uvh = t.passes[k].uvh;
+  return Float32Array.from({ length: uvh.length / 3 }, (_, i) => f(uvh[i * 3], uvh[i * 3 + 1], uvh[i * 3 + 2]));
+};
+
+/** Where the cutter is on the work, as the surface measures it; and on a
+ *  curved one, where rocking moves the work into the cutter, how deep. */
+const PLACE: Record<Surface['kind'], Series[]> = {
+  flat: [{ label: 'Cutter radius on the work', unit: 'mm', values: onSheet((u, v) => Math.hypot(u, v)) }],
+  cylinder: [
+    { label: 'Cutter along the barrel', unit: 'mm', values: onSheet((_, v) => v) },
+    { label: 'Depth of cut', unit: 'mm', values: onSheet((_, __, h) => -h) },
+  ],
+  dome: [
+    { label: 'Cutter arc from the pole', unit: 'mm', values: onSheet((u, v) => Math.hypot(u, v)) },
+    { label: 'Depth of cut', unit: 'mm', values: onSheet((_, __, h) => -h) },
+  ],
+};
 
 const SLIDE: Series = { label: 'Chuck slide', unit: 'mm', values: (t, k) => t.passes[k].slide };
 
@@ -38,9 +50,10 @@ function range(v: Float32Array): [number, number] {
 
 /** Each motion against spindle angle for the current pass, cursor at the playhead. */
 export function PlotsTile({ toolpaths, at, chuck }: { toolpaths: Toolpaths; at: PlayheadAt; chuck: boolean }) {
+  const kind = toolpaths.surface.kind;
   const body = useRef<HTMLDivElement>(null);
   const { width, height } = useElementSize(body);
-  const shown = useMemo(() => (chuck ? [...SERIES, SLIDE] : SERIES), [chuck]);
+  const shown = useMemo(() => [...SERIES, ...PLACE[kind], ...(chuck ? [SLIDE] : [])], [chuck, kind]);
   const rowHeight = Math.max(40, (height - shown.length * 18) / shown.length);
   const series = useMemo(
     () =>

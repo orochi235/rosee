@@ -5,3 +5,4 @@ export type { Panel } from './panel';
 export { pumpPanel } from './pump';
 export { rosettePanel } from './rosette';
 export { rubberPanel } from './rubber';
+export { surfacePanel } from './surface';

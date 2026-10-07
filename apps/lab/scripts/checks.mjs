@@ -3,7 +3,7 @@
 
 const hash = (v) => `#s=${Buffer.from(JSON.stringify(v)).toString('base64url')}`;
 
-async function setMode(page, mode) {
+export async function setMode(page, mode) {
   await page.getByRole('button', { name: 'Output' }).click();
   await page.getByRole('option', { name: mode, exact: true }).click();
 }
@@ -34,7 +34,7 @@ export async function modeToggles(page, url) {
   await page.waitForTimeout(1500);
   const before = await page.evaluate(() => window.__contexts);
   for (let k = 0; k < 5; k++) {
-    for (const mode of ['lines', 'split', 'surface']) {
+    for (const mode of ['lines', 'split', 'surface', 'part']) {
       await setMode(page, mode);
       await page.waitForTimeout(100);
     }

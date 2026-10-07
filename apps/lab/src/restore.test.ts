@@ -14,6 +14,15 @@ describe('restore', () => {
     expect(restore(JSON.parse(JSON.stringify(state)))).toEqual(state);
   });
 
+  it('restores a hash from before surfaces to a face', () => {
+    const { surface: _, ...old } = PRESETS.swirl;
+    expect(settingsOf(JSON.parse(JSON.stringify(old))).surface).toEqual({ kind: 'flat' });
+  });
+
+  it('restores a barrel', () => {
+    expect(settingsOf(JSON.parse(JSON.stringify(PRESETS.barrel)))).toEqual(PRESETS.barrel);
+  });
+
   it('rejects anything without a settings object', () => {
     for (const raw of [null, 3, 'x', {}, { settings: [] }, { settings: 'x' }]) expect(restore(raw)).toBeNull();
   });

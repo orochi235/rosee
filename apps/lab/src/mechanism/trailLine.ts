@@ -7,8 +7,8 @@ import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js
  *  shading to `old` over the last `turns`. */
 export interface TrailLine {
   object: THREE.Object3D;
-  /** The whole cut, from `cutPath`, and how many points make a turn. */
-  path(xy: Float32Array, perTurn: number): void;
+  /** The whole cut, x, y, z per point from `cutPath`, and how many points make a turn. */
+  path(xyz: Float32Array, perTurn: number): void;
   /** Draws the path up to point `end`. */
   cut(end: number): void;
   resize(width: number, height: number): void;
@@ -40,11 +40,11 @@ export function createTrailLine(fresh: string, old: string, width: number, turns
 
   return {
     object: line,
-    path(xy, perTurn) {
-      segments = xy.length / 2 - 1;
+    path(xyz, perTurn) {
+      segments = xyz.length / 3 - 1;
       span = Math.max(1, perTurn * turns);
       const ends = new Float32Array(segments * 6);
-      for (let k = 0; k < segments; k++) ends.set([xy[k * 2], xy[k * 2 + 1], 0, xy[k * 2 + 2], xy[k * 2 + 3], 0], k * 6);
+      for (let k = 0; k < segments; k++) ends.set(xyz.subarray(k * 3, k * 3 + 6), k * 6);
       colors = new Float32Array(segments * 6);
       for (let k = 0; k < segments; k++) colors.set([to.r, to.g, to.b, to.r, to.g, to.b], k * 6);
       geometry.dispose();

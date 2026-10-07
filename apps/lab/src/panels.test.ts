@@ -1,7 +1,7 @@
 import { computeToolpaths, PRESETS, type Settings } from 'rosee';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_CHUCKS } from './defaults';
-import { chuckPanel, cutPanel, lookPanel, type Panel, pumpPanel, rosettePanel, rubberPanel } from './panels';
+import { chuckPanel, cutPanel, lookPanel, type Panel, pumpPanel, rosettePanel, rubberPanel, surfacePanel } from './panels';
 import { DEFAULT_LOOK } from './state';
 
 const withPump: Settings = {
@@ -11,7 +11,7 @@ const withPump: Settings = {
 };
 
 describe('panels', () => {
-  const panels: Panel<Settings>[] = [rosettePanel, rubberPanel, pumpPanel, chuckPanel, cutPanel];
+  const panels: Panel<Settings>[] = [rosettePanel, rubberPanel, pumpPanel, chuckPanel, surfacePanel, cutPanel];
   for (const panel of panels) {
     it(`${panel.title}: writing back what it read changes nothing`, () => {
       for (const s of [...Object.values(PRESETS), withPump]) expect(panel.write(s, panel.read(s))).toEqual(s);
@@ -43,6 +43,18 @@ describe('panels', () => {
     const read = chuckPanel.read(PRESETS.wheel);
     const s = chuckPanel.write(PRESETS.wheel, { ...read, kind: 'elliptical', eccentricity: 5.5, wheel: 30 });
     expect(s.chuck).toEqual({ ...DEFAULT_CHUCKS.elliptical, eccentricity: 5.5, wheel: 30 });
+  });
+
+  it('switching between curved surfaces keeps the radius', () => {
+    const s = surfacePanel.write(PRESETS.barrel, { ...surfacePanel.read(PRESETS.barrel), kind: 'dome' });
+    expect(s.surface).toEqual({ kind: 'dome', radius: 10, rim: 10 });
+  });
+
+  it('writes the job position through whichever field the surface shows', () => {
+    const c = cutPanel.read(PRESETS.barrel);
+    const s = cutPanel.write(PRESETS.barrel, { ...c, from_cylinder: 3, to_flat: 99 });
+    expect(s.job.from).toBe(3);
+    expect(s.job.to).toBe(PRESETS.barrel.job.to);
   });
 
   it('fitting a chuck starts from its defaults', () => {

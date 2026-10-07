@@ -26,6 +26,7 @@ const settings = (over: Partial<Settings> = {}): Settings => ({
   pivotDistance: 1e5,
   pump: null,
   chuck: null,
+  surface: { kind: 'flat' },
   cutter: { vAngle: 90, tipFlat: 0 },
   job: job(),
   samplesPerTurn: 720,
@@ -40,7 +41,7 @@ function idealError(s: Settings, pass = 0): number {
   for (let i = 0; i < path.xyz.length / 3; i++) {
     const x = path.xyz[i * 3];
     const y = path.xyz[i * 3 + 1];
-    const ideal = path.pass.radius + 1.5 * Math.cos(12 * (Math.atan2(y, x) - phase));
+    const ideal = path.pass.at + 1.5 * Math.cos(12 * (Math.atan2(y, x) - phase));
     worst = Math.max(worst, Math.abs(Math.hypot(x, y) - ideal));
   }
   return worst;
@@ -76,7 +77,7 @@ describe('computeToolpaths', () => {
     const { passes, rubberX } = computeToolpaths(s);
     const path = passes[0];
     const n = s.samplesPerTurn;
-    const Rc = path.pass.radius;
+    const Rc = path.pass.at;
     for (let i = 0; i <= n; i += 7) {
       const spindle = (i / n) * TAU;
       const phi = path.swing[i];

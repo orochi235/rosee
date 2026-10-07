@@ -2,7 +2,9 @@
  *  degrees: `phase` turns the rosette against the work, `pumpPhase` the
  *  pumping rosette, `index` the work on the division plate. */
 export interface Pass {
-  radius: number;
+  /** Where the cutter is set: the radius on a face, the distance along a
+   *  barrel, the arc from a dome's pole; mm. */
+  at: number;
   depth: number;
   phase: number;
   pumpPhase: number;
@@ -13,8 +15,8 @@ export interface Pass {
   eccentricity: number;
 }
 
-/** A program of passes, as the lab edits it: the cutter steps from radius
- *  `from` to `to` by `step` mm; every `phaseGroup` passes the rosette is
+/** A program of passes, as the lab edits it: the cutter steps from `from`
+ *  to `to` by `step` mm, each a `Pass.at`; every `phaseGroup` passes the rosette is
  *  phased on by `phaseStep`°, the pump by `pumpPhaseStep`° every pass; and
  *  the whole sweep repeats at `indexCount` even divisions of the work, and
  *  within each at `wheelCount` even turns of the chuck's wheel. The chuck's
@@ -56,7 +58,7 @@ export function expandJob(job: Job): Pass[] {
     for (let w = 0; w < job.wheelCount; w++) {
       for (let i = 0; i < count; i++) {
         passes.push({
-          radius: job.from + dir * i * job.step,
+          at: job.from + dir * i * job.step,
           depth: job.depth,
           phase: job.phaseStep * Math.floor(i / job.phaseGroup),
           pumpPhase: job.pumpPhaseStep * i,

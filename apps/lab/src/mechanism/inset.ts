@@ -1,11 +1,11 @@
-import type { Vec2 } from 'rosee';
+import type { Vec3 } from 'rosee';
 import * as THREE from 'three';
 
 /** The graver and the half of the work around it, drawn over a corner of
  *  the main view, so the cut reads at a size the whole machine can't give it. */
 export interface Inset {
   /** Where the graver's tip is, machine-frame mm, and the stock's radius. */
-  aim(tip: Vec2, stock: number): void;
+  aim(tip: Vec3, stock: number): void;
   /** Draws the inset into the bottom right of a `width` × `height` CSS px canvas. */
   render(width: number, height: number, beforeRender: (w: number, h: number) => void): void;
 }
@@ -33,7 +33,7 @@ export function createInset(renderer: THREE.WebGLRenderer, scene: THREE.Scene, g
 
   return {
     aim(tip, stock) {
-      target.set(tip[0], tip[1], 0);
+      target.set(tip[0], tip[1], tip[2]);
       // Far enough that the frame is one stock radius tall: about half the work.
       const distance = stock / 2 / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
       camera.position.copy(target).addScaledVector(VIEW, distance);

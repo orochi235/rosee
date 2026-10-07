@@ -1,7 +1,7 @@
 import { ControlPanel } from '@weasel-js/labkit';
 import { PRESETS, type PresetName, type Settings } from 'rosee';
 import { useRef } from 'react';
-import { chuckPanel, cutPanel, lookPanel, type Panel, pumpPanel, rosettePanel, rubberPanel } from './panels';
+import { chuckPanel, cutPanel, lookPanel, type Panel, pumpPanel, rosettePanel, rubberPanel, surfacePanel } from './panels';
 import { shareLink } from './hash';
 import { ProfileEditor } from './ProfileEditor';
 import type { LabState, Look } from './state';
@@ -84,6 +84,7 @@ export function Sidebar({ state, setSettings, setLook, loadPreset, onExportSvg, 
       <Section panel={rubberPanel} value={settings} onChange={setSettings} />
       <Section panel={pumpPanel} value={settings} onChange={setSettings} />
       <Section panel={chuckPanel} value={settings} onChange={setSettings} />
+      <Section panel={surfacePanel} value={settings} onChange={setSettings} />
       <Section panel={cutPanel} value={settings} onChange={setSettings} />
       <Section panel={lookPanel} value={state.look} onChange={setLook} />
     </aside>

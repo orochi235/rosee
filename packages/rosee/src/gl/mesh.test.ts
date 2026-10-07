@@ -27,7 +27,9 @@ describe('carveMesh', () => {
 
   it('sizes the domain to hold every cut and leaves room below the deepest', () => {
     const m = carveMesh(straightGroove(0.1), { vAngle: 90, tipFlat: 0 });
-    expect(m.extent).toBeGreaterThan(5);
+    expect(m.bounds.u[1]).toBeGreaterThan(5);
+    expect(m.bounds.u).toEqual([-m.bounds.v[1], m.bounds.v[1]]);
+    expect(m.period).toBe(0);
     expect(m.floor).toBeCloseTo(-0.125, 6);
   });
 });

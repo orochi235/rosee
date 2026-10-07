@@ -50,12 +50,12 @@ export const PARTS: Record<PartKey, PartText> = {
   },
   work: {
     title: 'Work',
-    what: 'The stock being engraved, held on the spindle nose.',
-    how: 'It turns under a cutter that never moves, so every motion of the cut comes from the work moving, not the tool.',
+    what: 'The stock being engraved, held on the spindle nose: a face, a barrel or a dome.',
+    how: 'It turns under a cutter that never moves, so every motion of the cut comes from the work moving, not the tool. On a barrel the rocking only moves it into and out of the cutter, so the pattern along it comes from pumping.',
   },
   cutter: {
     title: 'Cutter',
-    what: 'A V graver held still on the slide rest.',
+    what: 'A V graver held still on the slide rest, square to the surface.',
     how: 'It cuts a groove as wide as its V at that depth. Its V stays square to the machine, so a groove narrows where the path climbs steeply.',
   },
   chuck: {
@@ -110,11 +110,18 @@ export function liveLine(part: PartKey, c: LiveContext): string {
     case 'spindle':
       return `${f1(at.degrees)}° into ${at.label}`;
     case 'work': {
-      const r = Math.hypot(pass.xyz[i * 3], pass.xyz[i * 3 + 1]);
-      return `cutting at radius ${f2(r)} mm`;
+      const [u, v] = [pass.uvh[i * 3], pass.uvh[i * 3 + 1]];
+      switch (s.surface.kind) {
+        case 'flat':
+          return `cutting at radius ${f2(Math.hypot(u, v))} mm`;
+        case 'cylinder':
+          return `barrel ${f1(s.surface.radius * 2)} mm across · cutting ${f2(v)} mm from the face, ${f1(deg(u / s.surface.radius))}° round`;
+        case 'dome':
+          return `dome of ${f1(s.surface.radius)} mm radius · cutting ${f2(Math.hypot(u, v))} mm round from the pole`;
+      }
     }
     case 'cutter': {
-      const depth = -pass.xyz[i * 3 + 2];
+      const depth = -pass.uvh[i * 3 + 2];
       return `${s.cutter.vAngle}° V · ${f2(depth)} mm deep · groove ${f2(grooveWidth(s.cutter, depth))} mm wide`;
     }
     case 'chuck': {
