@@ -1,5 +1,6 @@
 import { rad } from '../angle';
 import type { Carve } from './carve';
+import { METAL_GLSL, SHEET_GLSL } from './glsl';
 import { compile, FULLSCREEN_VERTEX } from './program';
 
 /** Which part of the work the canvas shows: the domain point at the canvas's
@@ -43,31 +44,12 @@ uniform float roughness;
 uniform vec3 background;
 out vec4 color;
 
-float heightAt(ivec2 t) {
-  ivec2 size = ivec2(texels);
-  ivec2 c = clamp(t, ivec2(0), size - 1);
-  // round a barrel the sheet's u edges meet
-  if (period > 0.0) c.x = (t.x % size.x + size.x) % size.x;
-  return floor_ * (1.0 - texelFetch(depth, c, 0).r);
-}
+${SHEET_GLSL}
+${METAL_GLSL}
 
 vec3 shadeAt(vec2 mm) {
-  vec2 span = bounds.zw - bounds.xy;
-  vec2 uv = clamp((mm - bounds.xy) / span, vec2(0.0), 1.0 - 0.5 / texels);
-  ivec2 t = ivec2(uv * texels);
-  vec2 texel = span / texels;
-  float dx = (heightAt(t + ivec2(1, 0)) - heightAt(t - ivec2(1, 0))) / (2.0 * texel.x);
-  float dy = (heightAt(t + ivec2(0, 1)) - heightAt(t - ivec2(0, 1))) / (2.0 * texel.y);
-  vec3 n = normalize(vec3(-dx, -dy, 1.0));
-  vec3 v = vec3(0.0, 0.0, 1.0);
-  vec3 h = normalize(light + v);
-  float a2 = roughness * roughness * roughness * roughness;
-  float nh = max(dot(n, h), 0.0);
-  float d = a2 / (3.14159265 * pow(nh * nh * (a2 - 1.0) + 1.0, 2.0));
-  float nl = max(dot(n, light), 0.0);
-  vec3 fresnel = metal + (1.0 - metal) * pow(1.0 - max(dot(h, v), 0.0), 5.0);
-  // a dim sky reflected by every facet, so the stock reads as metal away from the highlight
-  return metal * (0.12 + 0.18 * n.z * n.z) + fresnel * d * nl * 0.5;
+  vec3 hs = heightAndSlope(mm);
+  return litMetal(normalize(vec3(-hs.y, -hs.z, 1.0)), vec3(0.0, 0.0, 1.0), light);
 }
 
 void main() {
@@ -84,9 +66,7 @@ void main() {
   for (int j = 0; j < k; j++) {
     for (int i = 0; i < k; i++) {
       vec2 sub = (vec2(float(i), float(j)) + 0.5) / float(k) - 0.5;
-      vec2 at = here + sub * mmPerPixel;
-      if (period > 0.0) at.x = bounds.x + mod(at.x - bounds.x, period);
-      sum += shadeAt(at);
+      sum += shadeAt(here + sub * mmPerPixel);
     }
   }
   vec3 lit = sum / float(k * k);
