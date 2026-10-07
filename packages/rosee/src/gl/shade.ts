@@ -31,8 +31,9 @@ const SHADE_FRAGMENT = `#version 300 es
 precision highp float;
 uniform highp sampler2D depth;
 uniform float floor_;
-uniform float extent;
-uniform float resolution;
+uniform vec4 bounds;
+uniform float period;
+uniform vec2 texels;
 uniform vec2 center;
 uniform float mmPerPixel;
 uniform vec2 canvas;
@@ -43,16 +44,20 @@ uniform vec3 background;
 out vec4 color;
 
 float heightAt(ivec2 t) {
-  ivec2 c = clamp(t, ivec2(0), ivec2(int(resolution) - 1));
+  ivec2 size = ivec2(texels);
+  ivec2 c = clamp(t, ivec2(0), size - 1);
+  // round a barrel the sheet's u edges meet
+  if (period > 0.0) c.x = (t.x % size.x + size.x) % size.x;
   return floor_ * (1.0 - texelFetch(depth, c, 0).r);
 }
 
 vec3 shadeAt(vec2 mm) {
-  vec2 uv = clamp((mm / extent + 1.0) * 0.5, vec2(0.0), vec2(1.0 - 0.5 / resolution));
-  ivec2 t = ivec2(uv * resolution);
-  float texel = 2.0 * extent / resolution;
-  float dx = (heightAt(t + ivec2(1, 0)) - heightAt(t - ivec2(1, 0))) / (2.0 * texel);
-  float dy = (heightAt(t + ivec2(0, 1)) - heightAt(t - ivec2(0, 1))) / (2.0 * texel);
+  vec2 span = bounds.zw - bounds.xy;
+  vec2 uv = clamp((mm - bounds.xy) / span, vec2(0.0), 1.0 - 0.5 / texels);
+  ivec2 t = ivec2(uv * texels);
+  vec2 texel = span / texels;
+  float dx = (heightAt(t + ivec2(1, 0)) - heightAt(t - ivec2(1, 0))) / (2.0 * texel.x);
+  float dy = (heightAt(t + ivec2(0, 1)) - heightAt(t - ivec2(0, 1))) / (2.0 * texel.y);
   vec3 n = normalize(vec3(-dx, -dy, 1.0));
   vec3 v = vec3(0.0, 0.0, 1.0);
   vec3 h = normalize(light + v);
@@ -67,18 +72,21 @@ vec3 shadeAt(vec2 mm) {
 
 void main() {
   vec2 here = center + (gl_FragCoord.xy - 0.5 * canvas) * mmPerPixel;
-  if (any(greaterThan(abs(here), vec2(extent)))) {
+  if (period > 0.0) here.x = bounds.x + mod(here.x - bounds.x, period);
+  if (any(lessThan(here, bounds.xy)) || any(greaterThan(here, bounds.zw))) {
     color = vec4(pow(background, vec3(1.0 / 2.2)), 1.0);
     return;
   }
   // average the pixel's footprint: a pixel wider than a texel sees many facets at once
-  float texel = 2.0 * extent / resolution;
+  float texel = (bounds.z - bounds.x) / texels.x;
   int k = int(clamp(ceil(mmPerPixel / texel), 1.0, 6.0));
   vec3 sum = vec3(0.0);
   for (int j = 0; j < k; j++) {
     for (int i = 0; i < k; i++) {
       vec2 sub = (vec2(float(i), float(j)) + 0.5) / float(k) - 0.5;
-      sum += shadeAt(center + (gl_FragCoord.xy + sub - 0.5 * canvas) * mmPerPixel);
+      vec2 at = here + sub * mmPerPixel;
+      if (period > 0.0) at.x = bounds.x + mod(at.x - bounds.x, period);
+      sum += shadeAt(at);
     }
   }
   vec3 lit = sum / float(k * k);
@@ -109,8 +117,9 @@ export function createShade(gl: WebGL2RenderingContext): Shade {
       gl.bindTexture(gl.TEXTURE_2D, carve.depth);
       gl.uniform1i(u('depth'), 0);
       gl.uniform1f(u('floor_'), carve.floor);
-      gl.uniform1f(u('extent'), carve.extent);
-      gl.uniform1f(u('resolution'), carve.resolution);
+      gl.uniform4f(u('bounds'), carve.bounds.u[0], carve.bounds.v[0], carve.bounds.u[1], carve.bounds.v[1]);
+      gl.uniform1f(u('period'), carve.period);
+      gl.uniform2f(u('texels'), carve.width, carve.height);
       gl.uniform2f(u('center'), view.center[0], view.center[1]);
       gl.uniform1f(u('mmPerPixel'), view.mmPerPixel);
       gl.uniform2f(u('canvas'), w, h);

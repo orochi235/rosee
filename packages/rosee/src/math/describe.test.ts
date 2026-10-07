@@ -126,6 +126,20 @@ group.each(CASES)('%s', (name, settings) => {
     }
   });
 
+  it('puts the tip on the sheet where the path does', () => {
+    if (s.surface.kind === 'flat') return;
+    for (const k of passes) {
+      const st = stages(k);
+      const path = t.passes[k];
+      for (let i = 0; i <= t.samples; i += 4) {
+        const [u, v, h] = evaluate(equation(st, 'sheet').rhs, sampleEnv(st, s, t, k, i)) as number[];
+        expect(Math.abs(u - path.uvh[i * 3])).toBeLessThan(1e-4);
+        expect(Math.abs(v - path.uvh[i * 3 + 1])).toBeLessThan(1e-4);
+        expect(Math.abs(h - path.uvh[i * 3 + 2])).toBeLessThan(1e-4);
+      }
+    }
+  });
+
   it('gives the groove width grooveWidth does', () => {
     const w = equation(stages(0), 'groove').rhs;
     for (const depth of [0, 0.05, 0.3]) expect(num(evaluate(w, { depth }))).toBeCloseTo(grooveWidth(s.cutter, depth), 12);

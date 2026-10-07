@@ -1,4 +1,5 @@
 import type { Toolpaths } from '../toolpath/toolpath';
+import type { Surface } from '../surface/surface';
 import type { Settings } from '../toolpath/settings';
 import {
   add,
@@ -17,6 +18,7 @@ import {
   param,
   rel,
   rot,
+  sin,
   sub,
   sym,
   vec,
@@ -33,6 +35,59 @@ const theta = sym('θ');
 const swing = sym('φ');
 const beta = sym('β');
 const H = name('H', 'φ', { sup: '−1' });
+
+/** Where the graver's tip sits for the pass, machine frame: its x (y is 0)
+ *  and z, with any equation defining a symbol they use. */
+function graverMath(surface: Surface, at: number, depth: Expr): { x: Expr; z: Expr; equations: Equation[] } {
+  switch (surface.kind) {
+    case 'flat':
+      return { x: param(name('r', 'c'), at), z: neg(depth), equations: [] };
+    case 'cylinder': {
+      const R = param(name('R', 'b'), surface.radius);
+      return { x: sub(R, depth), z: neg(param(name('a'), at)), equations: [] };
+    }
+    case 'dome': {
+      const S = param(name('S'), surface.radius);
+      const gValue = div(param(name('a'), at), S);
+      const g = alias(sym('γ'), gValue);
+      const r = sub(S, depth);
+      return {
+        x: mul(r, sin(g)),
+        z: add(neg(S), mul(r, cos(g))),
+        equations: [{ id: 'polar', lhs: g, rhs: gValue, kind: 'formula', unit: 'angle', note: 'How far round the dome from its pole the graver is set.' }],
+      };
+    }
+  }
+}
+
+/** The work-frame tip on the surface's sheet, or null on a face, which is
+ *  its own sheet. */
+function sheetMath(surface: Surface): Equation | null {
+  const [x, y, z] = [sym('x'), sym('y'), sym('z')];
+  const lhs = vec(sym('u'), sym('v'), sym('h'));
+  switch (surface.kind) {
+    case 'flat':
+      return null;
+    case 'cylinder': {
+      const R = param(name('R', 'b'), surface.radius);
+      return { id: 'sheet', lhs, rhs: vec(mul(R, fn('arg', vec(x, y))), neg(z), sub(fn('abs', vec(x, y)), R)), kind: 'formula', unit: 'mm' };
+    }
+    case 'dome': {
+      const S = param(name('S'), surface.radius);
+      const zc = add(z, S);
+      const across = fn('abs', vec(x, y));
+      const arc = mul(S, fn('arg', vec(zc, across)));
+      return {
+        id: 'sheet',
+        lhs,
+        rhs: vec(mul(div(arc, across), x), mul(div(arc, across), y), sub(fn('abs', vec(x, y, zc)), S)),
+        kind: 'formula',
+        unit: 'mm',
+        note: 'u and v keep the direction round the axis and take the arc from the pole as their length.',
+      };
+    }
+  }
+}
 
 /** Formulas holding a print-only part, such as a drawn lobe, become
  *  definitions. */
@@ -85,7 +140,9 @@ export function describe(s: Settings, toolpaths: Toolpaths, pass: number, o: Des
   ];
 
   const index = param(name('index'), p.index, true);
-  const tip = headstock(param(name('r', 'c'), p.radius), num(0));
+  const depth = param(name('d', '0'), p.depth);
+  const graver = graverMath(s.surface, p.at, depth);
+  const tip = headstock(graver.x, num(0));
   const onChuck = rot(sub(index, theta), tip);
   const chain: Equation[] = [];
   let work = onChuck;
@@ -96,11 +153,14 @@ export function describe(s: Settings, toolpaths: Toolpaths, pass: number, o: Des
     chain.push({ id: 'slide', lhs: slide, rhs: slideValue, kind: 'formula', unit: 'mm' });
     work = rot(neg(param(name('wheel'), ch.wheel + p.wheel, true)), sub(onChuck, vec(slide, num(0))));
   }
+  chain.unshift(...graver.equations);
   chain.push({ id: 'chain', lhs: vec(sym('x'), sym('y')), rhs: work, kind: 'formula', unit: 'mm' });
   stages.push({ title: 'Chain', equations: chain });
 
-  const depth = param(name('d', '0'), p.depth);
   const z = sym('z');
+  // On a face the graver's z is the depth, and reads best as one negated sum.
+  const zOf = (travel: Expr | null): Expr =>
+    s.surface.kind === 'flat' ? neg(travel ? add(depth, travel) : depth) : travel ? sub(graver.z, travel) : graver.z;
   if (s.pump && toolpaths.pumpX !== null) {
     const pumpRosette = rosetteMath(s.pump.rosette, name('r', 'pump'), 'pump.rosette');
     const Rpump = name('R', 'pump');
@@ -130,14 +190,16 @@ export function describe(s: Settings, toolpaths: Toolpaths, pass: number, o: Des
           {
             id: 'depth',
             lhs: z,
-            rhs: neg(add(depth, mul(param(name('g'), s.pump.gain), sub(reachHere, mean)))),
+            rhs: zOf(mul(param(name('g'), s.pump.gain), sub(reachHere, mean))),
             kind: 'formula',
             unit: 'mm',
           },
         ],
       },
     );
-  } else stages.push({ title: 'Depth', equations: [{ id: 'depth', lhs: z, rhs: neg(depth), kind: 'formula', unit: 'mm' }] });
+  } else stages.push({ title: 'Depth', equations: [{ id: 'depth', lhs: z, rhs: zOf(null), kind: 'formula', unit: 'mm' }] });
+  const sheet = sheetMath(s.surface);
+  if (sheet) stages.push({ title: 'Sheet', equations: [sheet] });
 
   const V = param(name('V'), s.cutter.vAngle, true);
   stages.push({
@@ -149,7 +211,7 @@ export function describe(s: Settings, toolpaths: Toolpaths, pass: number, o: Des
         rhs: add(param(name('f'), s.cutter.tipFlat), mul(num(2), sym('depth', name('d')), fn('tan', div(V, num(2))))),
         kind: 'formula',
         unit: 'mm',
-        note: 'd is the depth of cut, −z.',
+        note: s.surface.kind === 'flat' ? 'd is the depth of cut, −z.' : 'd is the depth of cut, −h.',
       },
     ],
   });

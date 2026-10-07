@@ -3,7 +3,7 @@ import type { Pass } from '../job/job';
 import { slideAt } from './chuck';
 import { chuckToWork, workToChuck } from './pose';
 
-const pass: Pass = { radius: 0, depth: 0, phase: 0, pumpPhase: 0, index: 0, wheel: 0, eccentricity: 0 };
+const pass: Pass = { at: 0, depth: 0, phase: 0, pumpPhase: 0, index: 0, wheel: 0, eccentricity: 0 };
 
 describe('chuck frames', () => {
   it('round-trips chuck ↔ work', () => {

@@ -1,3 +1,5 @@
+import { sheetPeriod } from '../surface/surface';
+import { sheetRuns } from '../toolpath/runs';
 import type { Toolpaths } from '../toolpath/toolpath';
 
 export interface SvgOptions {
@@ -25,7 +27,8 @@ const DECIMALS = 3;
 
 const escape = (s: string): string => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-/** The toolpaths as an SVG drawing in mm, one polyline per pass, y up. */
+/** The toolpaths on their surface's sheet as an SVG drawing in mm, one
+ *  polyline per pass (more where a pass crosses a barrel's seam), v up. */
 export function toolpathsSvg(t: Toolpaths, options: SvgOptions = {}): string {
   const { strokeWidth = 0.02, stroke = 'black', background = null, tolerance = 0.001, upTo, metadata } = options;
   let minX = Infinity;
@@ -33,11 +36,11 @@ export function toolpathsSvg(t: Toolpaths, options: SvgOptions = {}): string {
   let maxX = -Infinity;
   let maxY = -Infinity;
   for (const p of t.passes) {
-    for (let i = 0; i < p.xyz.length; i += 3) {
-      minX = Math.min(minX, p.xyz[i]);
-      maxX = Math.max(maxX, p.xyz[i]);
-      minY = Math.min(minY, -p.xyz[i + 1]);
-      maxY = Math.max(maxY, -p.xyz[i + 1]);
+    for (let i = 0; i < p.uvh.length; i += 3) {
+      minX = Math.min(minX, p.uvh[i]);
+      maxX = Math.max(maxX, p.uvh[i]);
+      minY = Math.min(minY, -p.uvh[i + 1]);
+      maxY = Math.max(maxY, -p.uvh[i + 1]);
     }
   }
   if (minX > maxX) minX = maxX = minY = maxY = 0;
@@ -47,15 +50,17 @@ export function toolpathsSvg(t: Toolpaths, options: SvgOptions = {}): string {
   const lines: string[] = [];
   for (const [k, p] of t.passes.entries()) {
     if (upTo && k > upTo.pass) break;
-    const count = upTo && k === upTo.pass ? Math.min(upTo.sample + 1, p.xyz.length / 3) : p.xyz.length / 3;
-    if (count < 2) continue;
-    const xy = new Float64Array(2 * count);
-    for (let i = 0; i < count; i++) {
-      xy[2 * i] = p.xyz[3 * i];
-      xy[2 * i + 1] = -p.xyz[3 * i + 1];
+    const count = upTo && k === upTo.pass ? Math.min(upTo.sample + 1, p.uvh.length / 3) : p.uvh.length / 3;
+    for (const [first, last] of sheetRuns(p.uvh, count, sheetPeriod(t.surface))) {
+      if (last - first < 1) continue;
+      const xy = new Float64Array(2 * (last - first + 1));
+      for (let i = first; i <= last; i++) {
+        xy[2 * (i - first)] = p.uvh[3 * i];
+        xy[2 * (i - first) + 1] = -p.uvh[3 * i + 1];
+      }
+      const pts = simplify(xy, tolerance).map((i) => `${xy[2 * i].toFixed(DECIMALS)},${xy[2 * i + 1].toFixed(DECIMALS)}`);
+      lines.push(`<polyline points="${pts.join(' ')}"/>`);
     }
-    const pts = simplify(xy, tolerance).map((i) => `${xy[2 * i].toFixed(DECIMALS)},${xy[2 * i + 1].toFixed(DECIMALS)}`);
-    lines.push(`<polyline points="${pts.join(' ')}"/>`);
   }
   const box = [minX - pad, minY - pad, w, h].map((v) => v.toFixed(DECIMALS));
   return [

@@ -79,6 +79,119 @@ exports[`describe > prints barleycorn the same as last time 1`] = `
 ]
 `;
 
+exports[`describe > prints barrel the same as last time 1`] = `
+[
+  {
+    "equations": [
+      [
+        "<math display="block"><mrow><mi>r</mi><mo>⁡</mo><mrow><mo>(</mo><mi>α</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><msub><mi>r</mi><mn>0</mn></msub><mo>+</mo><mrow><mi>A</mi><mo>⁢</mo><mrow><mi>p</mi><mo>⁡</mo><mrow><mo>(</mo><mi>u</mi><mo>)</mo></mrow></mrow></mrow></mrow></math>",
+        "<math display="block"><mrow><mi>r</mi><mo>⁡</mo><mrow><mo>(</mo><mi>α</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><mn>30</mn><mo>+</mo><mrow><mn>0.05</mn><mo>⁢</mo><mrow><mi>p</mi><mo>⁡</mo><mrow><mo>(</mo><mi>u</mi><mo>)</mo></mrow></mrow></mrow></mrow></math>",
+      ],
+      [
+        "<math display="block"><mi>u</mi><mo>=</mo><mrow><mfrac><mrow><mrow><mi>n</mi><mo>⁢</mo><mi>α</mi></mrow></mrow><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi></mrow></mrow></mfrac><mo>mod</mo><mn>1</mn></mrow></math>",
+        "<math display="block"><mi>u</mi><mo>=</mo><mrow><mfrac><mrow><mrow><mn>12</mn><mo>⁢</mo><mi>α</mi></mrow></mrow><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi></mrow></mrow></mfrac><mo>mod</mo><mn>1</mn></mrow></math>",
+      ],
+      [
+        "<math display="block"><mrow><mi>p</mi><mo>⁡</mo><mrow><mo>(</mo><mi>u</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><mi mathvariant="normal">cos</mi><mo>⁡</mo><mrow><mo>(</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>u</mi></mrow><mo>)</mo></mrow></mrow></math>",
+        "<math display="block"><mrow><mi>p</mi><mo>⁡</mo><mrow><mo>(</mo><mi>u</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><mi mathvariant="normal">cos</mi><mo>⁡</mo><mrow><mo>(</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>u</mi></mrow><mo>)</mo></mrow></mrow></math>",
+      ],
+    ],
+    "title": "Rosette",
+  },
+  {
+    "equations": [
+      [
+        "<math display="block"><mrow><mi>R</mi><mo>⁡</mo><mrow><mo>(</mo><mi>β</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><munder><mi mathvariant="normal">max</mi><mrow><mi>α</mi><mo>:</mo><mrow><mrow><mo>|</mo><mrow><mrow><mi>r</mi><mo>⁡</mo><mrow><mo>(</mo><mi>α</mi><mo>)</mo></mrow></mrow><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">sin</mi><mo>⁡</mo><mrow><mo>(</mo><mrow><mi>α</mi><mo>−</mo><mi>β</mi></mrow><mo>)</mo></mrow></mrow></mrow><mo>|</mo></mrow><mo>≤</mo><mi>ρ</mi></mrow></mrow></munder><mrow><mrow><mrow><mi>r</mi><mo>⁡</mo><mrow><mo>(</mo><mi>α</mi><mo>)</mo></mrow></mrow><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">cos</mi><mo>⁡</mo><mrow><mo>(</mo><mrow><mi>α</mi><mo>−</mo><mi>β</mi></mrow><mo>)</mo></mrow></mrow></mrow><mo>+</mo><msqrt><mrow><msup><mrow><mi>ρ</mi></mrow><mrow><mn>2</mn></mrow></msup><mo>−</mo><msup><mrow><mo>(</mo><mrow><mrow><mi>r</mi><mo>⁡</mo><mrow><mo>(</mo><mi>α</mi><mo>)</mo></mrow></mrow><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">sin</mi><mo>⁡</mo><mrow><mo>(</mo><mrow><mi>α</mi><mo>−</mo><mi>β</mi></mrow><mo>)</mo></mrow></mrow></mrow><mo>)</mo></mrow><mrow><mn>2</mn></mrow></msup></mrow></msqrt></mrow></mrow></math>",
+        "<math display="block"><mrow><mi>R</mi><mo>⁡</mo><mrow><mo>(</mo><mi>β</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><munder><mi mathvariant="normal">max</mi><mrow><mi>α</mi><mo>:</mo><mrow><mrow><mo>|</mo><mrow><mrow><mi>r</mi><mo>⁡</mo><mrow><mo>(</mo><mi>α</mi><mo>)</mo></mrow></mrow><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">sin</mi><mo>⁡</mo><mrow><mo>(</mo><mrow><mi>α</mi><mo>−</mo><mi>β</mi></mrow><mo>)</mo></mrow></mrow></mrow><mo>|</mo></mrow><mo>≤</mo><mn>1</mn></mrow></mrow></munder><mrow><mrow><mrow><mi>r</mi><mo>⁡</mo><mrow><mo>(</mo><mi>α</mi><mo>)</mo></mrow></mrow><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">cos</mi><mo>⁡</mo><mrow><mo>(</mo><mrow><mi>α</mi><mo>−</mo><mi>β</mi></mrow><mo>)</mo></mrow></mrow></mrow><mo>+</mo><msqrt><mrow><msup><mrow><mn>1</mn></mrow><mrow><mn>2</mn></mrow></msup><mo>−</mo><msup><mrow><mo>(</mo><mrow><mrow><mi>r</mi><mo>⁡</mo><mrow><mo>(</mo><mi>α</mi><mo>)</mo></mrow></mrow><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">sin</mi><mo>⁡</mo><mrow><mo>(</mo><mrow><mi>α</mi><mo>−</mo><mi>β</mi></mrow><mo>)</mo></mrow></mrow></mrow><mo>)</mo></mrow><mrow><mn>2</mn></mrow></msup></mrow></msqrt></mrow></mrow></math>",
+      ],
+    ],
+    "title": "Reach",
+  },
+  {
+    "equations": [
+      [
+        "<math display="block"><mrow><msubsup><mi>H</mi><mi>φ</mi><mn>−1</mn></msubsup><mo>⁡</mo><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><mrow><mi mathvariant="normal">Rot</mi><mrow><mo>(</mo><mrow><mo>−</mo><mi>φ</mi></mrow><mo>)</mo></mrow><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mrow><mi>y</mi><mo>+</mo><mi>P</mi></mrow><mo>)</mo></mrow></mrow><mo>−</mo><mrow><mo>(</mo><mn>0</mn><mo>,</mo><mi>P</mi><mo>)</mo></mrow></mrow></math>",
+        "<math display="block"><mrow><msubsup><mi>H</mi><mi>φ</mi><mn>−1</mn></msubsup><mo>⁡</mo><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><mrow><mi mathvariant="normal">Rot</mi><mrow><mo>(</mo><mrow><mo>−</mo><mi>φ</mi></mrow><mo>)</mo></mrow><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mrow><mi>y</mi><mo>+</mo><mn>150</mn></mrow><mo>)</mo></mrow></mrow><mo>−</mo><mrow><mo>(</mo><mn>0</mn><mo>,</mo><mn>150</mn><mo>)</mo></mrow></mrow></math>",
+      ],
+      [
+        "<math display="block"><mrow><mi>ψ</mi><mo>⁡</mo><mrow><mo>(</mo><mi>φ</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><mi mathvariant="normal">arg</mi><mo>⁡</mo><mspace width="0.1667em"/><mrow><msubsup><mi>H</mi><mi>φ</mi><mn>−1</mn></msubsup><mo>⁡</mo><mrow><mo>(</mo><mi>X</mi><mo>,</mo><mn>0</mn><mo>)</mo></mrow></mrow></mrow></math>",
+        "<math display="block"><mrow><mi>ψ</mi><mo>⁡</mo><mrow><mo>(</mo><mi>φ</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><mi mathvariant="normal">arg</mi><mo>⁡</mo><mspace width="0.1667em"/><mrow><msubsup><mi>H</mi><mi>φ</mi><mn>−1</mn></msubsup><mo>⁡</mo><mrow><mo>(</mo><mn>31.0001</mn><mo>,</mo><mn>0</mn><mo>)</mo></mrow></mrow></mrow></math>",
+      ],
+      [
+        "<math display="block"><mi>β</mi><mo>=</mo><mrow><mrow><mi>ψ</mi><mo>⁡</mo><mrow><mo>(</mo><mi>φ</mi><mo>)</mo></mrow></mrow><mo>−</mo><mi>θ</mi><mo>−</mo><mi mathvariant="normal">phase</mi></mrow></math>",
+        "<math display="block"><mi>β</mi><mo>=</mo><mrow><mrow><mi>ψ</mi><mo>⁡</mo><mrow><mo>(</mo><mi>φ</mi><mo>)</mo></mrow></mrow><mo>−</mo><mi>θ</mi><mo>−</mo><mrow><mn>0</mn><mo>°</mo></mrow></mrow></math>",
+      ],
+      [
+        "<math display="block"><mi>φ</mi><mo>=</mo><mrow><munder><mi mathvariant="normal">max</mi><mrow><mi>φ</mi><mo>:</mo><mrow><mrow><mo>|</mo><mrow><msubsup><mi>H</mi><mi>φ</mi><mn>−1</mn></msubsup><mo>⁡</mo><mrow><mo>(</mo><mi>X</mi><mo>,</mo><mn>0</mn><mo>)</mo></mrow></mrow><mo>|</mo></mrow><mo>=</mo><mrow><mi>R</mi><mo>⁡</mo><mrow><mo>(</mo><mrow><mrow><mi>ψ</mi><mo>⁡</mo><mrow><mo>(</mo><mi>φ</mi><mo>)</mo></mrow></mrow><mo>−</mo><mi>θ</mi><mo>−</mo><mi mathvariant="normal">phase</mi></mrow><mo>)</mo></mrow></mrow></mrow></mrow></munder><mi>φ</mi></mrow></math>",
+        "<math display="block"><mi>φ</mi><mo>=</mo><mrow><munder><mi mathvariant="normal">max</mi><mrow><mi>φ</mi><mo>:</mo><mrow><mrow><mo>|</mo><mrow><msubsup><mi>H</mi><mi>φ</mi><mn>−1</mn></msubsup><mo>⁡</mo><mrow><mo>(</mo><mn>31.0001</mn><mo>,</mo><mn>0</mn><mo>)</mo></mrow></mrow><mo>|</mo></mrow><mo>=</mo><mrow><mi>R</mi><mo>⁡</mo><mrow><mo>(</mo><mrow><mrow><mi>ψ</mi><mo>⁡</mo><mrow><mo>(</mo><mi>φ</mi><mo>)</mo></mrow></mrow><mo>−</mo><mi>θ</mi><mo>−</mo><mrow><mn>0</mn><mo>°</mo></mrow></mrow><mo>)</mo></mrow></mrow></mrow></mrow></munder><mi>φ</mi></mrow></math>",
+      ],
+    ],
+    "title": "Swing",
+  },
+  {
+    "equations": [
+      [
+        "<math display="block"><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo></mrow><mo>=</mo><mrow><mi mathvariant="normal">Rot</mi><mrow><mo>(</mo><mrow><mi mathvariant="normal">index</mi><mo>−</mo><mi>θ</mi></mrow><mo>)</mo></mrow><mrow><msubsup><mi>H</mi><mi>φ</mi><mn>−1</mn></msubsup><mo>⁡</mo><mrow><mo>(</mo><mrow><msub><mi>R</mi><mi>b</mi></msub><mo>−</mo><msub><mi>d</mi><mn>0</mn></msub></mrow><mo>,</mo><mn>0</mn><mo>)</mo></mrow></mrow></mrow></math>",
+        "<math display="block"><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo></mrow><mo>=</mo><mrow><mi mathvariant="normal">Rot</mi><mrow><mo>(</mo><mrow><mrow><mn>0</mn><mo>°</mo></mrow><mo>−</mo><mi>θ</mi></mrow><mo>)</mo></mrow><mrow><msubsup><mi>H</mi><mi>φ</mi><mn>−1</mn></msubsup><mo>⁡</mo><mrow><mo>(</mo><mrow><mn>10</mn><mo>−</mo><mn>0.15</mn></mrow><mo>,</mo><mn>0</mn><mo>)</mo></mrow></mrow></mrow></math>",
+      ],
+    ],
+    "title": "Chain",
+  },
+  {
+    "equations": [
+      [
+        "<math display="block"><mrow><msub><mi>r</mi><mi mathvariant="normal">pump</mi></msub><mo>⁡</mo><mrow><mo>(</mo><mi>α</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><msub><mi>r</mi><mn>0</mn></msub><mo>+</mo><mrow><mi>A</mi><mo>⁢</mo><mrow><mi>p</mi><mo>⁡</mo><mrow><mo>(</mo><mi>u</mi><mo>)</mo></mrow></mrow></mrow></mrow></math>",
+        "<math display="block"><mrow><msub><mi>r</mi><mi mathvariant="normal">pump</mi></msub><mo>⁡</mo><mrow><mo>(</mo><mi>α</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><mn>30</mn><mo>+</mo><mrow><mn>1</mn><mo>⁢</mo><mrow><mi>p</mi><mo>⁡</mo><mrow><mo>(</mo><mi>u</mi><mo>)</mo></mrow></mrow></mrow></mrow></math>",
+      ],
+      [
+        "<math display="block"><mi>u</mi><mo>=</mo><mrow><mfrac><mrow><mrow><mi>n</mi><mo>⁢</mo><mi>α</mi></mrow></mrow><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi></mrow></mrow></mfrac><mo>mod</mo><mn>1</mn></mrow></math>",
+        "<math display="block"><mi>u</mi><mo>=</mo><mrow><mfrac><mrow><mrow><mn>9</mn><mo>⁢</mo><mi>α</mi></mrow></mrow><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi></mrow></mrow></mfrac><mo>mod</mo><mn>1</mn></mrow></math>",
+      ],
+      [
+        "<math display="block"><mrow><mi>p</mi><mo>⁡</mo><mrow><mo>(</mo><mi>u</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><mi mathvariant="normal">cos</mi><mo>⁡</mo><mrow><mo>(</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>u</mi></mrow><mo>)</mo></mrow></mrow></math>",
+        "<math display="block"><mrow><mi>p</mi><mo>⁡</mo><mrow><mo>(</mo><mi>u</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><mi mathvariant="normal">cos</mi><mo>⁡</mo><mrow><mo>(</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>u</mi></mrow><mo>)</mo></mrow></mrow></math>",
+      ],
+    ],
+    "title": "Pumping rosette",
+  },
+  {
+    "equations": [
+      [
+        "<math display="block"><mrow><msub><mi>R</mi><mi mathvariant="normal">pump</mi></msub><mo>⁡</mo><mrow><mo>(</mo><mi>β</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><msub><mi>r</mi><mi mathvariant="normal">pump</mi></msub><mo>⁡</mo><mrow><mo>(</mo><mi>β</mi><mo>)</mo></mrow></mrow></math>",
+        "<math display="block"><mrow><msub><mi>R</mi><mi mathvariant="normal">pump</mi></msub><mo>⁡</mo><mrow><mo>(</mo><mi>β</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><msub><mi>r</mi><mi mathvariant="normal">pump</mi></msub><mo>⁡</mo><mrow><mo>(</mo><mi>β</mi><mo>)</mo></mrow></mrow></math>",
+      ],
+      [
+        "<math display="block"><msub><mi>β</mi><mi mathvariant="normal">pump</mi></msub><mo>=</mo><mrow><mrow><mi mathvariant="normal">arg</mi><mo>⁡</mo><mspace width="0.1667em"/><mrow><msubsup><mi>H</mi><mi>φ</mi><mn>−1</mn></msubsup><mo>⁡</mo><mrow><mo>(</mo><msub><mi>X</mi><mi mathvariant="normal">pump</mi></msub><mo>,</mo><mn>0</mn><mo>)</mo></mrow></mrow></mrow><mo>−</mo><mi>θ</mi><mo>−</mo><msub><mi mathvariant="normal">phase</mi><mi mathvariant="normal">pump</mi></msub></mrow></math>",
+        "<math display="block"><msub><mi>β</mi><mi mathvariant="normal">pump</mi></msub><mo>=</mo><mrow><mrow><mi mathvariant="normal">arg</mi><mo>⁡</mo><mspace width="0.1667em"/><mrow><msubsup><mi>H</mi><mi>φ</mi><mn>−1</mn></msubsup><mo>⁡</mo><mrow><mo>(</mo><mn>30</mn><mo>,</mo><mn>0</mn><mo>)</mo></mrow></mrow></mrow><mo>−</mo><mi>θ</mi><mo>−</mo><mrow><mn>0</mn><mo>°</mo></mrow></mrow></math>",
+      ],
+      [
+        "<math display="block"><mi>z</mi><mo>=</mo><mrow><mrow><mo>−</mo><mi>a</mi></mrow><mo>−</mo><mrow><mi>g</mi><mo>⁢</mo><mrow><mo>(</mo><mrow><mrow><msub><mi>R</mi><mi mathvariant="normal">pump</mi></msub><mo>⁡</mo><mrow><mo>(</mo><msub><mi>β</mi><mi mathvariant="normal">pump</mi></msub><mo>)</mo></mrow></mrow><mo>−</mo><msub><mi>X</mi><mi mathvariant="normal">pump</mi></msub></mrow><mo>)</mo></mrow></mrow></mrow></math>",
+        "<math display="block"><mi>z</mi><mo>=</mo><mrow><mrow><mo>−</mo><mn>1.5</mn></mrow><mo>−</mo><mrow><mn>0.6</mn><mo>⁢</mo><mrow><mo>(</mo><mrow><mrow><msub><mi>R</mi><mi mathvariant="normal">pump</mi></msub><mo>⁡</mo><mrow><mo>(</mo><msub><mi>β</mi><mi mathvariant="normal">pump</mi></msub><mo>)</mo></mrow></mrow><mo>−</mo><mn>30</mn></mrow><mo>)</mo></mrow></mrow></mrow></math>",
+      ],
+    ],
+    "title": "Pump",
+  },
+  {
+    "equations": [
+      [
+        "<math display="block"><mrow><mo>(</mo><mi>u</mi><mo>,</mo><mi>v</mi><mo>,</mo><mi>h</mi><mo>)</mo></mrow><mo>=</mo><mrow><mo>(</mo><mrow><msub><mi>R</mi><mi>b</mi></msub><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">arg</mi><mo>⁡</mo><mspace width="0.1667em"/><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo></mrow></mrow></mrow><mo>,</mo><mrow><mo>−</mo><mi>z</mi></mrow><mo>,</mo><mrow><mrow><mo>|</mo><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo></mrow><mo>|</mo></mrow><mo>−</mo><msub><mi>R</mi><mi>b</mi></msub></mrow><mo>)</mo></mrow></math>",
+        "<math display="block"><mrow><mo>(</mo><mi>u</mi><mo>,</mo><mi>v</mi><mo>,</mo><mi>h</mi><mo>)</mo></mrow><mo>=</mo><mrow><mo>(</mo><mrow><mn>10</mn><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">arg</mi><mo>⁡</mo><mspace width="0.1667em"/><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo></mrow></mrow></mrow><mo>,</mo><mrow><mo>−</mo><mi>z</mi></mrow><mo>,</mo><mrow><mrow><mo>|</mo><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo></mrow><mo>|</mo></mrow><mo>−</mo><mn>10</mn></mrow><mo>)</mo></mrow></math>",
+      ],
+    ],
+    "title": "Sheet",
+  },
+  {
+    "equations": [
+      [
+        "<math display="block"><msub><mi>w</mi><mi mathvariant="normal">groove</mi></msub><mo>=</mo><mrow><mi>f</mi><mo>+</mo><mrow><mn>2</mn><mo>⁢</mo><mi>d</mi><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">tan</mi><mo>⁡</mo><mrow><mo>(</mo><mfrac><mrow><mi>V</mi></mrow><mrow><mn>2</mn></mrow></mfrac><mo>)</mo></mrow></mrow></mrow></mrow></math>",
+        "<math display="block"><msub><mi>w</mi><mi mathvariant="normal">groove</mi></msub><mo>=</mo><mrow><mn>0</mn><mo>+</mo><mrow><mn>2</mn><mo>⁢</mo><mi>d</mi><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">tan</mi><mo>⁡</mo><mrow><mo>(</mo><mfrac><mrow><mrow><mn>110</mn><mo>°</mo></mrow></mrow><mrow><mn>2</mn></mrow></mfrac><mo>)</mo></mrow></mrow></mrow></mrow></math>",
+      ],
+    ],
+    "title": "Groove",
+  },
+]
+`;
+
 exports[`describe > prints basket the same as last time 1`] = `
 [
   {
@@ -145,6 +258,98 @@ exports[`describe > prints basket the same as last time 1`] = `
       ],
     ],
     "title": "Depth",
+  },
+  {
+    "equations": [
+      [
+        "<math display="block"><msub><mi>w</mi><mi mathvariant="normal">groove</mi></msub><mo>=</mo><mrow><mi>f</mi><mo>+</mo><mrow><mn>2</mn><mo>⁢</mo><mi>d</mi><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">tan</mi><mo>⁡</mo><mrow><mo>(</mo><mfrac><mrow><mi>V</mi></mrow><mrow><mn>2</mn></mrow></mfrac><mo>)</mo></mrow></mrow></mrow></mrow></math>",
+        "<math display="block"><msub><mi>w</mi><mi mathvariant="normal">groove</mi></msub><mo>=</mo><mrow><mn>0</mn><mo>+</mo><mrow><mn>2</mn><mo>⁢</mo><mi>d</mi><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">tan</mi><mo>⁡</mo><mrow><mo>(</mo><mfrac><mrow><mrow><mn>110</mn><mo>°</mo></mrow></mrow><mrow><mn>2</mn></mrow></mfrac><mo>)</mo></mrow></mrow></mrow></mrow></math>",
+      ],
+    ],
+    "title": "Groove",
+  },
+]
+`;
+
+exports[`describe > prints dome the same as last time 1`] = `
+[
+  {
+    "equations": [
+      [
+        "<math display="block"><mrow><mi>r</mi><mo>⁡</mo><mrow><mo>(</mo><mi>α</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><msub><mi>r</mi><mn>0</mn></msub><mo>+</mo><mrow><mi>A</mi><mo>⁢</mo><mrow><mi>p</mi><mo>⁡</mo><mrow><mo>(</mo><mi>u</mi><mo>)</mo></mrow></mrow></mrow></mrow></math>",
+        "<math display="block"><mrow><mi>r</mi><mo>⁡</mo><mrow><mo>(</mo><mi>α</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><mn>30</mn><mo>+</mo><mrow><mn>1</mn><mo>⁢</mo><mrow><mi>p</mi><mo>⁡</mo><mrow><mo>(</mo><mi>u</mi><mo>)</mo></mrow></mrow></mrow></mrow></math>",
+      ],
+      [
+        "<math display="block"><mi>u</mi><mo>=</mo><mrow><mfrac><mrow><mrow><mi>n</mi><mo>⁢</mo><mi>α</mi></mrow></mrow><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi></mrow></mrow></mfrac><mo>mod</mo><mn>1</mn></mrow></math>",
+        "<math display="block"><mi>u</mi><mo>=</mo><mrow><mfrac><mrow><mrow><mn>12</mn><mo>⁢</mo><mi>α</mi></mrow></mrow><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi></mrow></mrow></mfrac><mo>mod</mo><mn>1</mn></mrow></math>",
+      ],
+      [
+        "<math display="block"><mrow><mi>p</mi><mo>⁡</mo><mrow><mo>(</mo><mi>u</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><mi mathvariant="normal">cos</mi><mo>⁡</mo><mrow><mo>(</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>u</mi></mrow><mo>)</mo></mrow></mrow></math>",
+        "<math display="block"><mrow><mi>p</mi><mo>⁡</mo><mrow><mo>(</mo><mi>u</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><mi mathvariant="normal">cos</mi><mo>⁡</mo><mrow><mo>(</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>u</mi></mrow><mo>)</mo></mrow></mrow></math>",
+      ],
+    ],
+    "title": "Rosette",
+  },
+  {
+    "equations": [
+      [
+        "<math display="block"><mrow><mi>R</mi><mo>⁡</mo><mrow><mo>(</mo><mi>β</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><munder><mi mathvariant="normal">max</mi><mrow><mi>α</mi><mo>:</mo><mrow><mrow><mo>|</mo><mrow><mrow><mi>r</mi><mo>⁡</mo><mrow><mo>(</mo><mi>α</mi><mo>)</mo></mrow></mrow><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">sin</mi><mo>⁡</mo><mrow><mo>(</mo><mrow><mi>α</mi><mo>−</mo><mi>β</mi></mrow><mo>)</mo></mrow></mrow></mrow><mo>|</mo></mrow><mo>≤</mo><mi>ρ</mi></mrow></mrow></munder><mrow><mrow><mrow><mi>r</mi><mo>⁡</mo><mrow><mo>(</mo><mi>α</mi><mo>)</mo></mrow></mrow><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">cos</mi><mo>⁡</mo><mrow><mo>(</mo><mrow><mi>α</mi><mo>−</mo><mi>β</mi></mrow><mo>)</mo></mrow></mrow></mrow><mo>+</mo><msqrt><mrow><msup><mrow><mi>ρ</mi></mrow><mrow><mn>2</mn></mrow></msup><mo>−</mo><msup><mrow><mo>(</mo><mrow><mrow><mi>r</mi><mo>⁡</mo><mrow><mo>(</mo><mi>α</mi><mo>)</mo></mrow></mrow><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">sin</mi><mo>⁡</mo><mrow><mo>(</mo><mrow><mi>α</mi><mo>−</mo><mi>β</mi></mrow><mo>)</mo></mrow></mrow></mrow><mo>)</mo></mrow><mrow><mn>2</mn></mrow></msup></mrow></msqrt></mrow></mrow></math>",
+        "<math display="block"><mrow><mi>R</mi><mo>⁡</mo><mrow><mo>(</mo><mi>β</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><munder><mi mathvariant="normal">max</mi><mrow><mi>α</mi><mo>:</mo><mrow><mrow><mo>|</mo><mrow><mrow><mi>r</mi><mo>⁡</mo><mrow><mo>(</mo><mi>α</mi><mo>)</mo></mrow></mrow><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">sin</mi><mo>⁡</mo><mrow><mo>(</mo><mrow><mi>α</mi><mo>−</mo><mi>β</mi></mrow><mo>)</mo></mrow></mrow></mrow><mo>|</mo></mrow><mo>≤</mo><mn>1</mn></mrow></mrow></munder><mrow><mrow><mrow><mi>r</mi><mo>⁡</mo><mrow><mo>(</mo><mi>α</mi><mo>)</mo></mrow></mrow><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">cos</mi><mo>⁡</mo><mrow><mo>(</mo><mrow><mi>α</mi><mo>−</mo><mi>β</mi></mrow><mo>)</mo></mrow></mrow></mrow><mo>+</mo><msqrt><mrow><msup><mrow><mn>1</mn></mrow><mrow><mn>2</mn></mrow></msup><mo>−</mo><msup><mrow><mo>(</mo><mrow><mrow><mi>r</mi><mo>⁡</mo><mrow><mo>(</mo><mi>α</mi><mo>)</mo></mrow></mrow><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">sin</mi><mo>⁡</mo><mrow><mo>(</mo><mrow><mi>α</mi><mo>−</mo><mi>β</mi></mrow><mo>)</mo></mrow></mrow></mrow><mo>)</mo></mrow><mrow><mn>2</mn></mrow></msup></mrow></msqrt></mrow></mrow></math>",
+      ],
+    ],
+    "title": "Reach",
+  },
+  {
+    "equations": [
+      [
+        "<math display="block"><mrow><msubsup><mi>H</mi><mi>φ</mi><mn>−1</mn></msubsup><mo>⁡</mo><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><mrow><mi mathvariant="normal">Rot</mi><mrow><mo>(</mo><mrow><mo>−</mo><mi>φ</mi></mrow><mo>)</mo></mrow><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mrow><mi>y</mi><mo>+</mo><mi>P</mi></mrow><mo>)</mo></mrow></mrow><mo>−</mo><mrow><mo>(</mo><mn>0</mn><mo>,</mo><mi>P</mi><mo>)</mo></mrow></mrow></math>",
+        "<math display="block"><mrow><msubsup><mi>H</mi><mi>φ</mi><mn>−1</mn></msubsup><mo>⁡</mo><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><mrow><mi mathvariant="normal">Rot</mi><mrow><mo>(</mo><mrow><mo>−</mo><mi>φ</mi></mrow><mo>)</mo></mrow><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mrow><mi>y</mi><mo>+</mo><mn>150</mn></mrow><mo>)</mo></mrow></mrow><mo>−</mo><mrow><mo>(</mo><mn>0</mn><mo>,</mo><mn>150</mn><mo>)</mo></mrow></mrow></math>",
+      ],
+      [
+        "<math display="block"><mrow><mi>ψ</mi><mo>⁡</mo><mrow><mo>(</mo><mi>φ</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><mi mathvariant="normal">arg</mi><mo>⁡</mo><mspace width="0.1667em"/><mrow><msubsup><mi>H</mi><mi>φ</mi><mn>−1</mn></msubsup><mo>⁡</mo><mrow><mo>(</mo><mi>X</mi><mo>,</mo><mn>0</mn><mo>)</mo></mrow></mrow></mrow></math>",
+        "<math display="block"><mrow><mi>ψ</mi><mo>⁡</mo><mrow><mo>(</mo><mi>φ</mi><mo>)</mo></mrow></mrow><mo>=</mo><mrow><mi mathvariant="normal">arg</mi><mo>⁡</mo><mspace width="0.1667em"/><mrow><msubsup><mi>H</mi><mi>φ</mi><mn>−1</mn></msubsup><mo>⁡</mo><mrow><mo>(</mo><mn>31.0377</mn><mo>,</mo><mn>0</mn><mo>)</mo></mrow></mrow></mrow></math>",
+      ],
+      [
+        "<math display="block"><mi>β</mi><mo>=</mo><mrow><mrow><mi>ψ</mi><mo>⁡</mo><mrow><mo>(</mo><mi>φ</mi><mo>)</mo></mrow></mrow><mo>−</mo><mi>θ</mi><mo>−</mo><mi mathvariant="normal">phase</mi></mrow></math>",
+        "<math display="block"><mi>β</mi><mo>=</mo><mrow><mrow><mi>ψ</mi><mo>⁡</mo><mrow><mo>(</mo><mi>φ</mi><mo>)</mo></mrow></mrow><mo>−</mo><mi>θ</mi><mo>−</mo><mrow><mn>0</mn><mo>°</mo></mrow></mrow></math>",
+      ],
+      [
+        "<math display="block"><mi>φ</mi><mo>=</mo><mrow><munder><mi mathvariant="normal">max</mi><mrow><mi>φ</mi><mo>:</mo><mrow><mrow><mo>|</mo><mrow><msubsup><mi>H</mi><mi>φ</mi><mn>−1</mn></msubsup><mo>⁡</mo><mrow><mo>(</mo><mi>X</mi><mo>,</mo><mn>0</mn><mo>)</mo></mrow></mrow><mo>|</mo></mrow><mo>=</mo><mrow><mi>R</mi><mo>⁡</mo><mrow><mo>(</mo><mrow><mrow><mi>ψ</mi><mo>⁡</mo><mrow><mo>(</mo><mi>φ</mi><mo>)</mo></mrow></mrow><mo>−</mo><mi>θ</mi><mo>−</mo><mi mathvariant="normal">phase</mi></mrow><mo>)</mo></mrow></mrow></mrow></mrow></munder><mi>φ</mi></mrow></math>",
+        "<math display="block"><mi>φ</mi><mo>=</mo><mrow><munder><mi mathvariant="normal">max</mi><mrow><mi>φ</mi><mo>:</mo><mrow><mrow><mo>|</mo><mrow><msubsup><mi>H</mi><mi>φ</mi><mn>−1</mn></msubsup><mo>⁡</mo><mrow><mo>(</mo><mn>31.0377</mn><mo>,</mo><mn>0</mn><mo>)</mo></mrow></mrow><mo>|</mo></mrow><mo>=</mo><mrow><mi>R</mi><mo>⁡</mo><mrow><mo>(</mo><mrow><mrow><mi>ψ</mi><mo>⁡</mo><mrow><mo>(</mo><mi>φ</mi><mo>)</mo></mrow></mrow><mo>−</mo><mi>θ</mi><mo>−</mo><mrow><mn>0</mn><mo>°</mo></mrow></mrow><mo>)</mo></mrow></mrow></mrow></mrow></munder><mi>φ</mi></mrow></math>",
+      ],
+    ],
+    "title": "Swing",
+  },
+  {
+    "equations": [
+      [
+        "<math display="block"><mi>γ</mi><mo>=</mo><mfrac><mrow><mi>a</mi></mrow><mrow><mi>S</mi></mrow></mfrac></math>",
+        "<math display="block"><mi>γ</mi><mo>=</mo><mfrac><mrow><mn>4</mn></mrow><mrow><mn>30</mn></mrow></mfrac></math>",
+      ],
+      [
+        "<math display="block"><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo></mrow><mo>=</mo><mrow><mi mathvariant="normal">Rot</mi><mrow><mo>(</mo><mrow><mi mathvariant="normal">index</mi><mo>−</mo><mi>θ</mi></mrow><mo>)</mo></mrow><mrow><msubsup><mi>H</mi><mi>φ</mi><mn>−1</mn></msubsup><mo>⁡</mo><mrow><mo>(</mo><mrow><mrow><mo>(</mo><mrow><mi>S</mi><mo>−</mo><msub><mi>d</mi><mn>0</mn></msub></mrow><mo>)</mo></mrow><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">sin</mi><mo>⁡</mo><mrow><mo>(</mo><mi>γ</mi><mo>)</mo></mrow></mrow></mrow><mo>,</mo><mn>0</mn><mo>)</mo></mrow></mrow></mrow></math>",
+        "<math display="block"><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo></mrow><mo>=</mo><mrow><mi mathvariant="normal">Rot</mi><mrow><mo>(</mo><mrow><mrow><mn>0</mn><mo>°</mo></mrow><mo>−</mo><mi>θ</mi></mrow><mo>)</mo></mrow><mrow><msubsup><mi>H</mi><mi>φ</mi><mn>−1</mn></msubsup><mo>⁡</mo><mrow><mo>(</mo><mrow><mrow><mo>(</mo><mrow><mn>30</mn><mo>−</mo><mn>0.15</mn></mrow><mo>)</mo></mrow><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">sin</mi><mo>⁡</mo><mrow><mo>(</mo><mi>γ</mi><mo>)</mo></mrow></mrow></mrow><mo>,</mo><mn>0</mn><mo>)</mo></mrow></mrow></mrow></math>",
+      ],
+    ],
+    "title": "Chain",
+  },
+  {
+    "equations": [
+      [
+        "<math display="block"><mi>z</mi><mo>=</mo><mrow><mrow><mo>−</mo><mi>S</mi></mrow><mo>+</mo><mrow><mrow><mo>(</mo><mrow><mi>S</mi><mo>−</mo><msub><mi>d</mi><mn>0</mn></msub></mrow><mo>)</mo></mrow><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">cos</mi><mo>⁡</mo><mrow><mo>(</mo><mi>γ</mi><mo>)</mo></mrow></mrow></mrow></mrow></math>",
+        "<math display="block"><mi>z</mi><mo>=</mo><mrow><mrow><mo>−</mo><mn>30</mn></mrow><mo>+</mo><mrow><mrow><mo>(</mo><mrow><mn>30</mn><mo>−</mo><mn>0.15</mn></mrow><mo>)</mo></mrow><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">cos</mi><mo>⁡</mo><mrow><mo>(</mo><mi>γ</mi><mo>)</mo></mrow></mrow></mrow></mrow></math>",
+      ],
+    ],
+    "title": "Depth",
+  },
+  {
+    "equations": [
+      [
+        "<math display="block"><mrow><mo>(</mo><mi>u</mi><mo>,</mo><mi>v</mi><mo>,</mo><mi>h</mi><mo>)</mo></mrow><mo>=</mo><mrow><mo>(</mo><mrow><mfrac><mrow><mrow><mi>S</mi><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">arg</mi><mo>⁡</mo><mspace width="0.1667em"/><mrow><mo>(</mo><mrow><mi>z</mi><mo>+</mo><mi>S</mi></mrow><mo>,</mo><mrow><mo>|</mo><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo></mrow><mo>|</mo></mrow><mo>)</mo></mrow></mrow></mrow></mrow><mrow><mrow><mo>|</mo><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo></mrow><mo>|</mo></mrow></mrow></mfrac><mo>⁢</mo><mi>x</mi></mrow><mo>,</mo><mrow><mfrac><mrow><mrow><mi>S</mi><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">arg</mi><mo>⁡</mo><mspace width="0.1667em"/><mrow><mo>(</mo><mrow><mi>z</mi><mo>+</mo><mi>S</mi></mrow><mo>,</mo><mrow><mo>|</mo><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo></mrow><mo>|</mo></mrow><mo>)</mo></mrow></mrow></mrow></mrow><mrow><mrow><mo>|</mo><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo></mrow><mo>|</mo></mrow></mrow></mfrac><mo>⁢</mo><mi>y</mi></mrow><mo>,</mo><mrow><mrow><mo>|</mo><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>,</mo><mrow><mi>z</mi><mo>+</mo><mi>S</mi></mrow><mo>)</mo></mrow><mo>|</mo></mrow><mo>−</mo><mi>S</mi></mrow><mo>)</mo></mrow></math>",
+        "<math display="block"><mrow><mo>(</mo><mi>u</mi><mo>,</mo><mi>v</mi><mo>,</mo><mi>h</mi><mo>)</mo></mrow><mo>=</mo><mrow><mo>(</mo><mrow><mfrac><mrow><mrow><mn>30</mn><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">arg</mi><mo>⁡</mo><mspace width="0.1667em"/><mrow><mo>(</mo><mrow><mi>z</mi><mo>+</mo><mn>30</mn></mrow><mo>,</mo><mrow><mo>|</mo><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo></mrow><mo>|</mo></mrow><mo>)</mo></mrow></mrow></mrow></mrow><mrow><mrow><mo>|</mo><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo></mrow><mo>|</mo></mrow></mrow></mfrac><mo>⁢</mo><mi>x</mi></mrow><mo>,</mo><mrow><mfrac><mrow><mrow><mn>30</mn><mo>⁢</mo><mspace width="0.1667em"/><mrow><mi mathvariant="normal">arg</mi><mo>⁡</mo><mspace width="0.1667em"/><mrow><mo>(</mo><mrow><mi>z</mi><mo>+</mo><mn>30</mn></mrow><mo>,</mo><mrow><mo>|</mo><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo></mrow><mo>|</mo></mrow><mo>)</mo></mrow></mrow></mrow></mrow><mrow><mrow><mo>|</mo><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo></mrow><mo>|</mo></mrow></mrow></mfrac><mo>⁢</mo><mi>y</mi></mrow><mo>,</mo><mrow><mrow><mo>|</mo><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>,</mo><mrow><mi>z</mi><mo>+</mo><mn>30</mn></mrow><mo>)</mo></mrow><mo>|</mo></mrow><mo>−</mo><mn>30</mn></mrow><mo>)</mo></mrow></math>",
+      ],
+    ],
+    "title": "Sheet",
   },
   {
     "equations": [

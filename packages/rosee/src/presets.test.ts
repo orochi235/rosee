@@ -15,3 +15,8 @@ it('includes a preset for each chuck', () => {
   expect(PRESETS.wheel.chuck?.kind).toBe('eccentric');
   expect(PRESETS.oval.chuck?.kind).toBe('elliptical');
 });
+
+it('includes a preset for each curved surface', () => {
+  expect(PRESETS.barrel.surface.kind).toBe('cylinder');
+  expect(PRESETS.dome.surface.kind).toBe('dome');
+});

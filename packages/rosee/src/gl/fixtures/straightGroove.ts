@@ -5,9 +5,11 @@ export function straightGroove(depth: number, length = 10, samples = 20): Toolpa
   const n = samples + 1;
   const xyz = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) xyz.set([-length / 2 + (length * i) / samples, 0, -depth], i * 3);
+  const uvh = xyz.slice();
   const path: PassPath = {
-    pass: { radius: 0, depth, phase: 0, pumpPhase: 0, index: 0, wheel: 0, eccentricity: 0 },
+    pass: { at: 0, depth, phase: 0, pumpPhase: 0, index: 0, wheel: 0, eccentricity: 0 },
     xyz,
+    uvh,
     swing: new Float32Array(n),
     pump: new Float32Array(n),
     contact: new Float32Array(n),
@@ -15,5 +17,5 @@ export function straightGroove(depth: number, length = 10, samples = 20): Toolpa
     across: new Float32Array(n).fill(Math.PI / 2),
     slide: new Float32Array(n),
   };
-  return { samples, rubberX: 30, pumpX: null, passes: [path] };
+  return { samples, surface: { kind: 'flat' }, rubberX: 30, pumpX: null, passes: [path] };
 }

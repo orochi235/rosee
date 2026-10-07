@@ -6,14 +6,18 @@ import { equation, type Stage } from './stage';
 
 /** The variables every formula in `stages` reads, at one sample of one
  *  pass: the spindle θ, swing φ, the touched rosette angle α, the depth of
- *  cut, and the directions β the formulas themselves give. */
+ *  cut, the tip (x, y, z) in the work, and the directions β the formulas
+ *  themselves give. */
 export function sampleEnv(stages: readonly Stage[], s: Settings, toolpaths: Toolpaths, pass: number, sample: number): Env {
   const path = toolpaths.passes[pass];
   const base = {
     θ: (sample / toolpaths.samples) * TAU,
     φ: path.swing[sample],
     α: path.contact[sample],
-    depth: -path.xyz[sample * 3 + 2],
+    depth: -path.uvh[sample * 3 + 2],
+    x: path.xyz[sample * 3],
+    y: path.xyz[sample * 3 + 1],
+    z: path.xyz[sample * 3 + 2],
   };
   const env: Record<string, number> = { ...base, β: evaluate(equation(stages, 'direction').rhs, base) as number };
   if (s.pump && toolpaths.pumpX !== null) {
