@@ -13,6 +13,7 @@ interface Props {
   loadPreset(name: PresetName): void;
   onExportSvg(): void;
   onOpen(file: File): void;
+  onImportRosette(file: File): void;
 }
 
 function Section<T>({ panel, value, onChange }: { panel: Panel<T>; value: T; onChange(next: T): void }) {
@@ -29,8 +30,9 @@ function Section<T>({ panel, value, onChange }: { panel: Panel<T>; value: T; onC
   );
 }
 
-export function Sidebar({ state, setSettings, setLook, loadPreset, onExportSvg, onOpen }: Props) {
+export function Sidebar({ state, setSettings, setLook, loadPreset, onExportSvg, onOpen, onImportRosette }: Props) {
   const picker = useRef<HTMLInputElement>(null);
+  const outline = useRef<HTMLInputElement>(null);
   const { settings } = state;
   const wave = settings.rosette.wave;
   return (
@@ -76,6 +78,23 @@ export function Sidebar({ state, setSettings, setLook, loadPreset, onExportSvg, 
       </section>
       <Section panel={enginePanel} value={settings} onChange={setSettings} />
       <Section panel={rosettePanel} value={settings} onChange={setSettings} />
+      <div className="rs-buttons">
+        <button type="button" onClick={() => outline.current?.click()}>
+          Import rosette
+        </button>
+        <input
+          ref={outline}
+          className="rs-hidden"
+          type="file"
+          accept=".svg,.dxf,image/*"
+          aria-label="Rosette outline to import: an SVG or DXF drawing, or a photo"
+          onChange={(e) => {
+            const file = e.currentTarget.files?.[0];
+            if (file) onImportRosette(file);
+            e.currentTarget.value = '';
+          }}
+        />
+      </div>
       {wave.kind === 'drawn' && (
         <ProfileEditor
           points={wave.points}

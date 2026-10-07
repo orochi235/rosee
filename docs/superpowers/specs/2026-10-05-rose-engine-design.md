@@ -1,8 +1,7 @@
 # rosee: rose engine lathe simulator — design
 
-**Status: v1, chucks (roadmap item 1), equations (item 2), surfaces (item 3)
-and the straight-line engine (item 4) built; rosette import (item 5) is not
-started.** This is the design for v1 plus the roadmap after it. It is for whoever implements it; it assumes familiarity with
+**Status: v1 and the whole roadmap built: chucks, equations, surfaces, the
+straight-line engine and rosette import.** This is the design for v1 plus the roadmap after it. It is for whoever implements it; it assumes familiarity with
 TypeScript and labkit (`@weasel-js/labkit`), not with ornamental turning.
 
 ## What it is
@@ -41,6 +40,7 @@ npm workspaces, following agnew.
 ```
 packages/rosee        library, pure TypeScript, no DOM
   rosette/            rosette definitions (data) → outline radius at angle
+  rosette/import/     SVG, DXF and traced-photo outlines → a drawn rosette
   contact/            rubber shape vs rosette outline
   machine/            chuck, headstock pivot, pump slide, phase → work pose at angle
   cutter/             V angle, tip flat, slide-rest position
@@ -88,6 +88,32 @@ spline and repeated `lobes` times), and `compound` (the sum of child waves). Eac
 kind declares its params as data so the lab builds panels from them. Contact
 samples any rosette into a dense outline polygon, so every kind gets the same
 contact treatment.
+
+### Rosette import
+
+A rosette can be read from a closed outline: an SVG or DXF drawing, or a photo
+or scan. Every source becomes loops in mm, the loop enclosing the most area is
+taken as the outline (an arbor hole or a mark inside it is ignored), and
+`rosetteFromOutline` turns it into a `drawn` wave, so an imported rosette is
+edited, cut and written out as equations like a hand-drawn one:
+
+1. The outline is sampled in 4096 directions round its area centroid, keeping
+   the farthest crossing in each. An outline that does not run all the way round
+   its centroid is refused.
+2. The lobe count is the largest n up to 96 at which folding the outline into n
+   repeats leaves an rms residual within 8% of its amplitude; 1 if none does. An
+   outline with no measurable wave (a circle's facets) is round.
+3. The lobes are averaged into one, box-filtered to 16–256 points, and turned so
+   the lobe's peak is at u = 0; the mean radius and amplitude come out in mm.
+
+| Source | Read by | Size |
+|---|---|---|
+| SVG (`svgLoops`) | paths (every command, arcs included), polygons, polylines, circles, ellipses and rects, with group and element transforms | its own: `width` in mm, in or cm over the `viewBox`, else 96 px to the inch; y flipped up |
+| DXF (`dxfLoops`) | LWPOLYLINE and POLYLINE with bulges, CIRCLE, ELLIPSE, SPLINE (de Boor; weights ignored), and LINE, ARC and open polylines chained end to end into loops | `$INSUNITS`, mm when unset |
+| Picture (`traceLoops`) | marching squares on brightness at Otsu's threshold, the picture padded with its border's brightness so a shape touching the edge closes | none: scaled to the current mean radius |
+
+The lab's **Import rosette** button, under the Rosette panel, takes any of
+them; a picture is traced at up to 1024 px on its longer side.
 
 ### Contact and the swing solve
 
@@ -339,6 +365,14 @@ Vitest in Node for the library, against cases with known answers:
 | Straight-line engine, round rosette | A straight line at x = at, y running −L/2 to L/2 |
 | Straight-line engine, lobed rosette | A wave across the stroke, one lobe every L/n |
 | Straight-line engine, index a quarter turn | The rows turned a quarter turn |
+| Outline of a 12-lobe sine, or a 7-lobe petal | Read back as 12 or 7 lobes within 0.02 or 0.05 mm |
+| Outline of a circle | One lobe, no amplitude |
+| SVG in mm with an arbor hole; in px under a group transform; arcs and curves | The rosette at its own size; the hole ignored |
+| DXF polyline, circle in inches, bulges, lines and arcs | Read at their size; pieces chained into a loop |
+| A soft-edged picture of a rosette | Traced to within 0.04 mm at 5 px/mm |
+
+`npm run smoke` imports an SVG outline and a PNG drawn in the page, and checks
+the lab reads a drawn lobe from the SVG and 7 lobes from the PNG.
 
 A browser test carves a ring round a barrel and finds it cut the whole way
 across the seam; another draws each curved preset's part and finds it in the
@@ -429,4 +463,4 @@ In order.
 2. **The math as equations**: built; see [Equations](#equations).
 3. **Surface work**: built; see [Surfaces](#surfaces).
 4. **Straight-line engine**: built; see [Straight-line engine](#straight-line-engine).
-5. **Rosette import**: outlines from DXF/SVG, or traced from a photo.
+5. **Rosette import**: built; see [Rosette import](#rosette-import).

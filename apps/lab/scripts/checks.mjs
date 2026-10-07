@@ -177,7 +177,7 @@ export async function exportSvg(page, url) {
 
   // Open SVG brings back the settings the file was exported with.
   await page.selectOption('.rs-preset select', 'basket');
-  await page.locator('input[type=file]').setInputFiles({ name: 'cut.svg', mimeType: 'image/svg+xml', buffer: Buffer.from(svg) });
+  await page.getByLabel('SVG to open').setInputFiles({ name: 'cut.svg', mimeType: 'image/svg+xml', buffer: Buffer.from(svg) });
   await page.waitForTimeout(500);
   const preset = await page.locator('.rs-preset select').inputValue();
   if (preset !== 'swirl') return `opening the export left the preset at ${preset}`;
@@ -191,7 +191,7 @@ export async function exportSvg(page, url) {
   await page.waitForTimeout(500);
   const dropped = await page.locator('.rs-preset select').inputValue();
   if (dropped !== 'swirl') return `dropping the export left the preset at ${dropped}`;
-  await page.locator('input[type=file]').setInputFiles({ name: 'other.svg', mimeType: 'image/svg+xml', buffer: Buffer.from('<svg/>') });
+  await page.getByLabel('SVG to open').setInputFiles({ name: 'other.svg', mimeType: 'image/svg+xml', buffer: Buffer.from('<svg/>') });
   await page.waitForTimeout(300);
   const notice = await page.getByRole('alert').filter({ hasText: 'other.svg' }).count();
   return notice ? '' : 'no notice for a file with no settings';
@@ -230,4 +230,59 @@ export async function equationsTab(page, url) {
   if (errors.length) return errors.join('; ');
   if (broken) return `${broken} merror elements`;
   return maths > 10 && values > 5 ? '' : `${maths} equations, ${values} values`;
+}
+
+/** Importing a rosette drawn in an SVG makes it the rosette, as a drawn lobe,
+ *  and the lab still draws. */
+export async function importOutline(page, url) {
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(url);
+  await page.waitForTimeout(1000);
+  const points = Array.from({ length: 720 }, (_, k) => {
+    const a = (k / 720) * 2 * Math.PI;
+    const r = 30 + 1.2 * Math.cos(9 * a);
+    return `${(r * Math.cos(a)).toFixed(3)},${(r * Math.sin(a)).toFixed(3)}`;
+  }).join(' ');
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="80mm" height="80mm" viewBox="-40 -40 80 80"><polygon points="${points}"/></svg>`;
+  await page.locator('input[aria-label^="Rosette outline"]').setInputFiles({ name: 'nine.svg', mimeType: 'image/svg+xml', buffer: Buffer.from(svg) });
+  await page.waitForTimeout(1500);
+  const shape = await page.locator('.rs-sidebar').getByText('drawn', { exact: true }).count();
+  const banner = await page.locator('.rs-error').count();
+  if (errors.length) return errors.join('; ');
+  if (banner) return `error banner: ${await page.locator('.rs-error').first().textContent()}`;
+  return shape ? '' : 'the rosette did not become a drawn lobe';
+}
+
+/** A photo of a rosette, here a 7-lobed one drawn light on dark into a PNG,
+ *  traces into a 7-lobe drawn rosette at the mean radius already set. */
+export async function importPicture(page, url) {
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(url);
+  await page.waitForTimeout(1000);
+  const png = await page.evaluate(() => {
+    const c = document.createElement('canvas');
+    c.width = c.height = 400;
+    const g = c.getContext('2d');
+    g.fillStyle = '#111';
+    g.fillRect(0, 0, 400, 400);
+    g.fillStyle = '#ddd';
+    g.beginPath();
+    for (let k = 0; k <= 720; k++) {
+      const a = (k / 720) * 2 * Math.PI;
+      const r = 150 + 9 * Math.cos(7 * a);
+      g.lineTo(200 + r * Math.cos(a), 200 - r * Math.sin(a));
+    }
+    g.fill();
+    return c.toDataURL('image/png').split(',')[1];
+  });
+  await page.locator('input[aria-label^="Rosette outline"]').setInputFiles({ name: 'photo.png', mimeType: 'image/png', buffer: Buffer.from(png, 'base64') });
+  await page.waitForTimeout(1500);
+  const banner = await page.locator('.rs-error').count();
+  if (errors.length) return errors.join('; ');
+  if (banner) return `error banner: ${await page.locator('.rs-error').first().textContent()}`;
+  const hash = await page.evaluate(() => location.hash.slice(3));
+  const lobes = await page.evaluate((h) => JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(h.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0)))).settings.rosette.wave.lobes, hash);
+  return lobes === 7 ? '' : `traced ${lobes} lobes, not 7`;
 }
