@@ -24,6 +24,8 @@ export interface ChuckPose {
   ends: [Vec2, Vec2];
   /** The elliptical chuck's ring center; null on an eccentric chuck. */
   ring: Vec2 | null;
+  /** The ring's radius, wider than the stock so it shows past the work. */
+  ringRadius: number;
 }
 
 /** The machine at one instant, in machine-frame mm, ready to draw. */
@@ -52,6 +54,20 @@ export interface MachinePose {
 
 const OUTLINE_POINTS = 720;
 
+const stocks = new WeakMap<Toolpaths, number>();
+
+/** The stock's radius: wide enough for every pass's cut at its largest eccentricity. */
+function stockRadius(s: Settings, t: Toolpaths): number {
+  let stock = stocks.get(t);
+  if (stock === undefined) {
+    const c = s.chuck;
+    const eccentricity = c ? Math.max(...t.passes.map((q) => Math.abs(c.eccentricity + q.pass.eccentricity))) : 0;
+    stock = Math.max(s.job.from, s.job.to) + eccentricity + 1;
+    stocks.set(t, stock);
+  }
+  return stock;
+}
+
 export function machinePose(s: Settings, t: Toolpaths, at: PlayheadAt): MachinePose {
   const path = t.passes[at.pass];
   const i = at.sample;
@@ -67,8 +83,7 @@ export function machinePose(s: Settings, t: Toolpaths, at: PlayheadAt): MachineP
   const onHeadstock = (p: Vec2) => headstockToMachine(chuckToHeadstock(p, at.angle, index), P, swing);
   const slide = path.slide[i];
   const c = s.chuck;
-  const eccentricity = c ? Math.max(...t.passes.map((q) => Math.abs(c.eccentricity + q.pass.eccentricity))) : 0;
-  const stock = Math.max(s.job.from, s.job.to) + eccentricity + 1;
+  const stock = stockRadius(s, t);
   const e = c ? c.eccentricity + path.pass.eccentricity : 0;
   const chuck: ChuckPose | null = c && {
     kind: c.kind,
@@ -79,6 +94,7 @@ export function machinePose(s: Settings, t: Toolpaths, at: PlayheadAt): MachineP
       c.kind === 'elliptical'
         ? headstockToMachine([e * Math.cos(rad(c.ring)), e * Math.sin(rad(c.ring))], P, swing)
         : null,
+    ringRadius: stock * 1.25,
   };
   const rosette: Vec2[] = [];
   for (let k = 0; k <= OUTLINE_POINTS; k++) rosette.push(toMachine((k / OUTLINE_POINTS) * TAU));

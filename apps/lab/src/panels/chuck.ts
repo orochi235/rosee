@@ -47,7 +47,7 @@ export const chuckPanel: Panel<Settings> = {
     if (c.kind === 'none') return { ...s, chuck: null, job: { ...s.job, wheelCount: 1, eccentricityStep: 0 } };
     const kind = c.kind as Chuck['kind'];
     const chuck: Chuck =
-      kind !== s.chuck?.kind
+      s.chuck === null
         ? DEFAULT_CHUCKS[kind]
         : kind === 'eccentric'
           ? { kind, eccentricity: c.eccentricity as number, wheel: c.wheel as number }

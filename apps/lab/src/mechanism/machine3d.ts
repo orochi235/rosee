@@ -169,7 +169,7 @@ export function createMachineScene(
       if (ch?.ring) {
         const [hx, hy] = machineToHeadstock(ch.ring, P, pose.swing);
         ring.position.set(hx, hy + P, -11);
-        ring.scale.setScalar(pose.stock * 1.25);
+        ring.scale.setScalar(ch.ringRadius);
       }
       work.scale.set(pose.stock, pose.stock, 1);
       mark.scale.set(pose.stock * 0.9, 1.2, 1);

@@ -39,6 +39,12 @@ describe('panels', () => {
     expect(() => computeToolpaths({ ...off, samplesPerTurn: 256 })).not.toThrow();
   });
 
+  it('switching the chuck kind keeps its eccentricity and wheel', () => {
+    const read = chuckPanel.read(PRESETS.wheel);
+    const s = chuckPanel.write(PRESETS.wheel, { ...read, kind: 'elliptical', eccentricity: 5.5, wheel: 30 });
+    expect(s.chuck).toEqual({ ...DEFAULT_CHUCKS.elliptical, eccentricity: 5.5, wheel: 30 });
+  });
+
   it('fitting a chuck starts from its defaults', () => {
     const on = chuckPanel.write(PRESETS.swirl, { ...chuckPanel.read(PRESETS.swirl), kind: 'elliptical' });
     expect(on.chuck).toEqual(DEFAULT_CHUCKS.elliptical);

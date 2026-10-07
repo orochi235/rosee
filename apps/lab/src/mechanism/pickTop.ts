@@ -35,11 +35,11 @@ export function pickTop(
   if (p[0] >= cutter[0] - 2 && p[0] <= cutter[0] + 11 && Math.abs(p[1] - cutter[1]) <= 7) return 'cutter';
   const spindle = at(pose.spindle);
   if (Math.hypot(p[0] - spindle[0], p[1] - spindle[1]) <= REACH) return 'spindle';
-  const ring = pose.chuck?.ring;
-  if (ring) {
-    const [rx, ry] = at(ring);
+  const ch = pose.chuck;
+  if (ch?.ring) {
+    const [rx, ry] = at(ch.ring);
     const d = Math.hypot(p[0] - rx, p[1] - ry);
-    if (d <= REACH || Math.abs(d - pose.stock * frame.scale) <= REACH) return 'ring';
+    if (d <= REACH || Math.abs(d - ch.ringRadius * frame.scale) <= REACH) return 'ring';
   }
   for (let k = 1; k < pose.rosette.length; k++) {
     if (toSegment(p, at(pose.rosette[k - 1]), at(pose.rosette[k])) <= REACH) return 'rosette';

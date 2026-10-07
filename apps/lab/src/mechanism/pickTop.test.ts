@@ -40,7 +40,8 @@ describe('pickTop', () => {
       expect(a).not.toEqual(b);
       if (cp.chuck!.ring) {
         const r = cp.chuck!.ring;
-        expect(pickTop(cp, cs.rubber, cframe, size, cat([r[0], r[1] + cp.stock]))).toBe('ring');
+        expect(pickTop(cp, cs.rubber, cframe, size, cat([r[0], r[1] + cp.chuck!.ringRadius]))).toBe('ring');
+        expect(pickTop(cp, cs.rubber, cframe, size, cat([cp.work[0], cp.work[1] + cp.stock - 1]))).toBe('work');
       }
     }
   });

@@ -50,7 +50,7 @@ export function drawTop(
     ctx.strokeStyle = c.faint;
     ctx.setLineDash([3, 3]);
     ctx.beginPath();
-    ctx.arc(X(chuck.ring), Y(chuck.ring), pose.stock * frame.scale, 0, Math.PI * 2);
+    ctx.arc(X(chuck.ring), Y(chuck.ring), chuck.ringRadius * frame.scale, 0, Math.PI * 2);
     ctx.stroke();
     ctx.setLineDash([]);
     ctx.fillStyle = c.faint;
