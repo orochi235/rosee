@@ -27,7 +27,7 @@ export interface LabState {
 }
 
 export const DEFAULT_LOOK: Look = {
-  mode: 'surface',
+  mode: 'lines',
   azimuth: 120,
   elevation: 35,
   metal: 'silver',
