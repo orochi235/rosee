@@ -14,6 +14,20 @@ function toSegment(p: Vec2, a: Vec2, b: Vec2): number {
   return Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy);
 }
 
+/** Whether `p` is inside the convex polygon `points`, wound either way. */
+function inside(p: Vec2, points: Vec2[]): boolean {
+  let sign = 0;
+  for (let k = 0; k < points.length; k++) {
+    const a = points[k];
+    const b = points[(k + 1) % points.length];
+    const cross = (b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0]);
+    if (cross === 0) continue;
+    if (sign === 0) sign = Math.sign(cross);
+    else if (Math.sign(cross) !== sign) return false;
+  }
+  return true;
+}
+
 /** The part of the top view under canvas point `p`, smallest parts first so
  *  the rubber wins over the rosette it sits on. */
 export function pickTop(
@@ -45,8 +59,15 @@ export function pickTop(
     if (toSegment(p, at(pose.rosette[k - 1]), at(pose.rosette[k])) <= REACH) return 'rosette';
   }
   if (pose.chuck && toSegment(p, at(pose.chuck.ends[0]), at(pose.chuck.ends[1])) <= REACH) return 'chuck';
-  const work = at(pose.work);
-  if (Math.hypot(p[0] - work[0], p[1] - work[1]) <= pose.stock * frame.scale) return 'work';
+  const carriage = pose.carriage;
+  if (carriage) {
+    if (inside(p, carriage.plateCorners.map(at))) return 'work';
+    if (inside(p, carriage.corners.map(at))) return 'carriage';
+    if (carriage.rails.some(([a, b]) => toSegment(p, at(a), at(b)) <= REACH)) return 'carriage';
+  } else {
+    const work = at(pose.work);
+    if (Math.hypot(p[0] - work[0], p[1] - work[1]) <= pose.stock * frame.scale) return 'work';
+  }
   if (toSegment(p, at(pose.pivot), spindle) <= REACH) return 'headstock';
   return null;
 }

@@ -157,7 +157,7 @@ export function App() {
       </ErrorBoundary>
     );
   return (
-    <LabShell title="rosee" mode="dark" documentTitle="rosee — rose engine lab">
+    <LabShell title="rosee" mode="dark" documentTitle="rosee — rose and straight-line engine lab">
       <ErrorBoundary onReset={resetToDefault}>
         <Lab />
       </ErrorBoundary>

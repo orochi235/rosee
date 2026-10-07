@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
-import { liveLine, type LiveContext, type PartKey, PARTS } from './mechanism/parts';
+import type { Settings } from 'rosee';
+import { liveLine, type LiveContext, type PartKey, partText } from './mechanism/parts';
 
 export interface Hover {
   part: PartKey;
@@ -13,7 +14,7 @@ export interface Hover {
  *  lab's root, under its theme but outside every tile that would clip it, and
  *  flips toward the middle of the window. */
 export function Callout({ hover, live }: { hover: Hover; live: LiveContext }) {
-  const text = PARTS[hover.part];
+  const text = partText(hover.part, live.settings);
   const line = liveLine(hover.part, live);
   const left = hover.x > window.innerWidth / 2;
   const up = hover.y > window.innerHeight / 2;
@@ -30,7 +31,15 @@ export function Callout({ hover, live }: { hover: Hover; live: LiveContext }) {
 }
 
 /** The same callouts for a keyboard or a touch screen: focus or tap a name. */
-export function PartsList({ parts, onShow }: { parts: PartKey[]; onShow(part: PartKey | null, x: number, y: number): void }) {
+export function PartsList({
+  parts,
+  settings,
+  onShow,
+}: {
+  parts: PartKey[];
+  settings: Settings;
+  onShow(part: PartKey | null, x: number, y: number): void;
+}) {
   return (
     <details className="rs-parts">
       <summary>Parts</summary>
@@ -45,7 +54,7 @@ export function PartsList({ parts, onShow }: { parts: PartKey[]; onShow(part: Pa
               }}
               onBlur={() => onShow(null, 0, 0)}
             >
-              {PARTS[p].title}
+              {partText(p, settings).title}
             </button>
           </li>
         ))}

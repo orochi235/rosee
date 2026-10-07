@@ -1,7 +1,8 @@
 # rosee: rose engine lathe simulator — design
 
-**Status: v1 and the whole roadmap built: chucks, equations, surfaces, the
-straight-line engine and rosette import.** This is the design for v1 plus the roadmap after it. It is for whoever implements it; it assumes familiarity with
+**Status: v1 and roadmap items 1–5 built: chucks, equations, surfaces, the
+straight-line engine and rosette import. Items 6–10, other engraving machines,
+are not started.** This is the design for v1 plus the roadmap after it. It is for whoever implements it; it assumes familiarity with
 TypeScript and labkit (`@weasel-js/labkit`), not with ornamental turning.
 
 ## What it is
@@ -200,9 +201,22 @@ turns the work on the carriage, so a second index crosses the rows. The graver's
 V opens across the stroke and does not turn. `PassPath.slide` holds the
 carriage's travel. A straight-line engine cuts a flat face with no chuck;
 `computeToolpaths` refuses either, and the lab's Engine panel takes the chuck off
-and flattens the surface when it is chosen, hiding both panels. The `straight`
-preset is barleycorn in rows. A hash from before engines restores to a rose
-engine.
+and flattens the surface when it is chosen, hiding both panels. Switching
+engines also moves the rows: radii from–to become rows centered on the stroke,
+and back to radii starting at 4 mm. A hash from before engines restores to a
+rose engine.
+
+Presets for it, grouped under their own heading in the picker: `ruled` (plain
+rows from a round rosette), `waves` (rows in phase), `flame` (a small phase step
+slanting the crests), `grain` (barleycorn in rows), `chain` (rows in phase in
+groups of four), `scales` (a petal rosette at half a lobe a row) and `lattice`
+(waves cut again a quarter turn round on the division plate).
+
+The lab draws the machine as it is. A rack on the carriage meshes with a pinion
+on the arbor whose pitch radius is L/2π, so one turn rolls the carriage one
+stroke. The carriage runs on rails on the rocking frame, and the work is a
+rectangular plate covering the whole cut. The callouts call the spindle the
+arbor, and add the carriage and the rack and pinion.
 
 ### Jobs
 
@@ -321,6 +335,13 @@ Pumping, Chuck, Surface, Cutter and job, Look, Presets) and a `WorkspaceGrid`:
 - **Transport**: play/pause, pass `n/N`, scrubber, speed; the angle readout pinned
   to a fixed width.
 
+On a straight-line engine the Top view draws the plate on its carriage between
+the rails, and the Side view the carriage behind the plate. The 3D machine hangs
+each engine's own work-holding off a shared frame: the rose engine's chuck and
+round stock, or the straight-line engine's rails, carriage, plate, and rack
+and pinion. The motion plots show the cutter across the stroke and the
+carriage's travel.
+
 With a chuck fitted, the Top view and the 3D machine draw
 the slide on the faceplate with the work offset along it, and the ring for the
 elliptical chuck, each with a callout (live value: the slide offset); the motion
@@ -337,7 +358,7 @@ of cut. The job's From and To are labeled by what they measure. Presets
 rosette) and `dome` (a swirl on a dome) use them.
 
 Panes stay under about 400 px tall. All state lives in the URL hash. Presets
-(phased swirl, basket weave, barleycorn, wheel, oval) are settings objects.
+are settings objects, grouped in the picker by engine.
 
 ## Testing
 
@@ -464,3 +485,19 @@ In order.
 3. **Surface work**: built; see [Surfaces](#surfaces).
 4. **Straight-line engine**: built; see [Straight-line engine](#straight-line-engine).
 5. **Rosette import**: built; see [Rosette import](#rosette-import).
+
+Not started; each needs evaluating before it is designed.
+
+6. **Geometric chuck**: a stack of rotating stages geared together, each with
+   its own radius and speed ratio, drawing epicycloid figures. It generalizes
+   the eccentric chuck, so it may fit the existing chuck chain.
+7. **Ornamental turning cutting frames**: the cutter, not the work, runs a
+   small loop (eccentric, elliptical or epicycloidal cutting frame), stepped
+   round by a division plate. Needs a cutter path in the chain.
+8. **Geometric pen**: the geometric chuck's motion drawing with a pen, not a
+   cutter. Possibly only an output mode of item 6.
+9. **Medal ruling machine**: parallel lines whose wiggles copy a relief, so
+   the print looks embossed. Its input is a height map, not a rosette.
+10. **Pantograph or reducing machine**: copies a large master down to small
+    scale. It copies a pattern instead of generating one, so it may not belong
+    here at all.

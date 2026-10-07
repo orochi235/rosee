@@ -1,6 +1,6 @@
 import { computeToolpaths, PRESETS } from 'rosee';
 import { expect, it } from 'vitest';
-import { ALL_PARTS, liveLine, PARTS, partsFor } from './parts';
+import { ALL_PARTS, liveLine, PARTS, partsFor, partText } from './parts';
 import { at as playheadAt } from '../playhead';
 import { machinePose } from './pose';
 
@@ -25,8 +25,23 @@ it('lists and explains the chuck parts when a chuck is fitted', () => {
   expect(partsFor(PRESETS.swirl, ALL_PARTS)).not.toContain('chuck');
   expect(partsFor(PRESETS.wheel, ALL_PARTS)).toContain('chuck');
   expect(partsFor(PRESETS.wheel, ALL_PARTS)).not.toContain('ring');
-  expect(partsFor(s, ALL_PARTS)).toEqual(ALL_PARTS);
+  expect(partsFor(s, ALL_PARTS)).toEqual(ALL_PARTS.filter((p) => p !== 'carriage' && p !== 'gearing'));
   for (const key of ['chuck', 'ring'] as const) expect(PARTS[key].title && PARTS[key].what && PARTS[key].how).toBeTruthy();
   expect(liveLine('chuck', c)).toMatch(/^elliptical · slide -?\d+\.\d\d of ±4\.00 mm · wheel 0\.0°$/);
   expect(liveLine('ring', c)).toBe('4.00 mm off the spindle toward 0.0°');
+});
+
+it("lists and explains a straight-line engine's carriage and gearing, and calls its spindle the arbor", () => {
+  const s = { ...PRESETS.grain, samplesPerTurn: 256 };
+  const toolpaths = computeToolpaths(s);
+  const at = playheadAt(128, 256, toolpaths.passes.length);
+  const c = { settings: s, toolpaths, at, pose: machinePose(s, toolpaths, at), exaggerate: 10 };
+  const parts = partsFor(s, ALL_PARTS);
+  expect(parts).toContain('carriage');
+  expect(parts).toContain('gearing');
+  expect(parts).not.toContain('chuck');
+  expect(partsFor(s, ['work'])).toEqual(['work', 'carriage']);
+  expect(partText('spindle', s).title).toBe('Arbor');
+  expect(liveLine('carriage', c)).toMatch(/^-?\d+\.\d\d of ±15\.0 mm along the stroke$/);
+  expect(liveLine('gearing', c)).toBe('pitch radius 4.77 mm · 30.0 mm per turn');
 });

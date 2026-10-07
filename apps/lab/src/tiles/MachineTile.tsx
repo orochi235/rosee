@@ -77,7 +77,7 @@ export function MachineTile({
         }}
         onPointerLeave={() => setHover(null)}
       />
-      {parts && <PartsList parts={partsFor(settings, ALL_PARTS)} onShow={show} />}
+      {parts && <PartsList parts={partsFor(settings, ALL_PARTS)} settings={settings} onShow={show} />}
       {hover && <Callout hover={hover} live={{ settings, toolpaths, at, pose, exaggerate }} />}
     </div>
   );
