@@ -1,6 +1,6 @@
-import { type Chuck, PRESETS, type PresetName, type Pump, type Rosette, type Rubber, type Settings, type Surface, type Wave } from 'rosee';
+import { type Chuck, type Engine, PRESETS, type PresetName, type Pump, type Rosette, type Rubber, type Settings, type Surface, type Wave } from 'rosee';
 import { METALS } from 'rosee/gl';
-import { DEFAULT_CHUCKS, DEFAULT_PUMP, DEFAULT_SURFACES, defaultWave, RUBBERS, SIMPLE_KINDS } from './defaults';
+import { DEFAULT_CHUCKS, DEFAULT_ENGINES, DEFAULT_PUMP, DEFAULT_SURFACES, defaultWave, RUBBERS, SIMPLE_KINDS } from './defaults';
 import { DEFAULT_STATE, type LabState, type Look, OUTPUT_MODES, RESOLUTIONS } from './state';
 
 type Raw = Record<string, unknown>;
@@ -62,6 +62,13 @@ function chuck(raw: unknown, fallback: Chuck | null): Chuck | null {
   return numbers(raw, DEFAULT_CHUCKS[kind]);
 }
 
+/** A hash from before engines has none, and was cut on a rose engine. */
+function engine(raw: unknown, fallback: Engine): Engine {
+  if (!isObject(raw)) return fallback;
+  const kind = oneOf(raw.kind, Object.keys(DEFAULT_ENGINES) as Engine['kind'][], 'rose');
+  return numbers(raw, DEFAULT_ENGINES[kind]);
+}
+
 /** A hash from before surfaces has none, and cuts a face as it did then. */
 function surface(raw: unknown, fallback: Surface): Surface {
   if (!isObject(raw)) return fallback;
@@ -71,15 +78,18 @@ function surface(raw: unknown, fallback: Surface): Surface {
 
 /** Settings from a hash. A job that repeats the wheel or steps the
  *  eccentricity with no chuck to do it is set back, since the sidebar hides
- *  those fields without a chuck and could not undo them. */
+ *  those fields without a chuck and could not undo them; and a straight-line
+ *  engine, which the sidebar shows no chuck or surface for, gets neither. */
 function settings(raw: Raw): Settings {
-  const s = fields(raw);
+  const read = fields(raw);
+  const s = read.engine.kind === 'straight' ? { ...read, chuck: null, surface: DEFAULT_SURFACES.flat } : read;
   return s.chuck ? s : { ...s, job: { ...s.job, wheelCount: 1, eccentricityStep: 0 } };
 }
 
 function fields(raw: Raw): Settings {
   const d = DEFAULT_STATE.settings;
   return {
+    engine: engine(raw.engine, d.engine),
     rosette: rosette(raw.rosette, d.rosette),
     rubber: rubber(raw.rubber, d.rubber),
     pivotDistance: finite(raw.pivotDistance) ? raw.pivotDistance : d.pivotDistance,

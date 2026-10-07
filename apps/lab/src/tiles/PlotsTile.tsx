@@ -35,7 +35,19 @@ const PLACE: Record<Surface['kind'], Series[]> = {
   ],
 };
 
+/** On a straight-line engine, where the cutter sits across the stroke. */
+const ACROSS: Series = {
+  label: 'Cutter across the stroke',
+  unit: 'mm',
+  // The work is turned on the carriage by the index; turn it back.
+  values: (t, k) => {
+    const a = (t.passes[k].pass.index * Math.PI) / 180;
+    return onSheet((u, v) => u * Math.cos(a) + v * Math.sin(a))(t, k);
+  },
+};
+
 const SLIDE: Series = { label: 'Chuck slide', unit: 'mm', values: (t, k) => t.passes[k].slide };
+const CARRIAGE: Series = { ...SLIDE, label: 'Carriage' };
 
 function range(v: Float32Array): [number, number] {
   let lo = Infinity;
@@ -48,12 +60,20 @@ function range(v: Float32Array): [number, number] {
   return [lo - pad, hi + pad];
 }
 
-/** Each motion against spindle angle for the current pass, cursor at the playhead. */
-export function PlotsTile({ toolpaths, at, chuck }: { toolpaths: Toolpaths; at: PlayheadAt; chuck: boolean }) {
+/** Each motion against spindle angle for the current pass, cursor at the
+ *  playhead. `slide` names the work's slide, if it has one. */
+export function PlotsTile({ toolpaths, at, slide }: { toolpaths: Toolpaths; at: PlayheadAt; slide: 'chuck' | 'carriage' | null }) {
   const kind = toolpaths.surface.kind;
   const body = useRef<HTMLDivElement>(null);
   const { width, height } = useElementSize(body);
-  const shown = useMemo(() => [...SERIES, ...PLACE[kind], ...(chuck ? [SLIDE] : [])], [chuck, kind]);
+  const shown = useMemo(
+    () => [
+      ...SERIES,
+      ...(slide === 'carriage' ? [ACROSS] : PLACE[kind]),
+      ...(slide === 'chuck' ? [SLIDE] : slide === 'carriage' ? [CARRIAGE] : []),
+    ],
+    [slide, kind],
+  );
   const rowHeight = Math.max(40, (height - shown.length * 18) / shown.length);
   const series = useMemo(
     () =>

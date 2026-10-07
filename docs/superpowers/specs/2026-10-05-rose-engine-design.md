@@ -1,7 +1,8 @@
 # rosee: rose engine lathe simulator — design
 
-**Status: v1, chucks (roadmap item 1), equations (item 2) and surfaces (item 3)
-built; the rest of the roadmap is not started.** This is the design for v1 plus the roadmap after it. It is for whoever implements it; it assumes familiarity with
+**Status: v1, chucks (roadmap item 1), equations (item 2), surfaces (item 3)
+and the straight-line engine (item 4) built; rosette import (item 5) is not
+started.** This is the design for v1 plus the roadmap after it. It is for whoever implements it; it assumes familiarity with
 TypeScript and labkit (`@weasel-js/labkit`), not with ornamental turning.
 
 ## What it is
@@ -30,7 +31,8 @@ widening and narrowing.
 
 v1 models rocking, pumping, phasing and indexing, rubber shape and pivot geometry,
 on a flat face, plus eccentric and elliptical [chucks](#chucks) and barrel and
-dome [surfaces](#surfaces). Roadmap at the end.
+dome [surfaces](#surfaces), and a [straight-line engine](#straight-line-engine).
+Roadmap at the end.
 
 ## Layout
 
@@ -156,6 +158,25 @@ for the views, so none recomputes it.
 
 The cutter is `{ vAngle, tipFlat }`. It doesn't affect the toolpath, only the
 carve.
+
+### Straight-line engine
+
+`Settings.engine` is `{ kind: 'rose' }`, or `{ kind: 'straight', stroke }`: a
+machine whose work does not turn. A carriage on the rocking frame slides the
+work along the frame's y axis, geared to the rosette so it travels `stroke` mm
+per rosette turn, centered on the stroke: c(θ) = L(θ/2π − ½). Rocking and
+pumping are unchanged, so a lobed rosette moves the work across the stroke as it
+slides, and the cutter cuts a straight wave. In the chain the carriage replaces
+the spindle's rotation: a headstock-frame tip h maps to the work as
+Rot(index)(h − (0, c)) (`headstockToCarriage`). The job's `from`/`to` set the
+row across the stroke, phasing shifts the waves along it, and the division plate
+turns the work on the carriage, so a second index crosses the rows. The graver's
+V opens across the stroke and does not turn. `PassPath.slide` holds the
+carriage's travel. A straight-line engine cuts a flat face with no chuck;
+`computeToolpaths` refuses either, and the lab's Engine panel takes the chuck off
+and flattens the surface when it is chosen, hiding both panels. The `straight`
+preset is barleycorn in rows. A hash from before engines restores to a rose
+engine.
 
 ### Jobs
 
@@ -315,6 +336,9 @@ Vitest in Node for the library, against cases with known answers:
 | Round rosette on a dome | A ring of arc `at` from the pole, h = −d |
 | Any surface | `fromSheet` inverts `toSheet`; the graver sits d below the surface and points square into it |
 | Hash from before surfaces | Restores to a face |
+| Straight-line engine, round rosette | A straight line at x = at, y running −L/2 to L/2 |
+| Straight-line engine, lobed rosette | A wave across the stroke, one lobe every L/n |
+| Straight-line engine, index a quarter turn | The rows turned a quarter turn |
 
 A browser test carves a ring round a barrel and finds it cut the whole way
 across the seam; another draws each curved preset's part and finds it in the
@@ -368,6 +392,7 @@ evaluating their own equations.
 | Chain | (x, y) = Rot(−wheel)(Rot(index − θ) H_φ⁻¹(r_c, 0) − (s, 0)); s = e, or e cos(θ − index − ring) | formula, given each sample's φ | `PassPath.xyz`, `PassPath.slide` |
 | Pump | β_pump = arg H_φ⁻¹(X_pump, 0) − θ − phase_pump; z = −(d₀ + g(R_pump(β_pump) − X_pump)); z = −d₀ with no pump | formula, given R_pump from the table | `PassPath.xyz` z |
 | Groove | w = f + 2d tan(V/2) | formula | `grooveWidth` |
+| Carriage | c = L(θ/2π − ½); (x, y) = Rot(index)(H_φ⁻¹(r_c, 0) − (0, c)) | formula | `PassPath.slide`, `PassPath.xyz` |
 | Sheet, barrel | (u, v, h) = (R_b arg(x, y), −z, \|(x, y)\| − R_b) | formula | `PassPath.uvh` |
 | Sheet, dome | (u, v) = S·arg(z + S, \|(x, y)\|)/\|(x, y)\| · (x, y), h = \|(x, y, z + S)\| − S | formula | `PassPath.uvh` |
 
@@ -403,6 +428,5 @@ In order.
 1. **Eccentric and elliptical chucks**: built; see [Chucks](#chucks).
 2. **The math as equations**: built; see [Equations](#equations).
 3. **Surface work**: built; see [Surfaces](#surfaces).
-4. **Straight-line engine**: a second machine whose chain has a linear slide where
-   spindle rotation was; same cutter, job, surface and carve.
+4. **Straight-line engine**: built; see [Straight-line engine](#straight-line-engine).
 5. **Rosette import**: outlines from DXF/SVG, or traced from a photo.

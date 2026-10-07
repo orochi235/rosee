@@ -4,8 +4,11 @@ export { type Cutter, grooveWidth } from './cutter/cutter';
 export { type SvgOptions, toolpathsSvg } from './export/svg';
 export { expandJob, type Job, type Pass, passCount } from './job/job';
 export { type Chuck, slideAt, wheelOf } from './machine/chuck';
+export { carriageAt, type Engine, roseEngine } from './machine/engine';
 export {
+  carriageToHeadstock,
   chuckToHeadstock,
+  headstockToCarriage,
   chuckToWork,
   headstockToChuck,
   headstockToMachine,

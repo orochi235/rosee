@@ -7,6 +7,7 @@ it('opens the V along the machine x axis, carried into the work by spindle, inde
   const t = computeToolpaths({
     rosette: { radius: 30, wave: { kind: 'sine', lobes: 12, amplitude: 1.5 } },
     rubber: { shape: 'round', radius: 1 },
+    engine: { kind: 'rose' },
     pivotDistance: 60,
     pump: null,
     chuck: null,

@@ -2,6 +2,7 @@ import type { Rubber } from '../contact/table';
 import type { Cutter } from '../cutter/cutter';
 import type { Job } from '../job/job';
 import type { Chuck } from '../machine/chuck';
+import type { Engine } from '../machine/engine';
 import type { Rosette } from '../rosette/rosette';
 import type { Surface } from '../surface/surface';
 
@@ -17,6 +18,8 @@ export interface Pump {
  *  degrees. `pivotDistance` is how far below the spindle axis the headstock
  *  rocks. */
 export interface Settings {
+  /** The machine: a rose engine, or a straight-line engine. */
+  engine: Engine;
   rosette: Rosette;
   rubber: Rubber;
   pivotDistance: number;

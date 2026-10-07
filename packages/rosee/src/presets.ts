@@ -3,6 +3,7 @@ import type { Settings } from './toolpath/settings';
 const base: Settings = {
   rosette: { radius: 30, wave: { kind: 'sine', lobes: 12, amplitude: 1 } },
   rubber: { shape: 'round', radius: 1 },
+  engine: { kind: 'rose' },
   pivotDistance: 150,
   pump: null,
   chuck: null,
@@ -58,6 +59,14 @@ export const PRESETS = {
     rosette: { radius: 30, wave: { kind: 'sine', lobes: 12, amplitude: 0.3 } },
     surface: { kind: 'dome', radius: 30, rim: 20 },
     job: { ...base.job, from: 4, to: 19, depth: 0.25 },
+  },
+  /** Barleycorn in straight rows on a straight-line engine: each row's
+   *  waves half a lobe from the last's, so they interleave into grains. */
+  straight: {
+    ...base,
+    engine: { kind: 'straight', stroke: 30 },
+    rosette: { radius: 30, wave: { kind: 'sine', lobes: 12, amplitude: 0.6 } },
+    job: { ...base.job, from: -12, to: 12, step: 0.3, depth: 0.12, phaseStep: 15 },
   },
 } satisfies Record<string, Settings>;
 

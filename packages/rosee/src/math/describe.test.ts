@@ -101,7 +101,7 @@ group.each(CASES)('%s', (name, settings) => {
       const st = stages(k);
       const path = t.passes[k];
       const chain = equation(st, 'chain').rhs;
-      const slide = s.chuck && equation(st, 'slide').rhs;
+      const slide = (s.chuck || s.engine.kind === 'straight') && equation(st, 'slide').rhs;
       for (let i = 0; i <= t.samples; i += 4) {
         const env = sampleEnv(st, s, t, k, i);
         const [x, y] = evaluate(chain, env) as number[];

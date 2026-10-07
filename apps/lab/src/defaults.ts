@@ -1,4 +1,4 @@
-import { type Chuck, type ProfilePoint, type Pump, type Rubber, type Surface, WAVE_PARAMS, type Wave } from 'rosee';
+import { type Chuck, type Engine, type ProfilePoint, type Pump, type Rubber, type Surface, WAVE_PARAMS, type Wave } from 'rosee';
 
 export type SimpleWave = Exclude<Wave, { kind: 'compound' }>;
 export type SimpleKind = SimpleWave['kind'];
@@ -44,4 +44,10 @@ export const DEFAULT_SURFACES: { [K in Surface['kind']]: Extract<Surface, { kind
   flat: { kind: 'flat' },
   cylinder: { kind: 'cylinder', radius: 10, length: 24 },
   dome: { kind: 'dome', radius: 30, rim: 20 },
+};
+
+/** Each engine as it starts when chosen. */
+export const DEFAULT_ENGINES: { [K in Engine['kind']]: Extract<Engine, { kind: K }> } = {
+  rose: { kind: 'rose' },
+  straight: { kind: 'straight', stroke: 30 },
 };

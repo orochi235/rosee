@@ -1,7 +1,7 @@
 import { computeToolpaths, PRESETS, type Settings } from 'rosee';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_CHUCKS } from './defaults';
-import { chuckPanel, cutPanel, lookPanel, type Panel, pumpPanel, rosettePanel, rubberPanel, surfacePanel } from './panels';
+import { chuckPanel, cutPanel, enginePanel, lookPanel, type Panel, pumpPanel, rosettePanel, rubberPanel, surfacePanel } from './panels';
 import { DEFAULT_LOOK } from './state';
 
 const withPump: Settings = {
@@ -11,7 +11,7 @@ const withPump: Settings = {
 };
 
 describe('panels', () => {
-  const panels: Panel<Settings>[] = [rosettePanel, rubberPanel, pumpPanel, chuckPanel, surfacePanel, cutPanel];
+  const panels: Panel<Settings>[] = [enginePanel, rosettePanel, rubberPanel, pumpPanel, chuckPanel, surfacePanel, cutPanel];
   for (const panel of panels) {
     it(`${panel.title}: writing back what it read changes nothing`, () => {
       for (const s of [...Object.values(PRESETS), withPump]) expect(panel.write(s, panel.read(s))).toEqual(s);
@@ -55,6 +55,13 @@ describe('panels', () => {
     const s = cutPanel.write(PRESETS.barrel, { ...c, from_cylinder: 3, to_flat: 99 });
     expect(s.job.from).toBe(3);
     expect(s.job.to).toBe(PRESETS.barrel.job.to);
+  });
+
+  it('switching to the straight-line engine takes off the chuck and flattens the surface, so it still cuts', () => {
+    const s = enginePanel.write(PRESETS.wheel, { ...enginePanel.read(PRESETS.wheel), kind: 'straight' });
+    expect(s.chuck).toBeNull();
+    expect(s.surface.kind).toBe('flat');
+    expect(() => computeToolpaths({ ...s, samplesPerTurn: 256 })).not.toThrow();
   });
 
   it('fitting a chuck starts from its defaults', () => {

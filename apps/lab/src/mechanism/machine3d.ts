@@ -193,7 +193,7 @@ export function createMachineScene(
       slide.visible = ch !== null;
       // Longer than the work is wide, and the ring wider, so both show past it.
       slide.scale.x = 2.6 * pose.stock;
-      carrier.position.set(ch?.slide ?? 0, 0, 0);
+      carrier.position.set(pose.carrier[0], pose.carrier[1], 0);
       carrier.rotation.z = ch?.wheel ?? 0;
       ring.visible = ch?.ring != null;
       if (ch?.ring) {
