@@ -49,11 +49,15 @@ export const PRESETS = {
     surface: { kind: 'cylinder', radius: 10, length: 24 },
     job: { ...base.job, from: 1.5, to: 22.5, step: 0.35, phaseStep: 0, pumpPhaseStep: 0 },
   },
-  /** The swirl cut on a dome, the graver kept square to it. */
+  /** A swirl cut on a dome, the graver kept square to it. Rocking carries
+   *  the dome sideways under the graver, which off the pole moves it into
+   *  and out of the cut, so the lobes are shallower than the face swirl's
+   *  and the cut deeper, or the graver would leave the stock. */
   dome: {
     ...base,
+    rosette: { radius: 30, wave: { kind: 'sine', lobes: 12, amplitude: 0.3 } },
     surface: { kind: 'dome', radius: 30, rim: 20 },
-    job: { ...base.job, from: 4, to: 19 },
+    job: { ...base.job, from: 4, to: 19, depth: 0.25 },
   },
 } satisfies Record<string, Settings>;
 

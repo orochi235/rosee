@@ -1,4 +1,4 @@
-import { machineToHeadstock, type Rosette, rubberReach, type Settings } from 'rosee';
+import { machineToHeadstock, type Rosette, rubberReach, type Settings, type Surface } from 'rosee';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { PALETTE } from '../palette';
@@ -17,8 +17,8 @@ import { rosetteGeometry } from './rosetteGeometry';
 export interface MachineScene {
   update(settings: Settings, pose: MachinePose, spindle: number, exaggerate: number): void;
   /** The whole cut, from `cutPath`, and how many of its points make a turn. */
-  path(xy: Float32Array, perTurn: number): void;
-  /** Draws the cut on the work's face up to point `end` of the path. */
+  path(xyz: Float32Array, perTurn: number): void;
+  /** Draws the cut on the work up to point `end` of the path. */
   cut(end: number): void;
   /** The part under a point given in the canvas's CSS pixels, or null. */
   pick(x: number, y: number): PartKey | null;
@@ -29,6 +29,34 @@ export interface MachineScene {
 }
 
 const ROSETTE_Z = -40;
+
+/** How far behind a face or a dome's rim the stock runs back into the chuck, mm. */
+const STOCK_BACK = 6;
+
+/** The stock as a solid in work-frame mm, its face or pole at z = 0. */
+function stockGeometry(surface: Surface, stock: number): THREE.BufferGeometry {
+  switch (surface.kind) {
+    case 'flat':
+      return new THREE.CylinderGeometry(stock, stock, STOCK_BACK, 96).rotateX(Math.PI / 2).translate(0, 0, -STOCK_BACK / 2);
+    case 'cylinder':
+      return new THREE.CylinderGeometry(surface.radius, surface.radius, surface.length, 96)
+        .rotateX(Math.PI / 2)
+        .translate(0, 0, -surface.length / 2);
+    case 'dome': {
+      const S = surface.radius;
+      const top = Math.asin(Math.min(1, surface.rim / S));
+      // A lathe profile in (radius, height), the height then turned onto z.
+      const profile: THREE.Vector2[] = [];
+      for (let k = 0; k <= 48; k++) {
+        const g = (k / 48) * top;
+        profile.push(new THREE.Vector2(S * Math.sin(g), -S + S * Math.cos(g)));
+      }
+      const rimZ = -S + S * Math.cos(top);
+      profile.push(new THREE.Vector2(surface.rim, rimZ - STOCK_BACK), new THREE.Vector2(0, rimZ - STOCK_BACK));
+      return new THREE.LatheGeometry(profile, 96).rotateX(Math.PI / 2);
+    }
+  }
+}
 
 /** Where the camera sits and what it orbits, in machine-frame mm. */
 export interface CameraPlacement {
@@ -85,7 +113,9 @@ export function createMachineScene(
   );
   rosette.position.z = ROSETTE_Z;
   spindle.add(rosette);
-  const work = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 6, 64).rotateX(Math.PI / 2).translate(0, 0, -3), metal(PALETTE.work));
+  const work = new THREE.Mesh(stockGeometry({ kind: 'flat' }, 1), metal(PALETTE.work));
+  // Two-sided, so a dome's lathe profile shows whichever way it winds.
+  (work.material as THREE.MeshStandardMaterial).side = THREE.DoubleSide;
   // The chuck sits back on the spindle by the index; the work rides its slide.
   const chuck = new THREE.Group();
   spindle.add(chuck);
@@ -97,8 +127,6 @@ export function createMachineScene(
   const mark = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 0.5), metal(PALETTE.steep));
   carrier.add(mark);
   const trail = createTrailLine(PALETTE.trailNew, PALETTE.trailOld, 1.5);
-  // Just proud of the face, so it never fights the face for depth.
-  trail.object.position.z = 0.05;
   carrier.add(trail.object);
   const ring = new THREE.Mesh(new THREE.TorusGeometry(1, 0.02, 12, 96), metal(PALETTE.steel));
   headstock.add(ring);
@@ -125,6 +153,8 @@ export function createMachineScene(
   const raycaster = new THREE.Raycaster();
 
   let shownRosette: Rosette | null = null;
+  let shownStock = '';
+  const down = new THREE.Vector3(0, 0, -1);
   const closeUp = inset ? createInset(renderer, scene, PALETTE.background, PALETTE.faint) : null;
   let width = 1;
   let height = 1;
@@ -171,7 +201,14 @@ export function createMachineScene(
         ring.position.set(hx, hy + P, -11);
         ring.scale.setScalar(ch.ringRadius);
       }
-      work.scale.set(pose.stock, pose.stock, 1);
+      const stockKey = JSON.stringify([settings.surface, pose.stock]);
+      if (stockKey !== shownStock) {
+        work.geometry.dispose();
+        work.geometry = stockGeometry(settings.surface, pose.stock);
+        shownStock = stockKey;
+      }
+      // The mark shows the work turning; a dome's face is curved, so it has none.
+      mark.visible = settings.surface.kind !== 'dome';
       mark.scale.set(pose.stock * 0.9, 1.2, 1);
       mark.position.set((pose.stock * 0.9) / 2, 0, 0.3);
       // A knife edge is drawn with some thickness, set back so its face, not
@@ -181,12 +218,14 @@ export function createMachineScene(
       rubber.scale.set(drawn, drawn, 1);
       const [rx, ry] = followingRubber(pose, P, exaggerate);
       rubber.position.set(rx + drawn - reach, ry, ROSETTE_Z + 2);
-      cutter.position.set(pose.cutter[0], pose.cutter[1], 0);
-      closeUp?.aim(pose.cutter, pose.stock);
+      const g = pose.graver;
+      cutter.position.set(...g.tip);
+      cutter.quaternion.setFromUnitVectors(down, new THREE.Vector3(...g.points));
+      closeUp?.aim(g.tip, pose.stock);
       requestRender();
     },
-    path(xy, perTurn) {
-      trail.path(xy, perTurn);
+    path(xyz, perTurn) {
+      trail.path(xyz, perTurn);
       requestRender();
     },
     cut(end) {

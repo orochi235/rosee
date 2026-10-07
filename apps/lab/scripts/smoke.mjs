@@ -1,12 +1,13 @@
 // Builds the lab, opens every preset in headless Chromium, and fails on any
 // console error or error banner; then runs the behavior checks. Screenshots
-// land in shots/, one per preset, overwritten each run.
+// land in shots/, two per preset (as loaded, and in the Part mode),
+// overwritten each run.
 import { mkdir } from 'node:fs/promises';
 import { chromium } from 'playwright';
 import { build, preview } from 'vite';
-import { bareHold, bareStill, bareView, equationsTab, exportSvg, hostileHash, modeToggles, resetKey, splitZoom } from './checks.mjs';
+import { bareHold, bareStill, bareView, equationsTab, exportSvg, hostileHash, modeToggles, resetKey, setMode, splitZoom } from './checks.mjs';
 
-const PRESETS = ['swirl', 'basket', 'barleycorn', 'wheel', 'oval'];
+const PRESETS = ['swirl', 'basket', 'barleycorn', 'wheel', 'oval', 'barrel', 'dome'];
 const root = new URL('..', import.meta.url).pathname;
 
 await build({ root, logLevel: 'warn' });
@@ -26,6 +27,9 @@ try {
     await page.waitForTimeout(1500);
     const banner = await page.locator('.rs-error').count();
     await page.screenshot({ path: `${root}shots/${name}.png` });
+    await setMode(page, 'part');
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: `${root}shots/${name}-part.png` });
     const ok = errors.length === 0 && banner === 0;
     if (!ok) failed++;
     console.log(`${i + 1}/${PRESETS.length} ${name}: ${ok ? 'ok' : `FAILED ${errors.join('; ') || 'error banner shown'}`}`);

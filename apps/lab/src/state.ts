@@ -1,7 +1,7 @@
 import { PRESETS, type PresetName, type Settings } from 'rosee';
 import { METALS } from 'rosee/gl';
 
-export const OUTPUT_MODES = ['lines', 'surface', 'split'] as const;
+export const OUTPUT_MODES = ['lines', 'surface', 'split', 'part'] as const;
 export type OutputMode = (typeof OUTPUT_MODES)[number];
 export type MetalName = keyof typeof METALS;
 /** Carve texture sizes the lab offers, texels on a side. */

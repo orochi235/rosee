@@ -25,6 +25,12 @@ describe.each(SURFACES)('$kind', (s) => {
     }
   });
 
+  it('points the graver square into the surface', () => {
+    const { tip, points } = graverAt(s, 6, 0.2);
+    const deeper = toSheet(s, tip[0] + 0.01 * points[0], tip[1] + 0.01 * points[1], tip[2] + 0.01 * points[2]);
+    expect(deeper[2]).toBeCloseTo(-0.21, 9);
+  });
+
   it('opens the V across the surface, square to where the graver points', () => {
     const { tip, opens } = graverAt(s, 6, 0.2);
     const step = 1e-4;

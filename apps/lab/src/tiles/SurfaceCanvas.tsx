@@ -1,5 +1,5 @@
 import type { Cutter, Toolpaths } from 'rosee';
-import { type Carve, carveMesh, createCarve, createShade, METALS, type Shade, type View } from 'rosee/gl';
+import { type Carve, carveMesh, createCarve, createPart, createShade, METALS, type Orbit, type Part, type Shade, type View } from 'rosee/gl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useCanvasSize } from '../hooks/useCanvasSize';
 import { linear, PALETTE } from '../palette';
@@ -11,6 +11,8 @@ interface Props {
   cutter: Cutter;
   upTo: PlayheadAt;
   view: View;
+  /** The camera round the part, used in the Part mode. */
+  orbit: Orbit;
   look: Look;
   /** Kept mounted while hidden, so toggling the output mode reuses one
    *  WebGL context instead of leaking a new one each time. */
@@ -19,13 +21,14 @@ interface Props {
 
 const BACKGROUND = linear(PALETTE.background);
 
-/** The carved, lit surface. Re-meshes when the cut changes, re-carves when
+/** The carved, lit surface, flat on its sheet or wrapped into the part.
+ *  Re-meshes when the cut changes, re-carves when
  *  the playhead moves, and re-lights on anything else; does none of it while
  *  hidden. A lost context is rebuilt when the browser restores it. */
-export function SurfaceCanvas({ toolpaths, cutter, upTo, view, look, hidden }: Props) {
+export function SurfaceCanvas({ toolpaths, cutter, upTo, view, orbit, look, hidden }: Props) {
   const ref = useRef<HTMLCanvasElement>(null);
   const size = useCanvasSize(ref);
-  const gl = useRef<{ carve: Carve; shade: Shade } | null>(null);
+  const gl = useRef<{ carve: Carve; shade: Shade; part: Part } | null>(null);
   const [error, setError] = useState('');
   const [generation, setGeneration] = useState(0);
   const mesh = useMemo(() => carveMesh(toolpaths, cutter), [toolpaths, cutter]);
@@ -46,9 +49,9 @@ export function SurfaceCanvas({ toolpaths, cutter, upTo, view, look, hidden }: P
     const onRestored = () => setGeneration((g) => g + 1);
     canvas.addEventListener('webglcontextlost', onLost);
     canvas.addEventListener('webglcontextrestored', onRestored);
-    let made: { carve: Carve; shade: Shade } | null = null;
+    let made: { carve: Carve; shade: Shade; part: Part } | null = null;
     try {
-      made = { carve: createCarve(context, look.resolution), shade: createShade(context) };
+      made = { carve: createCarve(context, look.resolution), shade: createShade(context), part: createPart(context) };
       gl.current = made;
       setError('');
     } catch (e) {
@@ -60,6 +63,7 @@ export function SurfaceCanvas({ toolpaths, cutter, upTo, view, look, hidden }: P
       if (made && !lost) {
         made.carve.dispose();
         made.shade.dispose();
+        made.part.dispose();
       }
       gl.current = null;
     };
@@ -72,13 +76,9 @@ export function SurfaceCanvas({ toolpaths, cutter, upTo, view, look, hidden }: P
   useEffect(() => {
     const g = gl.current;
     if (!g || hidden || size.width === 0) return;
-    g.shade.render(
-      g.carve,
-      { center: view.center, mmPerPixel: view.mmPerPixel / size.dpr },
-      { azimuth: look.azimuth, elevation: look.elevation },
-      METALS[look.metal],
-      BACKGROUND,
-    );
+    const light = { azimuth: look.azimuth, elevation: look.elevation };
+    if (look.mode === 'part') g.part.render(g.carve, toolpaths.surface, orbit, light, METALS[look.metal], BACKGROUND);
+    else g.shade.render(g.carve, { center: view.center, mmPerPixel: view.mmPerPixel / size.dpr }, light, METALS[look.metal], BACKGROUND);
   });
 
   return (

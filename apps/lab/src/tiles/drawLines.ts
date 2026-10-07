@@ -1,8 +1,9 @@
-import type { Toolpaths } from 'rosee';
+import { sheetPeriod, sheetRuns, type Toolpaths } from 'rosee';
 import type { View } from 'rosee/gl';
 import type { PlayheadAt } from '../playhead';
 
-/** The toolpaths as lines, cut up to the playhead, with the cutter marked.
+/** The toolpaths on their sheet as lines, cut up to the playhead, with the
+ *  cutter marked. A pass round a barrel breaks at the seam.
  *  A null background leaves the canvas transparent behind them. */
 export function drawLines(
   ctx: CanvasRenderingContext2D,
@@ -23,15 +24,14 @@ export function drawLines(
   const toY = (y: number) => height / 2 - (y - view.center[1]) / view.mmPerPixel;
   ctx.strokeStyle = colors.line;
   ctx.lineWidth = 0.75;
+  const period = sheetPeriod(t.surface);
   for (let k = 0; k <= upTo.pass; k++) {
-    const xyz = t.passes[k].xyz;
+    const uvh = t.passes[k].uvh;
     const last = k === upTo.pass ? upTo.sample : t.samples;
     ctx.beginPath();
-    for (let i = 0; i <= last; i++) {
-      const x = toX(xyz[i * 3]);
-      const y = toY(xyz[i * 3 + 1]);
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+    for (const [first, end] of sheetRuns(uvh, last + 1, period)) {
+      ctx.moveTo(toX(uvh[first * 3]), toY(uvh[first * 3 + 1]));
+      for (let i = first + 1; i <= end; i++) ctx.lineTo(toX(uvh[i * 3]), toY(uvh[i * 3 + 1]));
     }
     ctx.stroke();
   }
@@ -40,7 +40,7 @@ export function drawLines(
     const i = upTo.sample;
     ctx.fillStyle = colors.cutter;
     ctx.beginPath();
-    ctx.arc(toX(p.xyz[i * 3]), toY(p.xyz[i * 3 + 1]), 3.5, 0, Math.PI * 2);
+    ctx.arc(toX(p.uvh[i * 3]), toY(p.uvh[i * 3 + 1]), 3.5, 0, Math.PI * 2);
     ctx.fill();
   }
 }

@@ -17,7 +17,7 @@ export const pumpPanel: Panel<Settings> = {
         .showIf((c) => c.on === true),
       amplitude: f
         .number(0.02)
-        .range(0, 0.2)
+        .range(0, 2)
         .step(0.005)
         .label('Amplitude')
         .suffix('mm')

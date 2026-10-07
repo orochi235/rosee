@@ -37,4 +37,5 @@ export {
   type Vec3,
 } from './surface/surface';
 export type { Pump, Settings } from './toolpath/settings';
+export { sheetRuns } from './toolpath/runs';
 export { computeToolpaths, type PassPath, SAMPLE_BUDGET, SAMPLES_PER_TURN, type Toolpaths } from './toolpath/toolpath';

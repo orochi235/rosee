@@ -1,6 +1,6 @@
-import { type Chuck, PRESETS, type PresetName, type Pump, type Rosette, type Rubber, type Settings, type Wave } from 'rosee';
+import { type Chuck, PRESETS, type PresetName, type Pump, type Rosette, type Rubber, type Settings, type Surface, type Wave } from 'rosee';
 import { METALS } from 'rosee/gl';
-import { DEFAULT_CHUCKS, DEFAULT_PUMP, defaultWave, RUBBERS, SIMPLE_KINDS } from './defaults';
+import { DEFAULT_CHUCKS, DEFAULT_PUMP, DEFAULT_SURFACES, defaultWave, RUBBERS, SIMPLE_KINDS } from './defaults';
 import { DEFAULT_STATE, type LabState, type Look, OUTPUT_MODES, RESOLUTIONS } from './state';
 
 type Raw = Record<string, unknown>;
@@ -62,6 +62,13 @@ function chuck(raw: unknown, fallback: Chuck | null): Chuck | null {
   return numbers(raw, DEFAULT_CHUCKS[kind]);
 }
 
+/** A hash from before surfaces has none, and cuts a face as it did then. */
+function surface(raw: unknown, fallback: Surface): Surface {
+  if (!isObject(raw)) return fallback;
+  const kind = oneOf(raw.kind, Object.keys(DEFAULT_SURFACES) as Surface['kind'][], 'flat');
+  return numbers(raw, DEFAULT_SURFACES[kind]);
+}
+
 /** Settings from a hash. A job that repeats the wheel or steps the
  *  eccentricity with no chuck to do it is set back, since the sidebar hides
  *  those fields without a chuck and could not undo them. */
@@ -78,6 +85,7 @@ function fields(raw: Raw): Settings {
     pivotDistance: finite(raw.pivotDistance) ? raw.pivotDistance : d.pivotDistance,
     pump: pump(raw.pump, d.pump),
     chuck: chuck(raw.chuck, d.chuck),
+    surface: surface(raw.surface, d.surface),
     cutter: numbers(raw.cutter, d.cutter),
     job: numbers(raw.job, d.job),
     samplesPerTurn: finite(raw.samplesPerTurn) ? raw.samplesPerTurn : d.samplesPerTurn,

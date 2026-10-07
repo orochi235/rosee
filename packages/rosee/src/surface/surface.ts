@@ -13,11 +13,12 @@ export const flatFace: Surface = { kind: 'flat' };
 
 export type Vec3 = readonly [number, number, number];
 
-/** The graver for one pass, machine frame, at rest: where its tip is, and
- *  the unit direction its V opens across. The work face is at z = 0 with the
- *  stock behind it, z negative. */
+/** The graver for one pass, machine frame, at rest: where its tip is, the
+ *  unit direction it points into the stock, and the one its V opens across.
+ *  The work face is at z = 0 with the stock behind it, z negative. */
 export interface Graver {
   tip: Vec3;
+  points: Vec3;
   opens: Vec3;
 }
 
@@ -28,13 +29,17 @@ export interface Graver {
 export function graverAt(s: Surface, at: number, depth: number): Graver {
   switch (s.kind) {
     case 'flat':
-      return { tip: [at, 0, -depth], opens: [1, 0, 0] };
+      return { tip: [at, 0, -depth], points: [0, 0, -1], opens: [1, 0, 0] };
     case 'cylinder':
-      return { tip: [s.radius - depth, 0, -at], opens: [0, 0, 1] };
+      return { tip: [s.radius - depth, 0, -at], points: [-1, 0, 0], opens: [0, 0, 1] };
     case 'dome': {
       const g = at / s.radius;
       const r = s.radius - depth;
-      return { tip: [r * Math.sin(g), 0, -s.radius + r * Math.cos(g)], opens: [Math.cos(g), 0, -Math.sin(g)] };
+      return {
+        tip: [r * Math.sin(g), 0, -s.radius + r * Math.cos(g)],
+        points: [-Math.sin(g), 0, -Math.cos(g)],
+        opens: [Math.cos(g), 0, -Math.sin(g)],
+      };
     }
   }
 }

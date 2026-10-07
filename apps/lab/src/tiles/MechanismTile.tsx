@@ -53,7 +53,7 @@ export function MechanismTile({
     const ctx = ref.current?.getContext('2d');
     if (!ctx || size.width === 0) return;
     if (frame) drawTop(ctx, pose, settings.rubber, frame, size, PALETTE);
-    else drawSide(ctx, pose, settings.pump !== null, exaggerate, size, PALETTE);
+    else drawSide(ctx, pose, settings.surface, settings.pump !== null, exaggerate, size, PALETTE);
   });
   const show = (part: PartKey | null, x: number, y: number) => setHover(part ? { part, x, y } : null);
   return (

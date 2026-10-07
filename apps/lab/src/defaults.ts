@@ -1,4 +1,4 @@
-import { type Chuck, type ProfilePoint, type Pump, type Rubber, WAVE_PARAMS, type Wave } from 'rosee';
+import { type Chuck, type ProfilePoint, type Pump, type Rubber, type Surface, WAVE_PARAMS, type Wave } from 'rosee';
 
 export type SimpleWave = Exclude<Wave, { kind: 'compound' }>;
 export type SimpleKind = SimpleWave['kind'];
@@ -37,4 +37,11 @@ export const DEFAULT_PUMP: Pump = {
 export const DEFAULT_CHUCKS: { [K in Chuck['kind']]: Extract<Chuck, { kind: K }> } = {
   eccentric: { kind: 'eccentric', eccentricity: 8, wheel: 0 },
   elliptical: { kind: 'elliptical', eccentricity: 4, ring: 0, wheel: 0 },
+};
+
+/** Each surface as it starts when chosen. */
+export const DEFAULT_SURFACES: { [K in Surface['kind']]: Extract<Surface, { kind: K }> } = {
+  flat: { kind: 'flat' },
+  cylinder: { kind: 'cylinder', radius: 10, length: 24 },
+  dome: { kind: 'dome', radius: 30, rim: 20 },
 };
