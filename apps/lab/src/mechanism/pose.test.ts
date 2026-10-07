@@ -1,7 +1,8 @@
 import { computeToolpaths, PRESETS } from 'rosee';
 import { describe, expect, it } from 'vitest';
 import { at } from '../playhead';
-import { followingRubber, machinePose } from './pose';
+import { followingRubber, machinePose, workToMachine } from './pose';
+import { cutPath, cutTo } from './trail';
 
 describe('machinePose', () => {
   const s = { ...PRESETS.swirl, samplesPerTurn: 256 };
@@ -86,5 +87,21 @@ describe('machinePose', () => {
         expect(y).toBeGreaterThan(Math.min(...ys));
         expect(y).toBeLessThan(Math.max(...ys));
       }
+  });
+
+  it('carries the cut so far to the graver tip on a face, chuck or carriage alike', () => {
+    for (const name of Object.keys(PRESETS) as (keyof typeof PRESETS)[]) {
+      const p = { ...PRESETS[name], samplesPerTurn: 128 };
+      if (p.surface.kind !== 'flat') continue;
+      const tp = computeToolpaths(p);
+      const xyz = cutPath(tp);
+      for (const position of [5, 128 + 40, tp.passes.length * 128 - 3]) {
+        const now = at(position, 128, tp.passes.length);
+        const pose = machinePose(p, tp, now);
+        const k = cutTo(now, tp.samples);
+        const [x, y] = workToMachine(pose)([xyz[k * 3], xyz[k * 3 + 1]]);
+        expect(Math.hypot(x - pose.cutter[0], y - pose.cutter[1]), `${name} at ${position}`).toBeLessThan(1e-6);
+      }
+    }
   });
 });

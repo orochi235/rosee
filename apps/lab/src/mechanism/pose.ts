@@ -206,3 +206,17 @@ export function followingRubber(pose: MachinePose, pivotDistance: number, exagge
   const [x, y] = headstockToMachine(local, pivotDistance, pose.swing * exaggerate);
   return [pose.rubberX + x - pose.contact[0], y - pose.contact[1]];
 }
+
+/** A work-frame point in the machine frame at this pose: through the
+ *  chuck's wheel and slide, the spindle and index, and the headstock's rock. */
+export function workToMachine(pose: MachinePose): (p: Vec2) => Vec2 {
+  const P = -pose.pivot[1];
+  const wheel = pose.chuck?.wheel ?? 0;
+  const [cw, sw] = [Math.cos(wheel), Math.sin(wheel)];
+  const [ca, sa] = [Math.cos(pose.slideAngle), Math.sin(pose.slideAngle)];
+  return ([x, y]) => {
+    const cx = cw * x - sw * y + pose.carrier[0];
+    const cy = sw * x + cw * y + pose.carrier[1];
+    return headstockToMachine([ca * cx - sa * cy, sa * cx + ca * cy], P, pose.swing);
+  };
+}

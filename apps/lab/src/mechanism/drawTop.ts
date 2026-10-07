@@ -1,6 +1,7 @@
 import { type Rubber, rubberReach, type Vec2 } from 'rosee';
 import type { Palette } from '../palette';
-import type { MachinePose } from './pose';
+import { drawTrail, type Trail } from './drawTrail';
+import { type MachinePose, workToMachine } from './pose';
 
 export interface Frame {
   /** Machine-frame point at the canvas center, mm. */
@@ -19,7 +20,8 @@ export function toCanvas(frame: Frame, size: { width: number; height: number }) 
 
 /** The machine seen along the spindle: rosette on the rocking headstock,
  *  rubber fixed to the bed, the stock and the cutter; on a straight-line
- *  engine the plate on its carriage and the rails. True geometry. */
+ *  engine the plate on its carriage and the rails; the cut so far on the work
+ *  when `trail` is given. True geometry. */
 export function drawTop(
   ctx: CanvasRenderingContext2D,
   pose: MachinePose,
@@ -27,6 +29,7 @@ export function drawTop(
   frame: Frame,
   size: { width: number; height: number; dpr: number },
   c: Palette,
+  trail: Trail | null = null,
 ) {
   const { width, height, dpr } = size;
   const at = toCanvas(frame, size);
@@ -97,6 +100,11 @@ export function drawTop(
     ctx.lineTo(X(chuck.ends[1]), Y(chuck.ends[1]));
     ctx.stroke();
     ctx.lineWidth = 1;
+  }
+
+  if (trail) {
+    const onWork = workToMachine(pose);
+    drawTrail(ctx, trail, (p) => at(onWork(p)), c);
   }
 
   ctx.strokeStyle = c.rosette;

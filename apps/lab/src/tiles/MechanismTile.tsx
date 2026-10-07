@@ -1,5 +1,5 @@
 import { rubberReach, type Settings, type Toolpaths } from 'rosee';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Callout, type Hover, PartsList } from '../Callout';
 import { useCanvasSize } from '../hooks/useCanvasSize';
 import { drawSide } from '../mechanism/drawSide';
@@ -7,6 +7,7 @@ import { drawTop, type Frame } from '../mechanism/drawTop';
 import { type PartKey, partsFor } from '../mechanism/parts';
 import { pickTop } from '../mechanism/pickTop';
 import type { MachinePose } from '../mechanism/pose';
+import { cutPath, cutTo } from '../mechanism/trail';
 import { PALETTE } from '../palette';
 import type { PlayheadAt } from '../playhead';
 import { Tabs } from '../Tabs';
@@ -48,11 +49,16 @@ export function MechanismTile({
   const ref = useRef<HTMLCanvasElement>(null);
   const size = useCanvasSize(ref);
   const [hover, setHover] = useState<Hover | null>(null);
+  const path = useMemo(() => cutPath(toolpaths), [toolpaths]);
   const frame = tab === 'Side' ? null : tab === 'Top' ? topFrame(settings, pose, size) : contactFrame(settings, pose, size);
   useEffect(() => {
     const ctx = ref.current?.getContext('2d');
     if (!ctx || size.width === 0) return;
-    if (frame) drawTop(ctx, pose, settings.rubber, frame, size, PALETTE);
+    if (frame) drawTop(ctx, pose, settings.rubber, frame, size, PALETTE, {
+        xyz: path,
+        end: cutTo(at, toolpaths.samples),
+        perTurn: toolpaths.samples,
+      });
     else drawSide(ctx, pose, settings.surface, settings.pump !== null, exaggerate, size, PALETTE);
   });
   const show = (part: PartKey | null, x: number, y: number) => setHover(part ? { part, x, y } : null);
