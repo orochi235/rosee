@@ -28,6 +28,20 @@ export { PRESETS, type PresetName } from './presets';
 export type { ProfilePoint } from './rosette/profile';
 export { displacement, radiusAt, type Rosette, WAVE_PARAMS, type Wave, type WaveKind } from './rosette/rosette';
 export {
+  dxfLoops,
+  type Gray,
+  grayOf,
+  largestLoop,
+  type OutlineOptions,
+  otsu,
+  rosetteFromDxf,
+  rosetteFromImage,
+  rosetteFromOutline,
+  rosetteFromSvg,
+  svgLoops,
+  traceLoops,
+} from './rosette/import';
+export {
   checkSurface,
   flatFace,
   fromSheet,

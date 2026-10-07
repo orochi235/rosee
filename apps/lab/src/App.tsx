@@ -2,6 +2,7 @@ import { LabShell, Workspace } from '@weasel-js/labkit';
 import { PRESETS, type PresetName, toolpathsSvg } from 'rosee';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { Bare } from './Bare';
+import { importRosette } from './importRosette';
 import { ErrorBoundary } from './ErrorBoundary';
 import { initialState, readHash, resetToDefault, shareLink, stateInText, writeHash } from './hash';
 import { machinePose } from './mechanism/pose';
@@ -101,6 +102,15 @@ function Lab() {
           download(svg, name, 'image/svg+xml');
         }}
         onOpen={open}
+        onImportRosette={async (file) => {
+          try {
+            const { rosette } = await importRosette(file, state.settings.rosette.radius);
+            setState((s) => ({ ...s, preset: '', settings: { ...s.settings, rosette } }));
+            setNotice('');
+          } catch (e) {
+            setNotice(`Could not import ${file.name}: ${(e as Error).message}.`);
+          }
+        }}
       />
       <div className="rs-main">
         {error && <p className="rs-error" role="alert">{error}</p>}
