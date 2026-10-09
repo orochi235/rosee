@@ -1,4 +1,4 @@
-import { type ClockCapability, defineInstrument, type InstrumentList, type TrialClock } from '@weasel-js/labkit';
+import { defineInstrument, type InstrumentList, type TrialClock } from '@weasel-js/labkit';
 import type { ComponentType } from 'react';
 import { CutFigure } from './CutFigure';
 import { MachineTile } from './tiles/MachineTile';
@@ -60,15 +60,15 @@ export const TILES = ['output', 'mechanism', 'motion', 'machine'] as const;
 
 /** One instrument per tile, and the cut as a figure for an embed. None has a
  *  config or state of its own: every trial shows the one setup the sidebar
- *  edits and the URL hash holds, and plays on `clock`. */
-export function makeInstruments(clock: ClockCapability, still: boolean): InstrumentList {
+ *  edits and the URL hash holds, and plays on the lab's clock. */
+export function makeInstruments(still: boolean): InstrumentList {
   const instrument = (name: string, title: string, Body: ComponentType<TrialProps>) =>
     defineInstrument<null, Record<string, never>>({
       name,
       title,
       defaultConfig: () => ({}),
       initialState: () => null,
-      clock,
+      clock: 'lab',
       render: (ctx) => <Body clock={ctx.trial.clock} />,
     });
   const Figure = ({ clock: c }: TrialProps) => <CutFigure clock={c} still={still} />;

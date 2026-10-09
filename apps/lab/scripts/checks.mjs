@@ -32,6 +32,9 @@ export async function modeToggles(page, url) {
   });
   await page.goto(url);
   await page.waitForTimeout(1500);
+  // A mode makes its context the first time it shows; only reshowing it must not.
+  for (const mode of ['lines', 'split', 'surface', 'part']) await setMode(page, mode);
+  await page.waitForTimeout(500);
   const before = await page.evaluate(() => window.__contexts);
   for (let k = 0; k < 5; k++) {
     for (const mode of ['lines', 'split', 'surface', 'part']) {
@@ -212,6 +215,23 @@ export async function resetKey(page, url) {
   await page.keyboard.press('0');
   await page.waitForTimeout(300);
   return (await canvas.screenshot()).equals(before) ? '' : '0 did not restore the view';
+}
+
+/** A preset with another number of passes takes as long as its turns take at
+ *  the lab's pace, two turns a second at 1×, and opens finished. */
+export async function paceHolds(page, url) {
+  await page.goto(url);
+  for (const name of ['swirl', 'barleycorn']) {
+    await page.selectOption('.rs-preset select', name);
+    await page.waitForTimeout(800);
+    const pass = await page.locator('.rs-pass').first().textContent();
+    const time = await page.locator('.lk-trial-transport').textContent();
+    const turns = Number(pass?.match(/\/(\d+)/)?.[1]);
+    const [, at, length] = time?.match(/([\d.]+)s\s*\/\s*([\d.]+)s/) ?? [];
+    if (Math.abs(Number(length) - turns / 2) > 0.01) return `${name}: ${turns} turns take ${length}s`;
+    if (at !== length) return `${name} opened at ${at}s of ${length}s`;
+  }
+  return '';
 }
 
 /** The Motion tile's Equations tab prints every stage as MathML, with a

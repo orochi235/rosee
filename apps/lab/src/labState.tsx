@@ -1,6 +1,5 @@
 import type { Toolpaths } from 'rosee';
 import { createContext, type Dispatch, type ReactNode, type SetStateAction, useContext, useEffect, useState } from 'react';
-import { type ClockLink, createClockLink } from './cut';
 import { initialState, readHash, stateInText, writeHash } from './hash';
 import type { LabState } from './state';
 import { useToolpaths } from './useToolpaths';
@@ -16,8 +15,6 @@ export interface LabStateValue {
   setNotice(notice: string): void;
   /** Open the settings an SVG exported from the lab carries. */
   open(file: File): Promise<void>;
-  /** Keeps every trial's clock on one cut. */
-  link: ClockLink;
 }
 
 const Context = createContext<LabStateValue | null>(null);
@@ -28,18 +25,13 @@ const Context = createContext<LabStateValue | null>(null);
 export function LabStateProvider({ embedded, children }: { embedded: boolean; children: ReactNode }) {
   const [state, setState] = useState<LabState>(initialState);
   const [notice, setNotice] = useState('');
-  const [link] = useState(createClockLink);
   const { toolpaths, error } = useToolpaths(state.settings);
-  const end = toolpaths ? toolpaths.samples * toolpaths.passes.length : 0;
 
   const open = async (file: File) => {
     const next = stateInText(await file.text());
     if (next) setState(next);
     setNotice(next ? '' : `${file.name} has no rosee settings in it. Only SVGs exported from this lab do.`);
   };
-
-  // A new pattern shows finished; replaying it is a click away.
-  useEffect(() => link.finish(), [link, end]);
 
   useEffect(() => {
     if (embedded) return;
@@ -73,7 +65,7 @@ export function LabStateProvider({ embedded, children }: { embedded: boolean; ch
   }, [embedded]);
 
   return (
-    <Context.Provider value={{ state, setState, toolpaths, error, notice, setNotice, open, link }}>{children}</Context.Provider>
+    <Context.Provider value={{ state, setState, toolpaths, error, notice, setNotice, open }}>{children}</Context.Provider>
   );
 }
 

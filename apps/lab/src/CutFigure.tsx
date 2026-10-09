@@ -1,5 +1,6 @@
 import { type TrialClock, TrialTransport } from '@weasel-js/labkit';
 import { useRef } from 'react';
+import { FIGURE_PACE, speedLabel } from './cut';
 import { CutReadout } from './CutReadout';
 import { useElementSize } from './hooks/useElementSize';
 import { useLabState } from './labState';
@@ -12,6 +13,7 @@ import { usePose, useTrialCut } from './useCut';
 const WIDE_PX = 760;
 /** How long the finished cut holds before it is cut again. */
 const REPLAY_MS = 3000;
+const FORMAT_SPEED = speedLabel(FIGURE_PACE);
 
 /** The cut as a figure, for embedding the lab as a picture: the cut drawn as
  *  lines on a loop over nothing, and the machine cutting it beside it once
@@ -19,8 +21,9 @@ const REPLAY_MS = 3000;
  *  `still` is the finished cut alone at any size, never replayed.
  *
  *  The play controls are mounted, hidden, while the frame is narrow, because
- *  they are what replays the cut. labkit's own presented controls show from
- *  480px wide, and cannot be told to show only beside the machine. */
+ *  they are what replays the cut. They sit in a bar beside the readout and
+ *  show only with the machine, so they are the figure's own rather than
+ *  labkit's presented ones. */
 export function CutFigure({ clock, still }: { clock: TrialClock | undefined; still: boolean }) {
   const { error } = useLabState();
   const cut = useTrialCut(clock);
@@ -57,7 +60,7 @@ export function CutFigure({ clock, still }: { clock: TrialClock | undefined; sti
       )}
       {!still && (
         <div className={wide ? 'rs-cut-bar' : 'rs-hidden'}>
-          <TrialTransport keys={wide} replay={REPLAY_MS} className="rs-cut-transport" />
+          <TrialTransport keys={wide} replay={REPLAY_MS} formatRate={FORMAT_SPEED} className="rs-cut-transport" />
           <CutReadout />
         </div>
       )}

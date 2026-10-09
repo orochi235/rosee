@@ -29,13 +29,11 @@ export interface TrialCut extends LabStateValue {
   head: PlayheadAt;
 }
 
-/** The lab's setup, and the cut as far as this trial's clock has played it,
- *  with that clock kept on the same cut as every other trial's. Null until
- *  the settings first cut something. */
+/** The lab's setup, and the cut as far as the lab's clock has played it.
+ *  Null until the settings first cut something. */
 export function useTrialCut(clock: TrialClock | undefined): TrialCut | null {
   const lab = useLabState();
   const phase = useCutPhase(clock);
-  useLayoutEffect(() => (clock ? lab.link.join(clock) : undefined), [clock, lab.link]);
   const { toolpaths } = lab;
   return toolpaths ? { ...lab, toolpaths, head: headAt(phase, toolpaths) } : null;
 }
