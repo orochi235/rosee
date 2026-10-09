@@ -10,10 +10,10 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@weasel-js/core": "1.8.0",
-    "@weasel-js/labkit": "1.8.0",
-    "@weasel-js/theme": "1.8.0",
-    "@weasel-js/ui": "1.8.0",
+    "@weasel-js/core": "^1.9.2",
+    "@weasel-js/labkit": "^1.9.2",
+    "@weasel-js/theme": "^1.9.2",
+    "@weasel-js/ui": "^1.9.2",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "rosee": "^0.0.0",
