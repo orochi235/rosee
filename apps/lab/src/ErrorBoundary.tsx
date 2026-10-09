@@ -1,3 +1,4 @@
+import { LabRoot } from '@weasel-js/labkit';
 import { Component, type ReactNode } from 'react';
 
 interface Props {
@@ -18,13 +19,15 @@ export class ErrorBoundary extends Component<Props, { error: Error | null }> {
     const { error } = this.state;
     if (!error) return this.props.children;
     return (
-      <div className="rs-crash" role="alert">
-        <p>The lab hit an error and stopped drawing:</p>
-        <pre className="rs-error">{error.message}</pre>
-        <button type="button" onClick={this.props.onReset}>
-          Reset
-        </button>
-      </div>
+      <LabRoot mode="dark" className="rs-crash">
+        <div role="alert">
+          <p>The lab hit an error and stopped drawing:</p>
+          <pre className="rs-error">{error.message}</pre>
+          <button type="button" onClick={this.props.onReset}>
+            Reset
+          </button>
+        </div>
+      </LabRoot>
     );
   }
 }

@@ -332,8 +332,10 @@ Pumping, Chuck, Surface, Cutter and job, Look, Presets) and a `WorkspaceGrid`:
   shows what it is, how it works, and one live value at the playhead (the
   rubber's contact angle, the headstock's swing, the groove's width). A Parts list
   in each tile's corner opens the same callouts by keyboard or touch.
-- **Transport**: play/pause, pass `n/N`, scrubber, speed; the angle readout pinned
-  to a fixed width.
+- **Transport**: labkit's `TrialTransport` in the lab's footer: play/pause, loop,
+  speed, and a scrubber over the whole cut. Each tile is a labkit trial with a
+  clock, kept level with the others; each trial's status bar shows pass `n/N` and
+  the angle, pinned to a fixed width.
 
 On a straight-line engine the Top view draws the plate on its carriage between
 the rails, and the Side view the carriage behind the plate. The 3D machine hangs
@@ -464,8 +466,8 @@ pass's cutter radius.
 The Motion tile has tabs, Plots and Equations. Equations lists the stages top
 to bottom, scrolling within the tile, each equation with the playhead's value
 in a fixed-width column beside it: r at the contact, R(β), φ, s, the tip, z and
-the groove's width. The transport goes down to 64 seconds a turn, slow enough
-to follow one turn against the equations.
+the groove's width. The transport plays 0.25× to 4× of 2 turns a second, at
+the slowest 2 seconds a turn.
 
 ### Testing
 

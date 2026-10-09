@@ -1,22 +1,13 @@
-.rs-layout {
-  display: grid;
-  grid-template-columns: 300px 1fr;
-  height: 100%;
-  min-height: 0;
-}
-
 .rs-sidebar {
   overflow-y: auto;
   padding: var(--wzl-space-md, 12px);
-  border-inline-end: 1px solid var(--wzl-border, #2a2a30);
 }
 
 .rs-section + .rs-section {
   margin-block-start: var(--wzl-space-lg, 16px);
 }
 
-.rs-heading,
-.rs-tile-title {
+.rs-heading {
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -36,26 +27,13 @@
   margin-block-start: 8px;
 }
 
-.rs-main {
-  display: grid;
-  grid-template-rows: 1fr auto;
-  min-height: 0;
-}
-
-.rs-workspace {
-  min-height: 0;
-  height: 100%;
-}
-
+/* A trial's content well; the trial draws the frame and the title. */
 .rs-tile {
   display: grid;
-  grid-template-rows: auto 1fr;
-  height: 100%;
+  grid-template-rows: minmax(0, 1fr);
   min-height: 0;
+  overflow: hidden;
   padding: 8px;
-  background: var(--wzl-surface-raised, #18181b);
-  border: 1px solid var(--wzl-border, #2a2a30);
-  border-radius: var(--wzl-radius-md, 6px);
 }
 
 .rs-tile-body {
@@ -139,16 +117,9 @@
   stroke-dasharray: 3 3;
 }
 
-.rs-transport {
+.rs-readouts {
   display: flex;
-  align-items: center;
   gap: 10px;
-  padding: 8px 12px;
-  border-block-start: 1px solid var(--wzl-border, #2a2a30);
-}
-
-.rs-transport input[type='range'] {
-  flex: 1;
 }
 
 .rs-readout {
@@ -187,7 +158,6 @@
   border: 1px solid var(--wzl-border, #2a2a30);
   border-radius: var(--wzl-radius-md, 6px);
   background: color-mix(in srgb, var(--rs-background) 94%, transparent);
-  /* Its own ink and face: in the bare view no lab shell is around it to inherit from. */
   color: var(--rs-ink);
   font-family: var(--wzl-font-body, system-ui, sans-serif);
   font-size: 0.8rem;
@@ -251,41 +221,36 @@
   white-space: pre-wrap;
 }
 
-/* The embedding page shows through. A color scheme other than the
-   embedder's makes the browser paint an opaque backdrop behind the frame,
-   so labkit's dark one is dropped. */
-:root:has(.rs-bare) {
-  color-scheme: normal;
+/* The figure an embed presents. labkit's presentation makes the page
+   transparent; `&bg=` puts a ground back. */
+html:root:has(.rs-cut) {
+  background: var(--rs-ground, transparent);
 }
 
-:root:has(.rs-bare) {
-  background: var(--rs-bare-ground, transparent);
-}
-
-:root:has(.rs-bare) body {
-  background: transparent;
-}
-
-.rs-bare {
-  position: fixed;
-  inset: 0;
+.rs-cut {
   display: grid;
   grid-template-rows: minmax(0, 1fr);
+  min-height: 0;
+  overflow: hidden;
 }
 
-.rs-bare-wide {
+.rs-cut-wide {
   grid-template-columns: 1fr 1fr;
   grid-template-rows: minmax(0, 1fr) auto;
 }
 
-/* Its own ink, face and scheme: the bare view has no lab shell to inherit them from. */
-.rs-bare .rs-transport {
+.rs-cut-bar {
   grid-column: 1 / -1;
-  color: var(--rs-ink);
-  color-scheme: dark;
-  font-family: var(--wzl-font-body, system-ui, sans-serif);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-inline-end: 12px;
 }
 
-.rs-bare .rs-stage {
+.rs-cut-transport {
+  flex: 1;
+}
+
+.rs-cut .rs-stage {
   grid-template-rows: minmax(0, 1fr);
 }

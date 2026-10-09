@@ -1,24 +1,26 @@
-import { ControlPanel } from '@weasel-js/labkit';
-import { type Engine, PRESETS, type PresetName, type Settings } from 'rosee';
+import { ControlPanel, useTrialClock } from '@weasel-js/labkit';
+import { type Engine, PRESETS, type PresetName, type Settings, toolpathsSvg } from 'rosee';
 import { useRef } from 'react';
 import { chuckPanel, cutPanel, enginePanel, lookPanel, type Panel, pumpPanel, rosettePanel, rubberPanel, surfacePanel } from './panels';
 import { shareLink } from './hash';
+import { importRosette } from './importRosette';
+import { useLabState } from './labState';
 import { ProfileEditor } from './ProfileEditor';
-import type { LabState, Look } from './state';
+import type { Look } from './state';
+import { headAt } from './useCut';
 
 const ENGINES: [Engine['kind'], string][] = [
   ['rose', 'Rose engine'],
   ['straight', 'Straight-line engine'],
 ];
 
-interface Props {
-  state: LabState;
-  setSettings(next: Settings): void;
-  setLook(next: Look): void;
-  loadPreset(name: PresetName): void;
-  onExportSvg(): void;
-  onOpen(file: File): void;
-  onImportRosette(file: File): void;
+function download(text: string, name: string, type: string) {
+  const url = URL.createObjectURL(new Blob([text], { type }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
 }
 
 function Section<T>({ panel, value, onChange }: { panel: Panel<T>; value: T; onChange(next: T): void }) {
@@ -35,13 +37,49 @@ function Section<T>({ panel, value, onChange }: { panel: Panel<T>; value: T; onC
   );
 }
 
-export function Sidebar({ state, setSettings, setLook, loadPreset, onExportSvg, onOpen, onImportRosette }: Props) {
+/** Downloads what is on screen: the cut as far as the focused trial's clock,
+ *  which every other trial's is kept level with. */
+function ExportSvg() {
+  const { state, toolpaths } = useLabState();
+  const clock = useTrialClock();
+  const onClick = () => {
+    if (!toolpaths) return;
+    const phase = clock?.phase ?? 1;
+    const head = headAt(phase, toolpaths);
+    const svg = toolpathsSvg(toolpaths, { upTo: head, metadata: shareLink(state) });
+    const name = `rosee-${state.preset || 'custom'}${phase < 1 ? `-pass${head.pass + 1}` : ''}.svg`;
+    download(svg, name, 'image/svg+xml');
+  };
+  return (
+    <button type="button" onClick={onClick}>
+      Export SVG
+    </button>
+  );
+}
+
+/** The setup every trial shows, and the files it goes to and comes from. */
+export function Sidebar() {
+  const { state, setState, error, notice, setNotice, open } = useLabState();
   const picker = useRef<HTMLInputElement>(null);
   const outline = useRef<HTMLInputElement>(null);
   const { settings } = state;
   const wave = settings.rosette.wave;
+  const setSettings = (next: Settings) => setState((s) => ({ ...s, settings: next, preset: '' }));
+  const setLook = (look: Look) => setState((s) => ({ ...s, look }));
+  const loadPreset = (name: PresetName) => setState((s) => ({ ...s, preset: name, settings: PRESETS[name] }));
+  const onImportRosette = async (file: File) => {
+    try {
+      const { rosette } = await importRosette(file, settings.rosette.radius);
+      setState((s) => ({ ...s, preset: '', settings: { ...s.settings, rosette } }));
+      setNotice('');
+    } catch (e) {
+      setNotice(`Could not import ${file.name}: ${(e as Error).message}.`);
+    }
+  };
   return (
     <aside className="rs-sidebar">
+      {error && <p className="rs-error" role="alert">{error}</p>}
+      {notice && <p className="rs-error" role="alert">{notice}</p>}
       <section className="rs-section">
         <label className="rs-preset">
           Preset
@@ -61,9 +99,7 @@ export function Sidebar({ state, setSettings, setLook, loadPreset, onExportSvg, 
           </select>
         </label>
         <div className="rs-buttons">
-          <button type="button" onClick={onExportSvg}>
-            Export SVG
-          </button>
+          <ExportSvg />
           <button type="button" onClick={() => picker.current?.click()}>
             Open SVG
           </button>
@@ -75,7 +111,7 @@ export function Sidebar({ state, setSettings, setLook, loadPreset, onExportSvg, 
             aria-label="SVG to open"
             onChange={(e) => {
               const file = e.currentTarget.files?.[0];
-              if (file) onOpen(file);
+              if (file) void open(file);
               e.currentTarget.value = '';
             }}
           />
@@ -101,7 +137,7 @@ export function Sidebar({ state, setSettings, setLook, loadPreset, onExportSvg, 
           aria-label="Rosette outline to import: an SVG or DXF drawing, or a photo"
           onChange={(e) => {
             const file = e.currentTarget.files?.[0];
-            if (file) onImportRosette(file);
+            if (file) void onImportRosette(file);
             e.currentTarget.value = '';
           }}
         />

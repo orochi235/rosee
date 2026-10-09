@@ -99,14 +99,14 @@ export async function bareView(page, url) {
   await page.setViewportSize({ width: 560, height: 315 });
   await page.goto(bare);
   await page.waitForTimeout(1500);
-  const narrow = await page.locator('.rs-bare canvas').count();
-  const narrowTransport = await page.locator('.rs-transport').count();
+  const narrow = await page.locator('.rs-cut canvas').count();
+  const narrowTransport = await page.locator('.rs-cut-bar').count();
   await page.setViewportSize({ width: 1100, height: 600 });
   await page.waitForTimeout(800);
-  const wide = await page.locator('.rs-bare canvas').count();
+  const wide = await page.locator('.rs-cut canvas').count();
   const chrome = await page.locator('.rs-sidebar, .rs-parts').count();
   const transportInk = await page
-    .locator('.rs-transport .rs-pass')
+    .locator('.rs-cut-bar .rs-pass')
     .evaluate((e) => getComputedStyle(e).color)
     .catch(() => null);
   // An opaque root, or a color scheme unlike the embedder's, hides the page behind the frame.
@@ -138,11 +138,11 @@ export async function bareHold(page, url) {
   await page.setViewportSize({ width: 1100, height: 600 });
   await page.goto(`${url}?bare`);
   // It opens finished and holds; seeking to the end then would change nothing.
-  await page.locator('.rs-transport button[aria-label="Pause"]').waitFor({ timeout: 6000 });
-  const slider = page.locator('.rs-transport input[type="range"]');
-  await slider.fill(await slider.getAttribute('max'));
+  await page.locator('.rs-cut-bar button[aria-label="Pause"]').waitFor({ timeout: 6000 });
+  await page.locator('.rs-cut-bar').getByRole('slider', { name: 'Position' }).focus();
+  await page.keyboard.press('End');
   await page.waitForTimeout(4500);
-  const label = await page.locator('.rs-transport button').getAttribute('aria-label');
+  const label = await page.locator('.rs-cut-bar button').first().getAttribute('aria-label');
   return label === 'Play' ? '' : 'the loop replayed after the viewer seeked';
 }
 
@@ -152,12 +152,12 @@ export async function bareStill(page, url) {
   await page.setViewportSize({ width: 1100, height: 600 });
   await page.goto(`${url}?bare=still`);
   await page.waitForTimeout(1000);
-  const before = await page.locator('.rs-bare canvas').screenshot();
+  const before = await page.locator('.rs-cut canvas').screenshot();
   await page.waitForTimeout(4000);
-  const after = await page.locator('.rs-bare canvas').screenshot();
-  const n = await page.locator('.rs-bare canvas').count();
+  const after = await page.locator('.rs-cut canvas').screenshot();
+  const n = await page.locator('.rs-cut canvas').count();
   if (n !== 1) return `${n} canvases`;
-  if (await page.locator('.rs-transport').count()) return 'transport drawn in the still';
+  if (await page.locator('.rs-cut-transport').count()) return 'transport drawn in the still';
   return before.equals(after) ? '' : 'the cut changed after the hold';
 }
 
