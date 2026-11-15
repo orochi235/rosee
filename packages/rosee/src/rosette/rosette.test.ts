@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { displacement, radiusAt, type Rosette, type Wave } from './rosette';
+import { displacement, radiusAt, type Rosette, type Wave } from './rosette.js';
 
 describe('rosette', () => {
   const sine: Rosette = { radius: 30, wave: { kind: 'sine', lobes: 12, amplitude: 1.5 } };

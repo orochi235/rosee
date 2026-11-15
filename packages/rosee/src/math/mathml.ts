@@ -1,4 +1,4 @@
-import type { Expr, Name } from './expr';
+import type { Expr, Name } from './expr.js';
 
 /** How tightly a printed expression binds, so its parent knows when to
  *  bracket it. */

@@ -1,7 +1,7 @@
-import { rad } from '../angle';
-import type { Carve } from './carve';
-import { METAL_GLSL, SHEET_GLSL } from './glsl';
-import { compile, FULLSCREEN_VERTEX } from './program';
+import { rad } from '../angle.js';
+import type { Carve } from './carve.js';
+import { METAL_GLSL, SHEET_GLSL } from './glsl.js';
+import { compile, FULLSCREEN_VERTEX } from './program.js';
 
 /** Which part of the work the canvas shows: the domain point at the canvas's
  *  center, and the size of a canvas pixel, both in mm. */

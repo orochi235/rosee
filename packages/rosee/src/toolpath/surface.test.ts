@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { Job } from '../job/job';
-import { reachAt, contactTable } from '../contact/table';
-import { sheetRuns } from './runs';
-import type { Settings } from './settings';
-import { computeToolpaths } from './toolpath';
+import type { Job } from '../job/job.js';
+import { reachAt, contactTable } from '../contact/table.js';
+import { sheetRuns } from './runs.js';
+import type { Settings } from './settings.js';
+import { computeToolpaths } from './toolpath.js';
 
 const job = (over: Partial<Job> = {}): Job => ({
   from: 8,

@@ -1,4 +1,4 @@
-import { TAU } from '../angle';
+import { TAU } from '../angle.js';
 
 /** One lobe's shape: `u` is the position within the lobe in [0, 1), with the
  *  lobe's peak at u = 0. Returns a value in [-1, 1]: 1 at the peak, -1 at the

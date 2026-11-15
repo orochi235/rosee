@@ -1,5 +1,5 @@
-import { rad } from '../angle';
-import type { Pass } from '../job/job';
+import { rad } from '../angle.js';
+import type { Pass } from '../job/job.js';
 
 /** A chuck between the spindle and the work, in mm and degrees. An eccentric
  *  chuck holds the work `eccentricity` off the spindle axis; an elliptical

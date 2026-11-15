@@ -1,4 +1,4 @@
-import { TAU } from '../angle';
+import { TAU } from '../angle.js';
 
 /** The stock's surface, in mm. A face is cut flat on; a barrel is a cylinder
  *  of `radius` and `length` along the spindle from the face; a dome is a cap

@@ -1,6 +1,6 @@
-import { type Cutter, grooveWidth } from '../cutter/cutter';
-import { sheetPeriod } from '../surface/surface';
-import type { Toolpaths } from '../toolpath/toolpath';
+import { type Cutter, grooveWidth } from '../cutter/cutter.js';
+import { sheetPeriod } from '../surface/surface.js';
+import type { Toolpaths } from '../toolpath/toolpath.js';
 
 /** One pass as triangles (u, v, h per vertex, mm), laid out segment by
  *  segment so a prefix of the buffer is the pass cut up to a sample. */

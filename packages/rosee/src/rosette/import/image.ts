@@ -1,4 +1,4 @@
-import type { Vec2 } from '../../machine/pose';
+import type { Vec2 } from '../../machine/pose.js';
 
 /** A picture as its pixels' brightness, 0 to 255, row by row from the top. */
 export interface Gray {

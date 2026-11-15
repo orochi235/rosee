@@ -1,12 +1,12 @@
-import { rad, TAU } from '../angle';
-import { contactTable, reachAt } from '../contact/table';
-import { expandJob, type Pass, passCount } from '../job/job';
-import { slideAt, wheelOf } from '../machine/chuck';
-import { carriageAt } from '../machine/engine';
-import { chuckToWork, headstockToCarriage, headstockToChuck, machineToHeadstock } from '../machine/pose';
-import { swingAt, swingTable } from '../machine/swing';
-import { checkSurface, graverAt, type Surface, toSheet } from '../surface/surface';
-import type { Settings } from './settings';
+import { rad, TAU } from '../angle.js';
+import { contactTable, reachAt } from '../contact/table.js';
+import { expandJob, type Pass, passCount } from '../job/job.js';
+import { slideAt, wheelOf } from '../machine/chuck.js';
+import { carriageAt } from '../machine/engine.js';
+import { chuckToWork, headstockToCarriage, headstockToChuck, machineToHeadstock } from '../machine/pose.js';
+import { swingAt, swingTable } from '../machine/swing.js';
+import { checkSurface, graverAt, type Surface, toSheet } from '../surface/surface.js';
+import type { Settings } from './settings.js';
 
 /** One pass, sampled `samples + 1` times over a full turn (the last sample
  *  repeats the first). Sample i is at spindle angle i / samples · 2π. */

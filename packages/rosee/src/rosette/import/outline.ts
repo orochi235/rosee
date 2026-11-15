@@ -1,7 +1,7 @@
-import { TAU } from '../../angle';
-import type { Vec2 } from '../../machine/pose';
-import type { ProfilePoint } from '../profile';
-import type { Rosette } from '../rosette';
+import { TAU } from '../../angle.js';
+import type { Vec2 } from '../../machine/pose.js';
+import type { ProfilePoint } from '../profile.js';
+import type { Rosette } from '../rosette.js';
 
 /** A closed loop's signed area, positive when it runs anticlockwise. */
 export function loopArea(loop: readonly Vec2[]): number {

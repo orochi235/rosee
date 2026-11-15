@@ -1,4 +1,4 @@
-import type { Vec2 } from '../../machine/pose';
+import type { Vec2 } from '../../machine/pose.js';
 
 /** An affine transform [a, b, c, d, e, f]: x' = a·x + c·y + e, y' = b·x + d·y + f. */
 type Affine = [number, number, number, number, number, number];

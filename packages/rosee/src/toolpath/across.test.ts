@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
-import { TAU } from '../angle';
-import { headstockToChuck, machineToHeadstock } from '../machine/pose';
-import { computeToolpaths } from './toolpath';
+import { TAU } from '../angle.js';
+import { headstockToChuck, machineToHeadstock } from '../machine/pose.js';
+import { computeToolpaths } from './toolpath.js';
 
 it('opens the V along the machine x axis, carried into the work by spindle, index and swing', () => {
   const t = computeToolpaths({

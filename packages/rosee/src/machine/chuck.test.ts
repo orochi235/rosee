@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { Pass } from '../job/job';
-import { slideAt } from './chuck';
-import { chuckToWork, workToChuck } from './pose';
+import type { Pass } from '../job/job.js';
+import { slideAt } from './chuck.js';
+import { chuckToWork, workToChuck } from './pose.js';
 
 const pass: Pass = { at: 0, depth: 0, phase: 0, pumpPhase: 0, index: 0, wheel: 0, eccentricity: 0 };
 

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { createCarve } from './carve';
-import { context } from './fixtures/context';
-import { straightGroove } from './fixtures/straightGroove';
-import { carveMesh } from './mesh';
-import { createShade, METALS } from './shade';
+import { createCarve } from './carve.js';
+import { context } from './fixtures/context.js';
+import { straightGroove } from './fixtures/straightGroove.js';
+import { carveMesh } from './mesh.js';
+import { createShade, METALS } from './shade.js';
 
 describe('createShade', () => {
   it('lights a groove differently from the uncut surface', () => {

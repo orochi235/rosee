@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { TAU } from '../../angle';
-import type { Vec2 } from '../../machine/pose';
-import { radiusAt, type Rosette } from '../rosette';
-import { dxfLoops } from './dxf';
-import { type Gray, traceLoops } from './image';
-import { rosetteFromDxf, rosetteFromImage, rosetteFromSvg } from './index';
-import { rosetteFromOutline } from './outline';
-import { svgLoops } from './svg';
+import { TAU } from '../../angle.js';
+import type { Vec2 } from '../../machine/pose.js';
+import { radiusAt, type Rosette } from '../rosette.js';
+import { dxfLoops } from './dxf.js';
+import { type Gray, traceLoops } from './image.js';
+import { rosetteFromDxf, rosetteFromImage, rosetteFromSvg } from './index.js';
+import { rosetteFromOutline } from './outline.js';
+import { svgLoops } from './svg.js';
 
 const SINE: Rosette = { radius: 30, wave: { kind: 'sine', lobes: 12, amplitude: 1.5 } };
 const PETAL: Rosette = { radius: 25, wave: { kind: 'petal', lobes: 7, amplitude: 1, sharpness: 2 } };

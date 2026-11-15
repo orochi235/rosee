@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { PRESETS } from '../presets';
-import { computeToolpaths } from '../toolpath/toolpath';
-import { simplify, toolpathsSvg } from './svg';
+import { PRESETS } from '../presets.js';
+import { computeToolpaths } from '../toolpath/toolpath.js';
+import { simplify, toolpathsSvg } from './svg.js';
 
 const points = (svg: string): [number, number][][] =>
   [...svg.matchAll(/<polyline points="([^"]*)"/g)].map((m) => m[1].split(' ').map((p) => p.split(',').map(Number) as [number, number]));

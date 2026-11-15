@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { contactTable } from '../contact/table';
-import type { Rosette } from '../rosette/rosette';
-import { headstockToMachine, headstockToChuck, machineToHeadstock, chuckToHeadstock } from './pose';
-import { contactGap, solveSwing, swingAt, swingTable } from './swing';
+import { contactTable } from '../contact/table.js';
+import type { Rosette } from '../rosette/rosette.js';
+import { headstockToMachine, headstockToChuck, machineToHeadstock, chuckToHeadstock } from './pose.js';
+import { contactGap, solveSwing, swingAt, swingTable } from './swing.js';
 
 describe('pose', () => {
   it('swings the spindle axis on an arc about the pivot', () => {

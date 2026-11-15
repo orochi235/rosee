@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { grooveWidth } from './cutter';
+import { grooveWidth } from './cutter.js';
 
 it('a 90° cutter cuts a groove twice as wide as it is deep, plus its tip flat', () => {
   expect(grooveWidth({ vAngle: 90, tipFlat: 0 }, 0.1)).toBeCloseTo(0.2, 12);

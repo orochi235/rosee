@@ -1,4 +1,4 @@
-import type { Settings } from './toolpath/settings';
+import type { Settings } from './toolpath/settings.js';
 
 const base: Settings = {
   rosette: { radius: 30, wave: { kind: 'sine', lobes: 12, amplitude: 1 } },

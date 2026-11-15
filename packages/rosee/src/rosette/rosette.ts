@@ -1,6 +1,6 @@
-import { turnFraction } from '../angle';
-import { num, type ParamSpec } from '../params';
-import { drawnLobe, flatLobe, type LobeProfile, petalLobe, type ProfilePoint, scallopLobe, sineLobe } from './profile';
+import { turnFraction } from '../angle.js';
+import { num, type ParamSpec } from '../params.js';
+import { drawnLobe, flatLobe, type LobeProfile, petalLobe, type ProfilePoint, scallopLobe, sineLobe } from './profile.js';
 
 /** A rosette's wave: `lobes` repeats of a lobe shape, `amplitude` mm from the
  *  mean radius to a peak. */

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { grooveWidth } from '../cutter/cutter';
-import { PRESETS } from '../presets';
-import { computeToolpaths } from '../toolpath/toolpath';
-import { type Carve, createCarve } from './carve';
-import { context } from './fixtures/context';
-import { straightGroove } from './fixtures/straightGroove';
-import { carveMesh } from './mesh';
+import { grooveWidth } from '../cutter/cutter.js';
+import { PRESETS } from '../presets.js';
+import { computeToolpaths } from '../toolpath/toolpath.js';
+import { type Carve, createCarve } from './carve.js';
+import { context } from './fixtures/context.js';
+import { straightGroove } from './fixtures/straightGroove.js';
+import { carveMesh } from './mesh.js';
 
 /** Heights down the column through sheet point u, from −v to +v. */
 function column(h: Float32Array, carve: Carve, u: number): Float32Array {

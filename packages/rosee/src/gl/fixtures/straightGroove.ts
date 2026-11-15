@@ -1,4 +1,4 @@
-import type { PassPath, Toolpaths } from '../../toolpath/toolpath';
+import type { PassPath, Toolpaths } from '../../toolpath/toolpath.js';
 
 /** A straight groove along x at depth `depth`, the V opening across y. */
 export function straightGroove(depth: number, length = 10, samples = 20): Toolpaths {

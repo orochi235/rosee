@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { TAU } from '../angle';
-import { radiusAt, type Rosette } from '../rosette/rosette';
-import { CONTACT_SAMPLES, contactTable, reachAt, touchAt } from './table';
+import { TAU } from '../angle.js';
+import { radiusAt, type Rosette } from '../rosette/rosette.js';
+import { CONTACT_SAMPLES, contactTable, reachAt, touchAt } from './table.js';
 
 /** Reach against the outline sampled 64× denser than the table, then
  *  resampled 1024× finer around each near-best local maximum: a plain dense

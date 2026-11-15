@@ -1,5 +1,5 @@
-import { rad, TAU } from '../angle';
-import type { Expr } from './expr';
+import { rad, TAU } from '../angle.js';
+import type { Expr } from './expr.js';
 
 /** A number, or a 2D vector. */
 export type Value = number | readonly number[];

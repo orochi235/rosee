@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { TAU } from '../angle';
-import type { Job } from '../job/job';
-import { machineToHeadstock, chuckToHeadstock } from '../machine/pose';
-import { radiusAt } from '../rosette/rosette';
-import type { Settings } from './settings';
-import { computeToolpaths } from './toolpath';
+import { TAU } from '../angle.js';
+import type { Job } from '../job/job.js';
+import { machineToHeadstock, chuckToHeadstock } from '../machine/pose.js';
+import { radiusAt } from '../rosette/rosette.js';
+import type { Settings } from './settings.js';
+import { computeToolpaths } from './toolpath.js';
 
 const job = (over: Partial<Job> = {}): Job => ({
   from: 20,

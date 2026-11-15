@@ -1,6 +1,6 @@
-import { lerpTurn, TAU } from '../angle';
-import { type ContactTable, reachAt, touchAt } from '../contact/table';
-import { machineToHeadstock } from './pose';
+import { lerpTurn, TAU } from '../angle.js';
+import { type ContactTable, reachAt, touchAt } from '../contact/table.js';
+import { machineToHeadstock } from './pose.js';
 
 /** Points the gap is sampled at across the bracket, looking for roots. */
 const SCAN = 128;

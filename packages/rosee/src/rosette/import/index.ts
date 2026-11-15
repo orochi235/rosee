@@ -1,13 +1,13 @@
-import { dxfLoops } from './dxf';
-import { type Gray, traceLoops } from './image';
-import { largestLoop, type OutlineOptions, rosetteFromOutline } from './outline';
-import { svgLoops } from './svg';
+import { dxfLoops } from './dxf.js';
+import { type Gray, traceLoops } from './image.js';
+import { largestLoop, type OutlineOptions, rosetteFromOutline } from './outline.js';
+import { svgLoops } from './svg.js';
 
-export type { Gray } from './image';
-export { grayOf, otsu, traceLoops } from './image';
-export { largestLoop, loopArea, type OutlineOptions, rosetteFromOutline } from './outline';
-export { dxfLoops } from './dxf';
-export { pathLoops, svgLoops } from './svg';
+export type { Gray } from './image.js';
+export { grayOf, otsu, traceLoops } from './image.js';
+export { largestLoop, loopArea, type OutlineOptions, rosetteFromOutline } from './outline.js';
+export { dxfLoops } from './dxf.js';
+export { pathLoops, svgLoops } from './svg.js';
 
 /** A rosette from the largest closed outline in an SVG document, at the
  *  document's own size. */

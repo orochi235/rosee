@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { drawnLobe, flatLobe, petalLobe, scallopLobe, sineLobe } from './profile';
+import { drawnLobe, flatLobe, petalLobe, scallopLobe, sineLobe } from './profile.js';
 
 describe('lobe profiles', () => {
   const kinds = { sine: sineLobe, flat: flatLobe(0.4), petal: petalLobe(2), scallop: scallopLobe };

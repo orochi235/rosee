@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { straightGroove } from './fixtures/straightGroove';
-import { carveMesh } from './mesh';
+import { straightGroove } from './fixtures/straightGroove.js';
+import { carveMesh } from './mesh.js';
 
 describe('carveMesh', () => {
   it('builds two flank quads per segment for a sharp graver', () => {

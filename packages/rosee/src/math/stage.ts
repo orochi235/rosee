@@ -1,5 +1,5 @@
-import type { Expr } from './expr';
-import { type MathMLOptions, toMathML } from './mathml';
+import type { Expr } from './expr.js';
+import { type MathMLOptions, toMathML } from './mathml.js';
 
 /** What an equation's value measures, for display. */
 export type Unit = 'mm' | 'angle' | 'ratio';

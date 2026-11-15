@@ -1,6 +1,6 @@
-import type { Toolpaths } from '../toolpath/toolpath';
-import type { Surface } from '../surface/surface';
-import type { Settings } from '../toolpath/settings';
+import type { Toolpaths } from '../toolpath/toolpath.js';
+import type { Surface } from '../surface/surface.js';
+import type { Settings } from '../toolpath/settings.js';
 import {
   add,
   alias,
@@ -23,9 +23,9 @@ import {
   sub,
   sym,
   vec,
-} from './expr';
-import { reachValue, rosetteMath } from './rosette';
-import type { Equation, Stage } from './stage';
+} from './expr.js';
+import { reachValue, rosetteMath } from './rosette.js';
+import type { Equation, Stage } from './stage.js';
 
 export interface DescribeOptions {
   /** Points each "max over α" evaluates at. */

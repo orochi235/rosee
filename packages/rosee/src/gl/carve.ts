@@ -1,5 +1,5 @@
-import { compile, FULLSCREEN_VERTEX } from './program';
-import type { CarveMesh, SheetBounds } from './mesh';
+import { compile, FULLSCREEN_VERTEX } from './program.js';
+import type { CarveMesh, SheetBounds } from './mesh.js';
 
 /** How far the carve has got: every pass before `pass` in full, and `pass`
  *  itself up to sample `sample`. */

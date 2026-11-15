@@ -1,6 +1,6 @@
-import { sheetPeriod } from '../surface/surface';
-import { sheetRuns } from '../toolpath/runs';
-import type { Toolpaths } from '../toolpath/toolpath';
+import { sheetPeriod } from '../surface/surface.js';
+import { sheetRuns } from '../toolpath/runs.js';
+import type { Toolpaths } from '../toolpath/toolpath.js';
 
 export interface SvgOptions {
   /** Line width, mm. */

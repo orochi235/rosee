@@ -1,5 +1,5 @@
-import type { Rubber } from '../contact/table';
-import type { Rosette, Wave } from '../rosette/rosette';
+import type { Rubber } from '../contact/table.js';
+import type { Rosette, Wave } from '../rosette/rosette.js';
 import {
   add,
   alias,
@@ -24,8 +24,8 @@ import {
   sym,
   table,
   text,
-} from './expr';
-import type { Equation } from './stage';
+} from './expr.js';
+import type { Equation } from './stage.js';
 
 type SimpleWave = Exclude<Wave, { kind: 'compound' }>;
 

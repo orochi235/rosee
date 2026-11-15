@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { PRESETS } from '../presets';
-import type { Surface } from '../surface/surface';
-import { computeToolpaths } from '../toolpath/toolpath';
-import { createCarve } from './carve';
-import { context } from './fixtures/context';
-import { carveMesh } from './mesh';
-import { createPart, DEFAULT_ORBIT } from './part';
-import { METALS } from './shade';
+import { PRESETS } from '../presets.js';
+import type { Surface } from '../surface/surface.js';
+import { computeToolpaths } from '../toolpath/toolpath.js';
+import { createCarve } from './carve.js';
+import { context } from './fixtures/context.js';
+import { carveMesh } from './mesh.js';
+import { createPart, DEFAULT_ORBIT } from './part.js';
+import { METALS } from './shade.js';
 
 const BACKGROUND: [number, number, number] = [0, 0, 0];
 

@@ -1,16 +1,16 @@
 import { describe as group, expect, it } from 'vitest';
-import { TAU } from '../angle';
-import { contactTable, reachAt, type Rubber } from '../contact/table';
-import { grooveWidth } from '../cutter/cutter';
-import { machineToHeadstock } from '../machine/pose';
-import { PRESETS } from '../presets';
-import { radiusAt, type Wave } from '../rosette/rosette';
-import type { Settings } from '../toolpath/settings';
-import { computeToolpaths, type Toolpaths } from '../toolpath/toolpath';
-import { describe } from './describe';
-import { sampleEnv } from './env';
-import { evaluate } from './evaluate';
-import { equation, equationMathML, type Stage } from './stage';
+import { TAU } from '../angle.js';
+import { contactTable, reachAt, type Rubber } from '../contact/table.js';
+import { grooveWidth } from '../cutter/cutter.js';
+import { machineToHeadstock } from '../machine/pose.js';
+import { PRESETS } from '../presets.js';
+import { radiusAt, type Wave } from '../rosette/rosette.js';
+import type { Settings } from '../toolpath/settings.js';
+import { computeToolpaths, type Toolpaths } from '../toolpath/toolpath.js';
+import { describe } from './describe.js';
+import { sampleEnv } from './env.js';
+import { evaluate } from './evaluate.js';
+import { equation, equationMathML, type Stage } from './stage.js';
 
 const num = (v: unknown): number => {
   if (typeof v !== 'number') throw new Error('expected a number');

@@ -1,5 +1,5 @@
-import { lerpTurn, TAU, turnSample, wrapAngle } from '../angle';
-import { radiusAt, type Rosette, type Wave } from '../rosette/rosette';
+import { lerpTurn, TAU, turnSample, wrapAngle } from '../angle.js';
+import { radiusAt, type Rosette, type Wave } from '../rosette/rosette.js';
 
 /** The rubber's profile in the rosette's plane. A round rubber of radius 0 is
  *  a knife edge. A flat rubber is a face square to its line of approach. */

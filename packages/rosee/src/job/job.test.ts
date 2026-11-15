@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { expandJob, type Job, passCount } from './job';
+import { expandJob, type Job, passCount } from './job.js';
 
 const base: Job = { from: 10, to: 12, step: 0.5, depth: 0.05, phaseStep: 15, phaseGroup: 1, pumpPhaseStep: 0, indexCount: 1, wheelCount: 1, eccentricityStep: 0 };
 

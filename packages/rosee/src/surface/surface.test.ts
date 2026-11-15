@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fromSheet, graverAt, reachOf, type Surface, sheetPeriod, toSheet } from './surface';
+import { fromSheet, graverAt, reachOf, type Surface, sheetPeriod, toSheet } from './surface.js';
 
 const SURFACES: Surface[] = [
   { kind: 'flat' },

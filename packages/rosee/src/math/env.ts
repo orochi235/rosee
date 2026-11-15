@@ -1,8 +1,8 @@
-import { TAU } from '../angle';
-import type { Settings } from '../toolpath/settings';
-import type { Toolpaths } from '../toolpath/toolpath';
-import { type Env, evaluate } from './evaluate';
-import { equation, type Stage } from './stage';
+import { TAU } from '../angle.js';
+import type { Settings } from '../toolpath/settings.js';
+import type { Toolpaths } from '../toolpath/toolpath.js';
+import { type Env, evaluate } from './evaluate.js';
+import { equation, type Stage } from './stage.js';
 
 /** The variables every formula in `stages` reads, at one sample of one
  *  pass: the spindle θ, swing φ, the touched rosette angle α, the depth of

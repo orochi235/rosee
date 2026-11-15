@@ -1,10 +1,10 @@
-export { deg, rad, TAU } from './angle';
-export { CONTACT_SAMPLES, type ContactTable, contactTable, reachAt, type Rubber, rubberReach } from './contact/table';
-export { type Cutter, grooveWidth } from './cutter/cutter';
-export { type SvgOptions, toolpathsSvg } from './export/svg';
-export { expandJob, type Job, type Pass, passCount } from './job/job';
-export { type Chuck, slideAt, wheelOf } from './machine/chuck';
-export { carriageAt, type Engine, roseEngine } from './machine/engine';
+export { deg, rad, TAU } from './angle.js';
+export { CONTACT_SAMPLES, type ContactTable, contactTable, reachAt, type Rubber, rubberReach } from './contact/table.js';
+export { type Cutter, grooveWidth } from './cutter/cutter.js';
+export { type SvgOptions, toolpathsSvg } from './export/svg.js';
+export { expandJob, type Job, type Pass, passCount } from './job/job.js';
+export { type Chuck, slideAt, wheelOf } from './machine/chuck.js';
+export { carriageAt, type Engine, roseEngine } from './machine/engine.js';
 export {
   carriageToHeadstock,
   chuckToHeadstock,
@@ -15,18 +15,18 @@ export {
   machineToHeadstock,
   type Vec2,
   workToChuck,
-} from './machine/pose';
-export { contactGap, solveSwing } from './machine/swing';
-export { type DescribeOptions, describe } from './math/describe';
-export { sampleEnv } from './math/env';
-export { type Env, evaluate, type Value } from './math/evaluate';
-export type { Expr, Name } from './math/expr';
-export { type MathMLOptions, toMathML } from './math/mathml';
-export { type Equation, equation, equationMathML, type Stage, type Unit } from './math/stage';
-export { choice, type ChoiceParam, num, type NumberParam, type ParamSpec } from './params';
-export { PRESETS, type PresetName } from './presets';
-export type { ProfilePoint } from './rosette/profile';
-export { displacement, radiusAt, type Rosette, WAVE_PARAMS, type Wave, type WaveKind } from './rosette/rosette';
+} from './machine/pose.js';
+export { contactGap, solveSwing } from './machine/swing.js';
+export { type DescribeOptions, describe } from './math/describe.js';
+export { sampleEnv } from './math/env.js';
+export { type Env, evaluate, type Value } from './math/evaluate.js';
+export type { Expr, Name } from './math/expr.js';
+export { type MathMLOptions, toMathML } from './math/mathml.js';
+export { type Equation, equation, equationMathML, type Stage, type Unit } from './math/stage.js';
+export { choice, type ChoiceParam, num, type NumberParam, type ParamSpec } from './params.js';
+export { PRESETS, type PresetName } from './presets.js';
+export type { ProfilePoint } from './rosette/profile.js';
+export { displacement, radiusAt, type Rosette, WAVE_PARAMS, type Wave, type WaveKind } from './rosette/rosette.js';
 export {
   dxfLoops,
   type Gray,
@@ -40,7 +40,7 @@ export {
   rosetteFromSvg,
   svgLoops,
   traceLoops,
-} from './rosette/import';
+} from './rosette/import/index.js';
 export {
   checkSurface,
   flatFace,
@@ -52,7 +52,7 @@ export {
   type Surface,
   toSheet,
   type Vec3,
-} from './surface/surface';
-export type { Pump, Settings } from './toolpath/settings';
-export { sheetRuns } from './toolpath/runs';
-export { computeToolpaths, type PassPath, SAMPLE_BUDGET, SAMPLES_PER_TURN, type Toolpaths } from './toolpath/toolpath';
+} from './surface/surface.js';
+export type { Pump, Settings } from './toolpath/settings.js';
+export { sheetRuns } from './toolpath/runs.js';
+export { computeToolpaths, type PassPath, SAMPLE_BUDGET, SAMPLES_PER_TURN, type Toolpaths } from './toolpath/toolpath.js';

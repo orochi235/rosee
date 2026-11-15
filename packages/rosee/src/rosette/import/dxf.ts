@@ -1,4 +1,4 @@
-import type { Vec2 } from '../../machine/pose';
+import type { Vec2 } from '../../machine/pose.js';
 
 /** Segments a circle, arc, ellipse or spline is flattened to per turn or span. */
 const STEPS = 256;

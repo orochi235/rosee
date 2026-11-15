@@ -1,9 +1,9 @@
-import { rad } from '../angle';
-import { reachOf, type Surface } from '../surface/surface';
-import type { Carve } from './carve';
-import { METAL_GLSL, SHEET_GLSL } from './glsl';
-import { compile } from './program';
-import type { Light, Metal } from './shade';
+import { rad } from '../angle.js';
+import { reachOf, type Surface } from '../surface/surface.js';
+import type { Carve } from './carve.js';
+import { METAL_GLSL, SHEET_GLSL } from './glsl.js';
+import { compile } from './program.js';
+import type { Light, Metal } from './shade.js';
 
 /** A camera turning round the part: `yaw` round its vertical axis and
  *  `pitch` above it, degrees; `zoom` 1 frames the whole part. */

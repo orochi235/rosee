@@ -1,4 +1,4 @@
-import { rad } from '../angle';
+import { rad } from '../angle.js';
 
 /** A V graver: included angle in degrees, and the width of the flat ground
  *  on its tip in mm (0 for a sharp point). */

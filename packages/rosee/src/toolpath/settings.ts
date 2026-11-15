@@ -1,10 +1,10 @@
-import type { Rubber } from '../contact/table';
-import type { Cutter } from '../cutter/cutter';
-import type { Job } from '../job/job';
-import type { Chuck } from '../machine/chuck';
-import type { Engine } from '../machine/engine';
-import type { Rosette } from '../rosette/rosette';
-import type { Surface } from '../surface/surface';
+import type { Rubber } from '../contact/table.js';
+import type { Cutter } from '../cutter/cutter.js';
+import type { Job } from '../job/job.js';
+import type { Chuck } from '../machine/chuck.js';
+import type { Engine } from '../machine/engine.js';
+import type { Rosette } from '../rosette/rosette.js';
+import type { Surface } from '../surface/surface.js';
 
 /** A pumping rosette and its rubber. `gain` is the lever ratio from the
  *  pumping rubber's travel to the headstock's travel along the spindle. */

@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
-import { grooveWidth } from './cutter/cutter';
-import { PRESETS } from './presets';
-import { computeToolpaths } from './toolpath/toolpath';
+import { grooveWidth } from './cutter/cutter.js';
+import { PRESETS } from './presets.js';
+import { computeToolpaths } from './toolpath/toolpath.js';
 
 it('cuts every preset deep enough that its grooves overlap', () => {
   for (const s of Object.values(PRESETS)) expect(grooveWidth(s.cutter, s.job.depth)).toBeGreaterThan(s.job.step);

@@ -1,4 +1,4 @@
-import { TAU } from '../angle';
+import { TAU } from '../angle.js';
 
 /** The machine cutting the work. A rose engine turns the work with the
  *  rosette on one spindle. A straight-line engine keeps the work from
