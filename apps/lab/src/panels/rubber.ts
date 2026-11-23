@@ -19,7 +19,7 @@ export const rubberPanel: Panel<Settings> = {
   title: 'Rubber and headstock',
   schema: resolveConfigSchema(
     f.schema({
-      shape: f.enum<string>('round', ['round', 'flat']).label('Rubber').manual(),
+      shape: f.enum<string>('round', ['round', 'flat']).label('Rubber'),
       radius: f
         .number(1)
         .range(0, 10)
@@ -27,7 +27,6 @@ export const rubberPanel: Panel<Settings> = {
         .label('Rubber radius')
         .suffix('mm')
         .describe('0 is a knife edge.')
-        .manual()
         .showIf((c) => c.shape === 'round'),
       width: f
         .number(6)
@@ -35,7 +34,6 @@ export const rubberPanel: Panel<Settings> = {
         .step(0.5)
         .label('Face width')
         .suffix('mm')
-        .manual()
         .showIf((c) => c.shape === 'flat'),
       ...Object.fromEntries(
         (Object.keys(AXES) as Engine['kind'][]).map((kind) => [
@@ -47,7 +45,6 @@ export const rubberPanel: Panel<Settings> = {
             .label(`Pivot below ${AXES[kind]}`)
             .suffix('mm')
             .describe(`How far below the ${AXES[kind]} the frame rocks. Shorter arms bend the cut along an arc.`)
-            .manual()
             .showIf((c) => c.engine === kind),
         ]),
       ),

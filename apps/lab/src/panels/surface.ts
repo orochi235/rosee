@@ -13,15 +13,14 @@ export const surfacePanel: Panel<Settings> = {
         .enum<string>('flat', ['flat', 'cylinder', 'dome'])
         .label('Surface')
         .describe('A flat face, a barrel cut round its side, or a dome cut with the graver kept square to it.')
-        .manual(),
-      radius: f.number(10).range(1, 100).step(0.5).label('Radius').suffix('mm').manual().showIf(curved),
+        ,
+      radius: f.number(10).range(1, 100).step(0.5).label('Radius').suffix('mm').showIf(curved),
       length: f
         .number(24)
         .range(1, 200)
         .step(0.5)
         .label('Length')
         .suffix('mm')
-        .manual()
         .showIf((c) => c.kind === 'cylinder'),
       rim: f
         .number(20)
@@ -30,7 +29,6 @@ export const surfacePanel: Panel<Settings> = {
         .label('Rim radius')
         .suffix('mm')
         .describe('How far from the axis the dome is cut out to; at most its radius, a hemisphere.')
-        .manual()
         .showIf((c) => c.kind === 'dome'),
     }),
   ),

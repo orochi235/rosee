@@ -76,9 +76,9 @@ describe('cutClock', () => {
     const clock = cutClock(DEFAULT_STATE.settings, 2);
     expect(clock.start).toBe('end');
     const label = speedLabel(2);
-    const rates = clock.rates ?? [];
-    expect(label(rates[0] as number)).toBe('64 s/turn');
-    expect(label(rates.at(-1) as number)).toBe('8 turn/s');
+    const speeds = clock.speeds ?? [];
+    expect(label(speeds[0] as number)).toBe('64 s/turn');
+    expect(label(speeds.at(-1) as number)).toBe('8 turn/s');
     expect(label(1)).toBe('2 turn/s');
   });
 });

@@ -11,6 +11,6 @@ export interface Panel<T> {
 }
 
 export const num = (s: ParamSpec & { type: 'number' }) => {
-  const node = f.number(s.default).range(s.min, s.max).step(s.step).label(s.label).manual();
+  const node = f.number(s.default).range(s.min, s.max).step(s.step).label(s.label);
   return s.suffix ? node.suffix(s.suffix) : node;
 };

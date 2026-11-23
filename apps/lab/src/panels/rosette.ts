@@ -38,8 +38,8 @@ export const rosettePanel: Panel<Settings> = {
   title: 'Rosette',
   schema: resolveConfigSchema(
     f.schema({
-      kind: f.enum<string>('sine', KINDS).label('Shape').manual(),
-      radius: f.number(30).range(5, 80).step(0.5).label('Mean radius').suffix('mm').manual(),
+      kind: f.enum<string>('sine', KINDS).label('Shape'),
+      radius: f.number(30).range(5, 80).step(0.5).label('Mean radius').suffix('mm'),
       ...waveFields(),
     }),
   ),

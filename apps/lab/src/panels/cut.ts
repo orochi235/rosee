@@ -21,7 +21,6 @@ function positions(key: 'from' | 'to', label: string, def: number) {
         .step(0.05)
         .label(`${label} ${MEASURES[m]}`)
         .suffix('mm')
-        .manual()
         .showIf((c) => c.measure === m),
     ]),
   );
@@ -31,17 +30,17 @@ export const cutPanel: Panel<Settings> = {
   title: 'Cutter and job',
   schema: resolveConfigSchema(
     f.schema({
-      vAngle: f.number(110).range(30, 170).step(1).label('V angle').suffix('°').manual(),
-      tipFlat: f.number(0).range(0, 0.2).step(0.005).label('Tip flat').suffix('mm').manual(),
+      vAngle: f.number(110).range(30, 170).step(1).label('V angle').suffix('°'),
+      tipFlat: f.number(0).range(0, 0.2).step(0.005).label('Tip flat').suffix('mm'),
       ...positions('from', 'From', 4),
       ...positions('to', 'To', 18),
-      step: f.number(0.35).range(0.02, 5).step(0.01).label('Step').suffix('mm').manual(),
-      depth: f.number(0.15).range(0.005, 1).step(0.005).label('Depth').suffix('mm').manual(),
-      phaseStep: f.number(2).range(-180, 180).step(0.25).label('Phase step').suffix('°').manual(),
-      phaseGroup: f.number(1).range(1, 20).step(1).label('Passes per phase').manual(),
-      pumpPhaseStep: f.number(0).range(-180, 180).step(0.25).label('Pump phase step').suffix('°').manual(),
-      indexCount: f.number(1).range(1, 24).step(1).label('Divisions').manual(),
-      samplesPerTurn: f.number(2048).range(256, 8192).step(256).label('Samples per turn').manual(),
+      step: f.number(0.35).range(0.02, 5).step(0.01).label('Step').suffix('mm'),
+      depth: f.number(0.15).range(0.005, 1).step(0.005).label('Depth').suffix('mm'),
+      phaseStep: f.number(2).range(-180, 180).step(0.25).label('Phase step').suffix('°'),
+      phaseGroup: f.number(1).range(1, 20).step(1).label('Passes per phase'),
+      pumpPhaseStep: f.number(0).range(-180, 180).step(0.25).label('Pump phase step').suffix('°'),
+      indexCount: f.number(1).range(1, 24).step(1).label('Divisions'),
+      samplesPerTurn: f.number(2048).range(256, 8192).step(256).label('Samples per turn'),
     }),
   ),
   read: (s) => {

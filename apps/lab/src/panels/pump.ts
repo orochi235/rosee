@@ -7,13 +7,12 @@ export const pumpPanel: Panel<Settings> = {
   title: 'Pumping',
   schema: resolveConfigSchema(
     f.schema({
-      on: f.boolean(false).label('Pump').manual(),
+      on: f.boolean(false).label('Pump'),
       lobes: f
         .number(6)
         .range(1, 48)
         .step(1)
         .label('Lobes')
-        .manual()
         .showIf((c) => c.on === true),
       amplitude: f
         .number(0.02)
@@ -21,14 +20,12 @@ export const pumpPanel: Panel<Settings> = {
         .step(0.005)
         .label('Amplitude')
         .suffix('mm')
-        .manual()
         .showIf((c) => c.on === true),
       gain: f
         .number(1)
         .range(0.1, 5)
         .step(0.1)
         .label('Lever ratio')
-        .manual()
         .showIf((c) => c.on === true),
     }),
   ),

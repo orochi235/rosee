@@ -13,7 +13,7 @@ export const enginePanel: Panel<Settings> = {
         .enum<string>('rose', ['rose', 'straight'])
         .label('Engine')
         .describe('A rose engine turns the work with the rosette. A straight-line engine slides it on a carriage geared to the rosette, cutting rows.')
-        .manual(),
+        ,
       stroke: f
         .number(30)
         .range(1, 200)
@@ -21,7 +21,6 @@ export const enginePanel: Panel<Settings> = {
         .label('Stroke')
         .suffix('mm')
         .describe('How far the carriage slides the work for each turn of the rosette.')
-        .manual()
         .showIf((c) => c.kind === 'straight'),
     }),
   ),

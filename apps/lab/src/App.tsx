@@ -43,7 +43,6 @@ export function App() {
           <Lab
             present
             instruments={INSTRUMENTS}
-            defaultInstrument="cut"
             seed={{ instrument: 'cut' }}
             clock={CLOCK}
             transport={false}
@@ -55,7 +54,6 @@ export function App() {
         ) : (
           <Lab
             instruments={INSTRUMENTS}
-            defaultInstrument={TILES[0]}
             opening={TILES}
             clock={CLOCK}
             title="rosee"

@@ -9,8 +9,8 @@ export const chuckPanel: Panel<Settings> = {
   title: 'Chuck',
   schema: resolveConfigSchema(
     f.schema({
-      kind: f.enum<string>('none', ['none', 'eccentric', 'elliptical']).label('Chuck').manual(),
-      eccentricity: f.number(8).range(0, 30).step(0.1).label('Eccentricity').suffix('mm').manual().showIf(fitted),
+      kind: f.enum<string>('none', ['none', 'eccentric', 'elliptical']).label('Chuck'),
+      eccentricity: f.number(8).range(0, 30).step(0.1).label('Eccentricity').suffix('mm').showIf(fitted),
       ring: f
         .number(0)
         .range(-180, 180)
@@ -18,17 +18,15 @@ export const chuckPanel: Panel<Settings> = {
         .label('Ring angle')
         .suffix('°')
         .describe('Which way the ring on the headstock is set off the spindle axis.')
-        .manual()
         .showIf((c) => c.kind === 'elliptical'),
-      wheel: f.number(0).range(-180, 180).step(0.5).label('Wheel').suffix('°').manual().showIf(fitted),
-      wheelCount: f.number(1).range(1, 24).step(1).label('Wheel divisions').manual().showIf(fitted),
+      wheel: f.number(0).range(-180, 180).step(0.5).label('Wheel').suffix('°').showIf(fitted),
+      wheelCount: f.number(1).range(1, 24).step(1).label('Wheel divisions').showIf(fitted),
       eccentricityStep: f
         .number(0)
         .range(-2, 2)
         .step(0.05)
         .label('Eccentricity step')
         .suffix('mm')
-        .manual()
         .showIf(fitted),
     }),
   ),

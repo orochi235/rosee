@@ -31,7 +31,7 @@ export function cutClock(settings: Settings, pace: number): ClockCapability {
   } catch {
     // A job computeToolpaths will refuse; the lab shows why.
   }
-  return { duration: cutLength(passes, pace), start: 'end', rates: SPEEDS.map((s) => s / pace) };
+  return { duration: cutLength(passes, pace), start: 'end', speeds: SPEEDS.map((s) => s / pace) };
 }
 
 /** Pause `clock` on the finished cut. Looping, that is the end of the pass it

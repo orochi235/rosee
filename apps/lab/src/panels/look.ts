@@ -7,18 +7,18 @@ export const lookPanel: Panel<Look> = {
   title: 'Look',
   schema: resolveConfigSchema(
     f.schema({
-      mode: f.enum<string>(D.mode, [...OUTPUT_MODES]).label('Output').manual(),
-      metal: f.enum<string>(D.metal, Object.keys(METALS)).label('Metal').manual(),
-      azimuth: f.number(D.azimuth).range(-180, 180).step(1).label('Light azimuth').suffix('°').manual(),
-      elevation: f.number(D.elevation).range(2, 90).step(1).label('Light elevation').suffix('°').manual(),
-      resolution: f.enum<string>(String(D.resolution), RESOLUTIONS.map(String)).label('Carve resolution').manual(),
+      mode: f.enum<string>(D.mode, [...OUTPUT_MODES]).label('Output'),
+      metal: f.enum<string>(D.metal, Object.keys(METALS)).label('Metal'),
+      azimuth: f.number(D.azimuth).range(-180, 180).step(1).label('Light azimuth').suffix('°'),
+      elevation: f.number(D.elevation).range(2, 90).step(1).label('Light elevation').suffix('°'),
+      resolution: f.enum<string>(String(D.resolution), RESOLUTIONS.map(String)).label('Carve resolution'),
       exaggerate: f
         .number(D.exaggerate)
         .range(1, 100)
         .step(1)
         .label('Exaggerate motion')
         .describe('Magnifies the 3D machine’s swing, moving its rubber to stay on the rosette, and pump travel in the side view and the 3D machine; the top and contact views stay true.')
-        .manual(),
+        ,
     }),
   ),
   read: (l) => ({ ...l, resolution: String(l.resolution) }),
